@@ -6,6 +6,7 @@
   "use strict";
 
   const STORAGE_KEY = "listenlab-exam-state";
+  const STORAGE_VERSION = 1;
   const THEME_KEY = "listenlab-theme";
   const DATA_URL = "data/questions.json";
 
@@ -104,6 +105,7 @@
   function saveState() {
     if (state.status !== "in_progress") return;
     const payload = {
+      version: STORAGE_VERSION,
       currentIndex: state.currentIndex,
       answers: state.answers,
       remainingSeconds: state.remainingSeconds,
@@ -124,7 +126,13 @@
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return null;
-      return JSON.parse(raw);
+      const data = JSON.parse(raw);
+      // Drop incompatible legacy payloads
+      if (data.version && data.version !== STORAGE_VERSION) {
+        localStorage.removeItem(STORAGE_KEY);
+        return null;
+      }
+      return data;
     } catch {
       return null;
     }
