@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Listening Comprehension Exam — practice listening skills with timed multiple-choice questions." />
+  <meta name="theme-color" content="#1a73e8" />
+  <title>Listening Comprehension Exam</title>
+  <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header" role="banner">
+    <div class="header-inner">
+      <div class="brand">
+        <img src="assets/images/logo.svg" alt="" width="36" height="36" class="brand-logo" />
+        <span class="brand-name">ListenLab</span>
+      </div>
+      <div class="header-actions">
+        <div class="timer-chip" id="timerChip" hidden aria-live="polite">
+          <span class="timer-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5M9 3h6"/>
+            </svg>
+          </span>
+          <span id="timerDisplay">15:00</span>
+        </div>
+        <button type="button" class="icon-btn" id="themeToggle" aria-label="Toggle dark mode" title="Toggle theme">
+          <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+          <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="main" tabindex="-1">
+    <!-- Loading -->
+    <section id="screenLoading" class="screen screen-active" aria-busy="true" aria-label="Loading exam">
+      <div class="card card-narrow loading-card">
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Loading exam…</p>
+      </div>
+    </section>
+
+    <!-- Home -->
+    <section id="screenHome" class="screen" hidden aria-labelledby="examTitle">
+      <div class="card home-card fade-in">
+        <div class="home-hero">
+          <img src="assets/images/logo.svg" alt="" width="64" height="64" class="home-logo" />
+          <p class="eyebrow">Listening Assessment</p>
+          <h1 id="examTitle">Listening Comprehension Exam</h1>
+          <p id="examDescription" class="lead"></p>
+        </div>
+
+        <ul class="meta-grid" aria-label="Exam details">
+          <li class="meta-item">
+            <span class="meta-label">Questions</span>
+            <span class="meta-value" id="metaQuestions">—</span>
+          </li>
+          <li class="meta-item">
+            <span class="meta-label">Total marks</span>
+            <span class="meta-value" id="metaMarks">—</span>
+          </li>
+          <li class="meta-item">
+            <span class="meta-label">Duration</span>
+            <span class="meta-value" id="metaDuration">—</span>
+          </li>
+          <li class="meta-item">
+            <span class="meta-label">Pass mark</span>
+            <span class="meta-value" id="metaPass">—</span>
+          </li>
+        </ul>
+
+        <div class="options-row">
+          <label class="toggle-label" for="preventSkipToggle">
+            <input type="checkbox" id="preventSkipToggle" checked />
+            <span>Prevent skipping unanswered questions</span>
+          </label>
+        </div>
+
+        <div class="home-actions">
+          <button type="button" class="btn btn-primary btn-lg" id="btnStart">Start Exam</button>
+          <button type="button" class="btn btn-ghost" id="btnResume" hidden>Resume Exam</button>
+        </div>
+        <p class="hint" id="resumeHint" hidden>An unfinished attempt was found. You can resume or start over.</p>
+      </div>
+    </section>
+
+    <!-- Exam -->
+    <section id="screenExam" class="screen" hidden aria-labelledby="questionPrompt">
+      <div class="exam-layout fade-in">
+        <div class="progress-panel" role="status" aria-live="polite">
+          <div class="progress-text">
+            <span id="progressLabel">Question 1 of 10</span>
+            <span id="answeredCount" class="muted">0 answered</span>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <article class="card question-card">
+          <header class="question-header">
+            <span class="question-badge" id="questionBadge">Q1</span>
+            <h2 class="question-prompt" id="questionPrompt">Listen and choose the best answer.</h2>
+          </header>
+
+          <div class="audio-block">
+            <label class="audio-label" for="examAudio">Audio clip</label>
+            <audio
+              id="examAudio"
+              class="audio-player"
+              controls
+              controlsList="nodownload noplaybackrate"
+              preload="auto"
+            >
+              Your browser does not support the audio element.
+            </audio>
+            <p class="audio-hint">You may play the audio as many times as you need.</p>
+          </div>
+
+          <fieldset class="choices" id="choicesFieldset">
+            <legend class="visually-hidden">Answer choices</legend>
+            <!-- Choices rendered by JS -->
+          </fieldset>
+
+          <div class="nav-bar">
+            <button type="button" class="btn btn-secondary" id="btnPrev" disabled>Previous</button>
+            <div class="nav-bar-right">
+              <button type="button" class="btn btn-danger-outline" id="btnSubmitEarly">Submit</button>
+              <button type="button" class="btn btn-primary" id="btnNext">Next</button>
+            </div>
+          </div>
+        </article>
+
+        <nav class="question-dots" id="questionDots" aria-label="Question navigator"></nav>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section id="screenResults" class="screen" hidden aria-labelledby="resultsHeading">
+      <div class="results-layout fade-in">
+        <div class="card results-summary" id="resultsSummary">
+          <p class="eyebrow" id="resultsStatusLabel">Result</p>
+          <h1 id="resultsHeading">Exam Complete</h1>
+          <p class="verdict" id="resultsVerdict">Passed</p>
+
+          <div class="score-ring-wrap" aria-hidden="true">
+            <svg class="score-ring" viewBox="0 0 120 120">
+              <circle class="score-ring-bg" cx="60" cy="60" r="52" />
+              <circle class="score-ring-fg" id="scoreRingFg" cx="60" cy="60" r="52" />
+            </svg>
+            <div class="score-ring-label">
+              <span id="resultsPercent">0%</span>
+            </div>
+          </div>
+
+          <ul class="stats-grid" aria-label="Score breakdown">
+            <li>
+              <span class="meta-label">Score</span>
+              <span class="meta-value" id="resultsScore">0 / 0</span>
+            </li>
+            <li>
+              <span class="meta-label">Correct</span>
+              <span class="meta-value correct-text" id="resultsCorrect">0</span>
+            </li>
+            <li>
+              <span class="meta-label">Wrong</span>
+              <span class="meta-value wrong-text" id="resultsWrong">0</span>
+            </li>
+            <li>
+              <span class="meta-label">Time taken</span>
+              <span class="meta-value" id="resultsTime">00:00</span>
+            </li>
+          </ul>
+
+          <div class="home-actions">
+            <button type="button" class="btn btn-primary" id="btnReview">Review answers</button>
+            <button type="button" class="btn btn-secondary" id="btnRetake">Retake exam</button>
+          </div>
+        </div>
+
+        <div id="reviewSection" class="review-section" hidden>
+          <h2 class="review-heading">Question Review</h2>
+          <div id="reviewList" class="review-list"></div>
+          <div class="home-actions">
+            <button type="button" class="btn btn-primary" id="btnBackHome">Back to home</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Confirm dialog -->
+  <div class="modal" id="confirmModal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card" role="document">
+      <h2 id="modalTitle">Submit exam?</h2>
+      <p id="modalMessage">You still have unanswered questions. Submit anyway?</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="modalCancel" data-close-modal>Cancel</button>
+        <button type="button" class="btn btn-primary" id="modalConfirm">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="js/app.js" defer></script>
+</body>
+</html>
