@@ -1,6 +1,6 @@
-# ListenLab — Listening Comprehension Exam
+# AscoltoIT — Esame di Ascolto (Italiano)
 
-A production-ready, client-side **Listening Exam** web application built with **HTML, CSS, and Vanilla JavaScript** (no frameworks). Inspired by Google Forms, IELTS computer-based tests, and the Duolingo English Test.
+A production-ready, client-side **Italian listening exam** web application built with **HTML, CSS, and Vanilla JavaScript** (no frameworks). UI and sample questions are in **Italian**. Inspired by Google Forms, IELTS computer-based tests, and language placement exams.
 
 **Live demo (GitHub Pages):** `https://<your-username>.github.io/<repo-name>/`
 
@@ -94,7 +94,7 @@ Edit `data/questions.json`:
 ```json
 {
   "exam": {
-    "title": "Listening Comprehension Exam",
+    "title": "Esame di Ascolto — Italiano",
     "description": "…",
     "durationMinutes": 15,
     "marksPerQuestion": 1,
@@ -104,9 +104,9 @@ Edit `data/questions.json`:
   "questions": [
     {
       "id": 1,
-      "prompt": "Which fruit is mentioned in the recording?",
+      "prompt": "Quale frutto viene menzionato nella registrazione?",
       "audio": "assets/audio/q1.mp3",
-      "choices": ["Apple", "Orange", "Banana", "Mango"],
+      "choices": ["Mela", "Arancia", "Banana", "Mango"],
       "correct": 0
     }
   ]
@@ -115,7 +115,7 @@ Edit `data/questions.json`:
 
 - `correct` is a **zero-based** index into `choices`.
 - `audio` paths must be **relative** to `index.html`.
-- Sample MP3 files are demo placeholders — replace them with real listening clips for classroom use. Scoring always follows the `correct` field in JSON.
+- Sample MP3 files are Italian speech clips (TTS) matched to the answer key — replace them with your own recordings if needed.
 
 ---
 

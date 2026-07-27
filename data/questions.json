@@ -1,7 +1,7 @@
 {
   "exam": {
-    "title": "Listening Comprehension Exam",
-    "description": "Listen carefully to each audio clip and choose the best answer. You may replay the audio as many times as you like. Manage your time wisely — the exam will submit automatically when the timer ends.",
+    "title": "Esame di Ascolto — Italiano",
+    "description": "Ascolta ogni audio e scegli la parola o la frase corretta. L’audio viene prima della domanda: ascolta con attenzione, poi rispondi. Puoi riascoltare tutte le volte che vuoi. Allo scadere del tempo l’esame viene inviato automaticamente.",
     "durationMinutes": 15,
     "marksPerQuestion": 1,
     "passPercentage": 60,
@@ -10,73 +10,73 @@
   "questions": [
     {
       "id": 1,
-      "prompt": "Which fruit is mentioned in the recording?",
+      "prompt": "Dove lavora?",
       "audio": "assets/audio/q1.mp3",
-      "choices": ["Apple", "Orange", "Banana", "Mango"],
+      "choices": ["In una biblioteca", "In un ospedale", "In una scuola", "In un supermercato"],
       "correct": 0
     },
     {
       "id": 2,
-      "prompt": "What is the weather like?",
+      "prompt": "Come va al lavoro?",
       "audio": "assets/audio/q2.mp3",
-      "choices": ["Sunny and warm", "Raining heavily", "Snowy and cold", "Cloudy but dry"],
-      "correct": 1
-    },
-    {
-      "id": 3,
-      "prompt": "Where will the meeting be held?",
-      "audio": "assets/audio/q3.mp3",
-      "choices": ["Library", "Cafeteria", "Conference room", "Main hall"],
+      "choices": ["In macchina", "In autobus", "In metropolitana", "A piedi"],
       "correct": 2
     },
     {
+      "id": 3,
+      "prompt": "Cosa le piace fare nel tempo libero?",
+      "audio": "assets/audio/q3.mp3",
+      "choices": ["Guardare la TV", "Leggere libri e ascoltare la musica italiana", "Fare sport", "Cucinare"],
+      "correct": 1
+    },
+    {
       "id": 4,
-      "prompt": "What time does the train leave?",
+      "prompt": "Quando esce con i suoi amici?",
       "audio": "assets/audio/q4.mp3",
-      "choices": ["2:30", "3:00", "3:30", "4:15"],
+      "choices": ["Domenica mattina", "Venerdì sera", "Sabato pomeriggio", "Lunedì sera"],
       "correct": 2
     },
     {
       "id": 5,
-      "prompt": "Which subject does she prefer?",
+      "prompt": "Dove vuole cenare per il compleanno?",
       "audio": "assets/audio/q5.mp3",
-      "choices": ["History", "Mathematics", "Biology", "Literature"],
+      "choices": ["A casa", "In un ristorante italiano", "In una pizzeria", "In un bar"],
       "correct": 1
     },
     {
       "id": 6,
-      "prompt": "How much does the book cost?",
+      "prompt": "Con chi pranza di solito?",
       "audio": "assets/audio/q6.mp3",
-      "choices": ["$10", "$12", "$15", "$20"],
+      "choices": ["Con la famiglia", "Con gli amici", "Con i colleghi", "Da sola"],
       "correct": 2
     },
     {
       "id": 7,
-      "prompt": "What color is the car?",
+      "prompt": "Cosa compra al mercato?",
       "audio": "assets/audio/q7.mp3",
-      "choices": ["Red", "Black", "Blue", "White"],
-      "correct": 2
+      "choices": ["Pane e latte", "Frutta e verdura fresca", "Vestiti", "Libri"],
+      "correct": 1
     },
     {
       "id": 8,
-      "prompt": "What is his job?",
+      "prompt": "Perché studia italiano?",
       "audio": "assets/audio/q8.mp3",
-      "choices": ["Doctor", "Engineer", "Teacher", "Lawyer"],
-      "correct": 2
+      "choices": ["Perché vuole vivere a Roma", "Per lavoro", "Per divertimento", "Per un esame di inglese"],
+      "correct": 0
     },
     {
       "id": 9,
-      "prompt": "Where did they go on holiday?",
+      "prompt": "Con chi ha guardato il film?",
       "audio": "assets/audio/q9.mp3",
-      "choices": ["France", "Spain", "Italy", "Greece"],
+      "choices": ["Con un amico", "Con i genitori", "Con la sorella", "Da sola"],
       "correct": 2
     },
     {
       "id": 10,
-      "prompt": "What does she want to drink?",
+      "prompt": "Dove va domani?",
       "audio": "assets/audio/q10.mp3",
-      "choices": ["Tea", "Water", "Juice", "Coffee"],
-      "correct": 3
+      "choices": ["A Napoli", "A Milano", "A Firenze", "A Torino"],
+      "correct": 1
     }
   ]
 }

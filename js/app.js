@@ -1,12 +1,12 @@
 /**
- * ListenLab — Listening Comprehension Exam
+ * AscoltoIT — Esame di Ascolto in Italiano
  * Client-side exam engine: load JSON, navigate, timer, score, persistence.
  */
 (() => {
   "use strict";
 
-  const STORAGE_KEY = "listenlab-exam-state";
-  const STORAGE_VERSION = 1;
+  const STORAGE_KEY = "ascoltoit-exam-state";
+  const STORAGE_VERSION = 3;
   const THEME_KEY = "listenlab-theme";
   const DATA_URL = "data/questions.json";
 
@@ -16,6 +16,7 @@
   const state = {
     currentIndex: 0,
     answers: /** @type {(number|null)[]} */ ([]),
+    listened: /** @type {boolean[]} */ ([]),
     remainingSeconds: 0,
     totalSeconds: 0,
     startedAt: null,
@@ -56,6 +57,8 @@
     questionPrompt: $("#questionPrompt"),
     examAudio: $("#examAudio"),
     choicesFieldset: $("#choicesFieldset"),
+    afterAudioBlock: $("#afterAudioBlock"),
+    listenFirstHint: $("#listenFirstHint"),
     btnPrev: $("#btnPrev"),
     btnNext: $("#btnNext"),
     btnSubmitEarly: $("#btnSubmitEarly"),
@@ -91,8 +94,9 @@
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem(THEME_KEY, theme);
     const next = theme === "dark" ? "light" : "dark";
-    els.themeToggle.setAttribute("aria-label", `Switch to ${next} mode`);
-    els.themeToggle.title = `Switch to ${next} mode`;
+    const label = next === "dark" ? "Passa alla modalità scura" : "Passa alla modalità chiara";
+    els.themeToggle.setAttribute("aria-label", label);
+    els.themeToggle.title = label;
   }
 
   function toggleTheme() {
@@ -108,6 +112,7 @@
       version: STORAGE_VERSION,
       currentIndex: state.currentIndex,
       answers: state.answers,
+      listened: state.listened,
       remainingSeconds: state.remainingSeconds,
       totalSeconds: state.totalSeconds,
       startedAt: state.startedAt,
@@ -147,6 +152,9 @@
     if (!saved || saved.status !== "in_progress") return false;
     if (!examData) return false;
     if (!Array.isArray(saved.answers) || saved.answers.length !== examData.questions.length) {
+      return false;
+    }
+    if (Array.isArray(saved.listened) && saved.listened.length !== examData.questions.length) {
       return false;
     }
     return typeof saved.remainingSeconds === "number" && saved.remainingSeconds > 0;
@@ -191,7 +199,7 @@
     }, ms);
   }
 
-  function openModal({ title, message, confirmLabel = "Confirm", onConfirm }) {
+  function openModal({ title, message, confirmLabel = "Conferma", onConfirm }) {
     els.modalTitle.textContent = title;
     els.modalMessage.textContent = message;
     els.modalConfirm.textContent = confirmLabel;
@@ -230,7 +238,7 @@
     const resumable = hasResumableAttempt();
     els.btnResume.hidden = !resumable;
     els.resumeHint.hidden = !resumable;
-    els.btnStart.textContent = resumable ? "Start over" : "Start Exam";
+    els.btnStart.textContent = resumable ? "Ricomincia" : "Inizia l'esame";
   }
 
   /* ---------- Exam UI ---------- */
@@ -242,7 +250,7 @@
       btn.type = "button";
       btn.className = "dot";
       btn.textContent = String(i + 1);
-      btn.setAttribute("aria-label", `Go to question ${i + 1}`);
+      btn.setAttribute("aria-label", `Vai alla domanda ${i + 1}`);
       btn.addEventListener("click", () => tryGoTo(i));
       els.questionDots.appendChild(btn);
     });
@@ -262,8 +270,8 @@
     const answered = answeredCount();
     const pct = (current / total) * 100;
 
-    els.progressLabel.textContent = `Question ${current} of ${total}`;
-    els.answeredCount.textContent = `${answered} answered`;
+    els.progressLabel.textContent = `Domanda ${current} di ${total}`;
+    els.answeredCount.textContent = `${answered} risposte`;
     els.progressFill.style.width = `${pct}%`;
     els.progressFill.setAttribute("aria-valuenow", String(Math.round(pct)));
   }
@@ -274,7 +282,7 @@
 
     const legend = document.createElement("legend");
     legend.className = "visually-hidden";
-    legend.textContent = "Answer choices";
+    legend.textContent = "Opzioni di risposta";
     els.choicesFieldset.appendChild(legend);
 
     question.choices.forEach((text, i) => {
@@ -317,24 +325,36 @@
     audio.removeAttribute("src");
     audio.load();
     audio.src = src;
-    // Discourage download via context menu where supported
     audio.setAttribute("controlsList", "nodownload noplaybackrate");
     audio.oncontextmenu = (e) => e.preventDefault();
+  }
+
+  function revealQuestionIfReady() {
+    const heard = !!state.listened[state.currentIndex];
+    if (els.afterAudioBlock) els.afterAudioBlock.hidden = !heard;
+    if (els.listenFirstHint) els.listenFirstHint.hidden = heard;
+  }
+
+  function markListened() {
+    if (state.listened[state.currentIndex]) return;
+    state.listened[state.currentIndex] = true;
+    saveState();
+    revealQuestionIfReady();
   }
 
   function renderQuestion() {
     const q = examData.questions[state.currentIndex];
     const n = state.currentIndex + 1;
 
-    els.questionBadge.textContent = `Q${n}`;
-    els.questionPrompt.textContent = q.prompt || "Listen to the audio and choose the best answer.";
+    els.questionBadge.textContent = `D${n}`;
+    els.questionPrompt.textContent = q.prompt || "Ascolta l'audio e scegli la risposta migliore.";
     loadAudio(q.audio);
     renderChoices(q);
+    revealQuestionIfReady();
     updateProgress();
     updateDots();
     updateNavButtons();
 
-    // Re-trigger entrance animation
     const card = $(".question-card");
     if (card) {
       card.classList.remove("fade-in");
@@ -346,7 +366,7 @@
   function updateNavButtons() {
     const last = state.currentIndex === examData.questions.length - 1;
     els.btnPrev.disabled = state.currentIndex === 0;
-    els.btnNext.textContent = last ? "Review & Submit" : "Next";
+    els.btnNext.textContent = last ? "Rivedi e invia" : "Successiva";
   }
 
   function canLeaveQuestion(fromIndex, toIndex) {
@@ -367,21 +387,26 @@
     if (index === state.currentIndex) return;
 
     if (state.preventSkip && index > state.currentIndex && !isAnswered(state.currentIndex)) {
-      showToast("Please select an answer before continuing.");
+      showToast("Seleziona una risposta prima di continuare.");
+      return;
+    }
+
+    if (!state.listened[state.currentIndex] && index > state.currentIndex) {
+      showToast("Ascolta prima l'audio.");
       return;
     }
 
     if (state.preventSkip && index > state.currentIndex + 1) {
       for (let i = 0; i < index; i++) {
         if (!isAnswered(i)) {
-          showToast("Answer earlier questions before skipping ahead.");
+          showToast("Rispondi prima alle domande precedenti.");
           return;
         }
       }
     }
 
     if (!canLeaveQuestion(state.currentIndex, index) && index > state.currentIndex) {
-      showToast("Please select an answer before continuing.");
+      showToast("Seleziona una risposta prima di continuare.");
       return;
     }
 
@@ -392,12 +417,16 @@
 
   function goNext() {
     const last = state.currentIndex === examData.questions.length - 1;
+    if (!state.listened[state.currentIndex]) {
+      showToast("Ascolta prima l'audio.");
+      return;
+    }
     if (last) {
       requestSubmit();
       return;
     }
     if (state.preventSkip && !isAnswered(state.currentIndex)) {
-      showToast("Please select an answer before continuing.");
+      showToast("Seleziona una risposta prima di continuare.");
       return;
     }
     state.currentIndex += 1;
@@ -420,7 +449,7 @@
     els.timerChip.classList.toggle("danger", state.remainingSeconds <= 60);
     els.timerChip.setAttribute(
       "aria-label",
-      `Time remaining ${formatTime(state.remainingSeconds)}`
+      `Tempo rimanente ${formatTime(state.remainingSeconds)}`
     );
   }
 
@@ -445,18 +474,18 @@
       // Countdown warnings
       if (state.remainingSeconds === 60 && !warnedAtMinute) {
         warnedAtMinute = true;
-        showToast("1 minute remaining.");
+        showToast("Resta 1 minuto.");
       }
       if (state.remainingSeconds === 30 && !warnedAtThirty) {
         warnedAtThirty = true;
-        showToast("30 seconds left!");
+        showToast("Restano 30 secondi!");
       }
 
       if (state.remainingSeconds <= 0) {
         state.remainingSeconds = 0;
         updateTimerUI();
         stopTimer();
-        showToast("Time is up — submitting your exam.");
+        showToast("Tempo scaduto — invio dell'esame in corso.");
         finalizeExam(true);
       }
     }, 1000);
@@ -498,9 +527,9 @@
 
     if (answeredCount() === 0) {
       openModal({
-        title: "No answers selected",
-        message: "You have not selected any answers. Submit anyway? This will score all questions as incorrect.",
-        confirmLabel: "Submit anyway",
+        title: "Nessuna risposta selezionata",
+        message: "Non hai selezionato nessuna risposta. Inviare comunque? Tutte le domande verranno considerate errate.",
+        confirmLabel: "Invia comunque",
         onConfirm: () => finalizeExam(false),
       });
       return;
@@ -508,18 +537,18 @@
 
     if (unanswered > 0) {
       openModal({
-        title: "Unanswered questions",
-        message: `You have ${unanswered} unanswered question${unanswered === 1 ? "" : "s"}. Submit anyway?`,
-        confirmLabel: "Submit",
+        title: "Domande senza risposta",
+        message: `Hai ${unanswered} domand${unanswered === 1 ? "a" : "e"} senza risposta. Inviare comunque?`,
+        confirmLabel: "Invia",
         onConfirm: () => finalizeExam(false),
       });
       return;
     }
 
     openModal({
-      title: "Submit exam?",
-      message: "You have answered every question. Ready to submit?",
-      confirmLabel: "Submit",
+      title: "Inviare l'esame?",
+      message: "Hai risposto a tutte le domande. Vuoi inviare?",
+      confirmLabel: "Invia",
       onConfirm: () => finalizeExam(false),
     });
   }
@@ -536,7 +565,7 @@
 
   function renderResults(autoSubmitted) {
     const r = state.results;
-    els.resultsVerdict.textContent = r.passed ? "✓ Passed" : "✗ Failed";
+    els.resultsVerdict.textContent = r.passed ? "✓ Superato" : "✗ Non superato";
     els.resultsVerdict.className = `verdict ${r.passed ? "pass" : "fail"}`;
     els.resultsPercent.textContent = `${r.percentage}%`;
     els.resultsScore.textContent = `${r.score} / ${r.maxScore}`;
@@ -559,7 +588,7 @@
 
     els.reviewSection.hidden = true;
     if (autoSubmitted) {
-      showToast("Time expired. Your answers have been submitted.");
+      showToast("Tempo scaduto. Le tue risposte sono state inviate.");
     }
   }
 
@@ -571,34 +600,34 @@
     summary.className = "hint";
     summary.style.textAlign = "left";
     summary.style.marginBottom = "1rem";
-    summary.textContent = `Review all ${r.detail.length} questions below. Green marks correct answers; red marks incorrect or unanswered items.`;
+    summary.textContent = `Rivedi le ${r.detail.length} domande qui sotto. Il verde indica le risposte corrette; il rosso quelle errate o non date.`;
     els.reviewList.appendChild(summary);
 
     r.detail.forEach((item, i) => {
       const card = document.createElement("article");
       card.className = `review-card ${item.isCorrect ? "correct" : "wrong"}`;
       card.style.animationDelay = `${Math.min(i * 40, 400)}ms`;
-      card.setAttribute("aria-label", `Question ${i + 1}, ${item.isCorrect ? "correct" : "incorrect"}`);
+      card.setAttribute("aria-label", `Domanda ${i + 1}, ${item.isCorrect ? "corretta" : "errata"}`);
 
       const userText =
         item.userIndex === null || item.userIndex === undefined
-          ? "No answer"
+          ? "Nessuna risposta"
           : item.choices[item.userIndex];
       const correctText = item.choices[item.correctIndex];
 
       card.innerHTML = `
-        <h3>Question ${i + 1}</h3>
-        <p>${escapeHtml(item.prompt || "Listen and choose the best answer.")}</p>
+        <h3>Domanda ${i + 1}</h3>
+        <p>${escapeHtml(item.prompt || "Ascolta e scegli la risposta migliore.")}</p>
         <div class="audio-block">
-          <label class="audio-label">Audio clip</label>
+          <label class="audio-label">Audio</label>
           <audio class="audio-player" controls controlsList="nodownload noplaybackrate" preload="none" src="${escapeAttr(item.audio)}"></audio>
         </div>
         <div class="review-meta">
           <span class="tag ${item.isCorrect ? "tag-ok" : "tag-bad"}">
-            ${item.isCorrect ? "Correct" : "Incorrect"}
+            ${item.isCorrect ? "Corretta" : "Errata"}
           </span>
-          <span class="tag tag-neutral">Your answer: ${escapeHtml(userText)}</span>
-          <span class="tag tag-ok">Correct answer: ${escapeHtml(correctText)}</span>
+          <span class="tag tag-neutral">La tua risposta: ${escapeHtml(userText)}</span>
+          <span class="tag tag-ok">Risposta corretta: ${escapeHtml(correctText)}</span>
         </div>
       `;
 
@@ -630,6 +659,7 @@
     const minutes = examData.exam.durationMinutes || 15;
     state.currentIndex = 0;
     state.answers = examData.questions.map(() => null);
+    state.listened = examData.questions.map(() => false);
     state.totalSeconds = minutes * 60;
     state.remainingSeconds = state.totalSeconds;
     state.startedAt = Date.now();
@@ -643,6 +673,9 @@
   function restoreExam(saved) {
     state.currentIndex = Math.min(saved.currentIndex || 0, examData.questions.length - 1);
     state.answers = saved.answers;
+    state.listened = Array.isArray(saved.listened)
+      ? saved.listened
+      : examData.questions.map((_, i) => state.answers[i] !== null);
     state.remainingSeconds = saved.remainingSeconds;
     state.totalSeconds = saved.totalSeconds || examData.exam.durationMinutes * 60;
     state.startedAt = saved.startedAt || Date.now();
@@ -668,7 +701,7 @@
     showScreen("exam");
     renderQuestion();
     startTimer();
-    showToast(resume ? "Exam resumed." : "Exam started. Good luck!");
+    showToast(resume ? "Esame ripreso." : "Esame iniziato. Buona fortuna!");
   }
 
   function resetToHome() {
@@ -728,9 +761,9 @@
     els.btnStart.addEventListener("click", () => {
       if (hasResumableAttempt()) {
         openModal({
-          title: "Start a new exam?",
-          message: "This will discard your saved progress and start from the beginning.",
-          confirmLabel: "Start over",
+          title: "Iniziare un nuovo esame?",
+          message: "Il progresso salvato verrà eliminato e ripartirai dall'inizio.",
+          confirmLabel: "Ricomincia",
           onConfirm: () => {
             clearSavedState();
             closeModal();
@@ -755,6 +788,9 @@
       state.preventSkip = els.preventSkipToggle.checked;
       if (state.status === "in_progress") saveState();
     });
+
+    // Reveal question only after the learner starts listening
+    els.examAudio.addEventListener("play", markListened);
 
     els.modalConfirm.addEventListener("click", () => {
       const action = pendingConfirmAction;
@@ -783,11 +819,11 @@
 
     try {
       const res = await fetch(DATA_URL);
-      if (!res.ok) throw new Error(`Failed to load questions (${res.status})`);
+      if (!res.ok) throw new Error(`Impossibile caricare le domande (${res.status})`);
       examData = await res.json();
 
       if (!examData.questions || !examData.questions.length) {
-        throw new Error("No questions found in data file.");
+        throw new Error("Nessuna domanda trovata nel file dati.");
       }
 
       renderHome();
@@ -795,7 +831,7 @@
       // Auto-resume if an attempt is in progress
       if (hasResumableAttempt()) {
         showScreen("home");
-        showToast("Unfinished exam found — resume or start over.");
+        showToast("Trovato un esame non concluso — riprendi o ricomincia.");
       } else {
         showScreen("home");
       }
@@ -803,9 +839,9 @@
       console.error(err);
       els.loading.innerHTML = `
         <div class="card card-narrow">
-          <h1>Unable to load exam</h1>
-          <p class="lead">${escapeHtml(err.message || "Unknown error")}</p>
-          <p class="hint">If you opened this file directly, serve the folder over HTTP (see README).</p>
+          <h1>Impossibile caricare l'esame</h1>
+          <p class="lead">${escapeHtml(err.message || "Errore sconosciuto")}</p>
+          <p class="hint">Se hai aperto il file direttamente, avvia un server HTTP locale (vedi README).</p>
         </div>`;
     }
   }
