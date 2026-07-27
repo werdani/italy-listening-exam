@@ -1,0 +1,82 @@
+{
+  "exam": {
+    "title": "Listening Comprehension Exam",
+    "description": "Listen carefully to each audio clip and choose the best answer. You may replay the audio as many times as you like. Manage your time wisely — the exam will submit automatically when the timer ends.",
+    "durationMinutes": 15,
+    "marksPerQuestion": 1,
+    "passPercentage": 60,
+    "preventSkip": true
+  },
+  "questions": [
+    {
+      "id": 1,
+      "prompt": "Which fruit is mentioned in the recording?",
+      "audio": "assets/audio/q1.mp3",
+      "choices": ["Apple", "Orange", "Banana", "Mango"],
+      "correct": 0
+    },
+    {
+      "id": 2,
+      "prompt": "What is the weather like?",
+      "audio": "assets/audio/q2.mp3",
+      "choices": ["Sunny and warm", "Raining heavily", "Snowy and cold", "Cloudy but dry"],
+      "correct": 1
+    },
+    {
+      "id": 3,
+      "prompt": "Where will the meeting be held?",
+      "audio": "assets/audio/q3.mp3",
+      "choices": ["Library", "Cafeteria", "Conference room", "Main hall"],
+      "correct": 2
+    },
+    {
+      "id": 4,
+      "prompt": "What time does the train leave?",
+      "audio": "assets/audio/q4.mp3",
+      "choices": ["2:30", "3:00", "3:30", "4:15"],
+      "correct": 2
+    },
+    {
+      "id": 5,
+      "prompt": "Which subject does she prefer?",
+      "audio": "assets/audio/q5.mp3",
+      "choices": ["History", "Mathematics", "Biology", "Literature"],
+      "correct": 1
+    },
+    {
+      "id": 6,
+      "prompt": "How much does the book cost?",
+      "audio": "assets/audio/q6.mp3",
+      "choices": ["$10", "$12", "$15", "$20"],
+      "correct": 2
+    },
+    {
+      "id": 7,
+      "prompt": "What color is the car?",
+      "audio": "assets/audio/q7.mp3",
+      "choices": ["Red", "Black", "Blue", "White"],
+      "correct": 2
+    },
+    {
+      "id": 8,
+      "prompt": "What is his job?",
+      "audio": "assets/audio/q8.mp3",
+      "choices": ["Doctor", "Engineer", "Teacher", "Lawyer"],
+      "correct": 2
+    },
+    {
+      "id": 9,
+      "prompt": "Where did they go on holiday?",
+      "audio": "assets/audio/q9.mp3",
+      "choices": ["France", "Spain", "Italy", "Greece"],
+      "correct": 2
+    },
+    {
+      "id": 10,
+      "prompt": "What does she want to drink?",
+      "audio": "assets/audio/q10.mp3",
+      "choices": ["Tea", "Water", "Juice", "Coffee"],
+      "correct": 3
+    }
+  ]
+}
