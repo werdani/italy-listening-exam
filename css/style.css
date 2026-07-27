@@ -1049,6 +1049,14 @@ h1 {
   .brand-name {
     font-size: 1.05rem;
   }
+
+  .home-actions {
+    flex-direction: column;
+  }
+
+  .home-actions .btn {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1058,6 +1066,10 @@ h1 {
 
   .header-inner {
     padding: 0 0.85rem;
+  }
+
+  .timer-chip {
+    padding: 0.35rem 0.65rem;
   }
 
   .timer-chip span:not(.timer-icon) {
@@ -1072,6 +1084,34 @@ h1 {
   .dot {
     width: 1.9rem;
     height: 1.9rem;
+    font-size: 0.75rem;
+  }
+
+  .choice {
+    padding: 0.8rem 0.85rem;
+  }
+
+  .score-ring-wrap {
+    width: 120px;
+    height: 120px;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+  }
+}
+
+@media (min-width: 900px) {
+  .question-card {
+    padding: 1.85rem 2rem 1.5rem;
+  }
+
+  .choice:hover {
+    transform: translateX(4px);
   }
 }
 
