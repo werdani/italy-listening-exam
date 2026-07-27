@@ -559,10 +559,18 @@
     const r = state.results;
     els.reviewList.innerHTML = "";
 
+    const summary = document.createElement("p");
+    summary.className = "hint";
+    summary.style.textAlign = "left";
+    summary.style.marginBottom = "1rem";
+    summary.textContent = `Review all ${r.detail.length} questions below. Green marks correct answers; red marks incorrect or unanswered items.`;
+    els.reviewList.appendChild(summary);
+
     r.detail.forEach((item, i) => {
       const card = document.createElement("article");
       card.className = `review-card ${item.isCorrect ? "correct" : "wrong"}`;
       card.style.animationDelay = `${Math.min(i * 40, 400)}ms`;
+      card.setAttribute("aria-label", `Question ${i + 1}, ${item.isCorrect ? "correct" : "incorrect"}`);
 
       const userText =
         item.userIndex === null || item.userIndex === undefined
