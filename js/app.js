@@ -426,10 +426,23 @@
   function startTimer() {
     stopTimer();
     updateTimerUI();
+    let warnedAtMinute = false;
+    let warnedAtThirty = false;
+
     timerId = setInterval(() => {
       state.remainingSeconds -= 1;
       updateTimerUI();
       if (state.remainingSeconds % 5 === 0) saveState();
+
+      // Countdown warnings
+      if (state.remainingSeconds === 60 && !warnedAtMinute) {
+        warnedAtMinute = true;
+        showToast("1 minute remaining.");
+      }
+      if (state.remainingSeconds === 30 && !warnedAtThirty) {
+        warnedAtThirty = true;
+        showToast("30 seconds left!");
+      }
 
       if (state.remainingSeconds <= 0) {
         state.remainingSeconds = 0;
