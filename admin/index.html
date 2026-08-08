@@ -88,6 +88,9 @@
             <p class="lead">Organizza le domande vocali per livello. Apri un livello per gestirne gli audio.</p>
           </div>
           <div class="page-actions">
+            <button type="button" class="btn btn-primary" id="btnPublishGithub" title="Pubblica online per tutti">
+              Pubblica online
+            </button>
             <button type="button" class="btn btn-secondary" id="btnExport">Esporta JSON</button>
             <button type="button" class="btn btn-secondary" id="btnResetLocal" title="Ripristina dal file questions.json">Ripristina file</button>
             <button type="button" class="btn btn-primary" id="btnAddLevel">+ Nuovo livello</button>
@@ -95,6 +98,45 @@
         </div>
 
         <div class="source-banner" id="sourceBanner" hidden></div>
+
+        <section class="card publish-card" aria-labelledby="publishTitle">
+          <p class="eyebrow">GitHub Pages</p>
+          <h2 id="publishTitle">Pubblicazione automatica</h2>
+          <p class="lead branding-lead">
+            Salva un GitHub Token una volta. Poi ogni modifica può andare online per tutti con
+            <strong>Pubblica online</strong> (senza export/push manuale).
+          </p>
+          <form id="githubForm" class="admin-form branding-form">
+            <div class="form-field">
+              <label class="field-label" for="ghToken">GitHub Personal Access Token</label>
+              <input type="password" id="ghToken" autocomplete="off" placeholder="ghp_… oppure github_pat_…" />
+              <p class="field-hint">
+                Crea un token su GitHub → Settings → Developer settings → Personal access tokens.
+                Permesso necessario: <strong>Contents: Read and write</strong> sul repo
+                <code>werdani/italy-listening-exam</code>. Il token resta solo in questo browser.
+              </p>
+            </div>
+            <div class="form-row-2">
+              <div class="form-field">
+                <label class="field-label" for="ghRepo">Repository</label>
+                <input type="text" id="ghRepo" placeholder="werdani/italy-listening-exam" />
+              </div>
+              <div class="form-field">
+                <label class="field-label" for="ghBranch">Branch</label>
+                <input type="text" id="ghBranch" placeholder="main" />
+              </div>
+            </div>
+            <label class="toggle-label" for="ghAutoPublish">
+              <input type="checkbox" id="ghAutoPublish" />
+              <span>Pubblica automaticamente su GitHub dopo ogni salvataggio</span>
+            </label>
+            <div class="page-actions">
+              <button type="submit" class="btn btn-secondary" id="btnSaveGithub">Salva impostazioni GitHub</button>
+              <button type="button" class="btn btn-primary" id="btnPublishGithub2">Pubblica online ora</button>
+            </div>
+            <p class="drive-status" id="githubStatus" hidden></p>
+          </form>
+        </section>
 
         <section class="card branding-card" aria-labelledby="brandingTitle">
           <div class="branding-card-head">

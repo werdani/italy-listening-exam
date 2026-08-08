@@ -247,6 +247,23 @@
   padding: 1.35rem 1.4rem;
 }
 
+.publish-card {
+  margin-bottom: 1.25rem;
+  padding: 1.35rem 1.4rem;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr;
+  gap: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .form-row-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
 .branding-card-head {
   display: flex;
   flex-wrap: wrap;

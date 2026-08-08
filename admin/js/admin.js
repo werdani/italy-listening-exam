@@ -47,6 +47,14 @@
     btnAddLevel: $("#btnAddLevel"),
     btnExport: $("#btnExport"),
     btnResetLocal: $("#btnResetLocal"),
+    btnPublishGithub: $("#btnPublishGithub"),
+    btnPublishGithub2: $("#btnPublishGithub2"),
+    githubForm: $("#githubForm"),
+    ghToken: $("#ghToken"),
+    ghRepo: $("#ghRepo"),
+    ghBranch: $("#ghBranch"),
+    ghAutoPublish: $("#ghAutoPublish"),
+    githubStatus: $("#githubStatus"),
     btnBackLevels: $("#btnBackLevels"),
     btnEditLevel: $("#btnEditLevel"),
     btnAddQuestion: $("#btnAddQuestion"),
@@ -170,13 +178,30 @@
       content = result.data;
       contentSource = result.source === "api" ? "file" : "local";
       updateSourceBanner();
+
+      const gh = AscoltoContent.getGithubSettings ? AscoltoContent.getGithubSettings() : null;
+      let published = false;
+      if (gh && gh.token && (options.publish === true || (gh.autoPublish && options.publish !== false))) {
+        try {
+          await publishOnline({ silent: true });
+          published = true;
+        } catch (pubErr) {
+          console.error(pubErr);
+          if (!options.silent) {
+            showToast(pubErr.message || "Pubblicazione GitHub non riuscita.");
+          }
+        }
+      }
+
       if (!options.silent) {
-        if (result.source === "api") {
+        if (published) {
+          showToast("Salvato e pubblicato online per tutti.");
+        } else if (result.source === "api") {
           showToast("Salvato — l’esame è aggiornato.");
         } else if (/\.github\.io$/i.test(location.hostname)) {
-          showToast("Salvato in questo browser. Esporta JSON per GitHub Pages.");
+          showToast("Salvato qui. Premi «Pubblica online» per tutti.");
         } else if (result.error) {
-          showToast("Salvato nel browser. Avvia python3 server.py per il file.");
+          showToast("Salvato nel browser. Pubblica su GitHub oppure avvia server.py.");
         }
       }
       return result;
@@ -187,20 +212,78 @@
     }
   }
 
+  function setGithubStatus(message, type = "") {
+    if (!els.githubStatus) return;
+    if (!message) {
+      els.githubStatus.hidden = true;
+      els.githubStatus.textContent = "";
+      els.githubStatus.className = "drive-status";
+      return;
+    }
+    els.githubStatus.hidden = false;
+    els.githubStatus.textContent = message;
+    els.githubStatus.className = `drive-status ${type}`.trim();
+  }
+
+  function fillGithubForm() {
+    if (!AscoltoContent.getGithubSettings || !els.githubForm) return;
+    const gh = AscoltoContent.getGithubSettings();
+    if (els.ghToken) els.ghToken.value = gh.token || "";
+    if (els.ghRepo) els.ghRepo.value = gh.repo || "werdani/italy-listening-exam";
+    if (els.ghBranch) els.ghBranch.value = gh.branch || "main";
+    if (els.ghAutoPublish) els.ghAutoPublish.checked = !!gh.autoPublish;
+    if (gh.token) {
+      setGithubStatus("Token salvato in questo browser. Puoi pubblicare online.", "ok");
+    } else {
+      setGithubStatus("Inserisci un token per pubblicare le modifiche a tutti i visitatori.", "warn");
+    }
+  }
+
+  function onGithubFormSubmit(e) {
+    e.preventDefault();
+    AscoltoContent.saveGithubSettings({
+      token: els.ghToken.value.trim(),
+      repo: els.ghRepo.value.trim(),
+      branch: els.ghBranch.value.trim(),
+      autoPublish: !!(els.ghAutoPublish && els.ghAutoPublish.checked),
+    });
+    fillGithubForm();
+    updateSourceBanner();
+    showToast("Impostazioni GitHub salvate.");
+  }
+
+  async function publishOnline(options = {}) {
+    if (!AscoltoContent.publishToGitHub) {
+      throw new Error("Modulo pubblicazione non disponibile.");
+    }
+    content = AscoltoContent.saveContent(content);
+    setGithubStatus("Pubblicazione su GitHub in corso…", "");
+    const result = await AscoltoContent.publishToGitHub(content);
+    contentSource = "file";
+    updateSourceBanner();
+    setGithubStatus(
+      `Pubblicato su ${result.repo}@${result.branch}. Online tra 1–2 minuti.`,
+      "ok"
+    );
+    if (!options.silent) {
+      showToast("Pubblicato online. Tra 1–2 minuti tutti vedranno le modifiche.");
+    }
+    return result;
+  }
+
   function updateSourceBanner() {
     if (!els.sourceBanner) return;
     els.sourceBanner.hidden = false;
-    const onPages = /\.github\.io$/i.test(location.hostname);
-    if (contentSource === "file") {
-      els.sourceBanner.innerHTML = onPages
-        ? "Contenuti da GitHub. Dopo Create/Edit/Delete: usa <strong>Esporta JSON</strong> e fai push per aggiornare il sito pubblico."
-        : "Modifiche scritte in <code>data/questions.json</code> — visibili nell’esame dopo refresh.";
-    } else if (contentSource === "local") {
-      els.sourceBanner.innerHTML = onPages
-        ? "<strong>CRUD attivo in questo browser.</strong> L’esame (stesso browser) vede subito le modifiche. Per il sito pubblico: <strong>Esporta JSON</strong> → push su GitHub."
-        : "Modifiche salvate in questo browser. L’esame le usa subito. Per il file: <code>python3 server.py</code> oppure <strong>Esporta JSON</strong>.";
+    const gh = AscoltoContent.getGithubSettings ? AscoltoContent.getGithubSettings() : null;
+    const hasToken = !!(gh && gh.token);
+    if (hasToken) {
+      els.sourceBanner.innerHTML =
+        "Puoi aggiornare il sito pubblico con <strong>Pubblica online</strong>" +
+        (gh.autoPublish ? " (auto attiva)" : "") +
+        " — senza export/push manuale.";
     } else {
-      els.sourceBanner.textContent = "Contenuti caricati da data/questions.json.";
+      els.sourceBanner.innerHTML =
+        "Configura il <strong>GitHub Token</strong> sotto e usa <strong>Pubblica online</strong> per aggiornare tutti i visitatori.";
     }
   }
 
@@ -327,6 +410,7 @@
     activeLevelId = null;
     updateSourceBanner();
     fillSiteForm();
+    fillGithubForm();
 
     const levels = content.levels || [];
     els.levelsGrid.innerHTML = "";
@@ -836,6 +920,27 @@
     els.btnAddLevel.addEventListener("click", () => openLevelModal(null));
     els.btnExport.addEventListener("click", exportJson);
     els.btnResetLocal.addEventListener("click", requestReset);
+    const publishHandler = async () => {
+      try {
+        // Save github form fields first if present
+        if (els.ghToken) {
+          AscoltoContent.saveGithubSettings({
+            token: els.ghToken.value.trim(),
+            repo: els.ghRepo.value.trim(),
+            branch: els.ghBranch.value.trim(),
+            autoPublish: !!(els.ghAutoPublish && els.ghAutoPublish.checked),
+          });
+        }
+        await publishOnline();
+      } catch (err) {
+        console.error(err);
+        setGithubStatus(err.message || "Errore pubblicazione", "warn");
+        showToast(err.message || "Pubblicazione fallita.");
+      }
+    };
+    if (els.btnPublishGithub) els.btnPublishGithub.addEventListener("click", publishHandler);
+    if (els.btnPublishGithub2) els.btnPublishGithub2.addEventListener("click", publishHandler);
+    if (els.githubForm) els.githubForm.addEventListener("submit", onGithubFormSubmit);
     els.btnBackLevels.addEventListener("click", renderLevels);
     els.btnEditLevel.addEventListener("click", () => {
       openLevelModal(AscoltoContent.getLevel(content, activeLevelId));

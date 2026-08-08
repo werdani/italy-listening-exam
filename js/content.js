@@ -290,6 +290,140 @@
     URL.revokeObjectURL(url);
   }
 
+  /* ---------- GitHub publish (no manual push each time) ---------- */
+
+  const GH_TOKEN_KEY = "ascoltoit-github-token";
+  const GH_REPO_KEY = "ascoltoit-github-repo";
+  const GH_BRANCH_KEY = "ascoltoit-github-branch";
+  const GH_AUTO_KEY = "ascoltoit-github-autopublish";
+
+  function getGithubSettings() {
+    try {
+      return {
+        token: String(localStorage.getItem(GH_TOKEN_KEY) || "").trim(),
+        repo: String(localStorage.getItem(GH_REPO_KEY) || "werdani/italy-listening-exam").trim(),
+        branch: String(localStorage.getItem(GH_BRANCH_KEY) || "main").trim() || "main",
+        autoPublish: localStorage.getItem(GH_AUTO_KEY) === "1",
+      };
+    } catch {
+      return {
+        token: "",
+        repo: "werdani/italy-listening-exam",
+        branch: "main",
+        autoPublish: false,
+      };
+    }
+  }
+
+  function saveGithubSettings({ token, repo, branch, autoPublish } = {}) {
+    try {
+      if (token != null) {
+        const t = String(token).trim();
+        if (t) localStorage.setItem(GH_TOKEN_KEY, t);
+        else localStorage.removeItem(GH_TOKEN_KEY);
+      }
+      if (repo != null) {
+        localStorage.setItem(GH_REPO_KEY, String(repo).trim() || "werdani/italy-listening-exam");
+      }
+      if (branch != null) {
+        localStorage.setItem(GH_BRANCH_KEY, String(branch).trim() || "main");
+      }
+      if (autoPublish != null) {
+        localStorage.setItem(GH_AUTO_KEY, autoPublish ? "1" : "0");
+      }
+    } catch {
+      /* ignore */
+    }
+    return getGithubSettings();
+  }
+
+  function utf8ToBase64(text) {
+    const bytes = new TextEncoder().encode(text);
+    let binary = "";
+    bytes.forEach((b) => {
+      binary += String.fromCharCode(b);
+    });
+    return btoa(binary);
+  }
+
+  /**
+   * Publish questions.json to GitHub via Contents API.
+   * Requires a Personal Access Token with Contents: Read and write.
+   */
+  async function publishToGitHub(data, options = {}) {
+    const settings = getGithubSettings();
+    const token = String(options.token || settings.token || "").trim();
+    const repoFull = String(options.repo || settings.repo || "").trim();
+    const branch = String(options.branch || settings.branch || "main").trim() || "main";
+    const path = options.path || "data/questions.json";
+
+    if (!token) {
+      throw new Error("Manca il GitHub Token. Salvalo nella sezione Pubblicazione.");
+    }
+    const parts = repoFull.split("/").filter(Boolean);
+    if (parts.length !== 2) {
+      throw new Error("Repo non valido. Usa il formato owner/repo");
+    }
+    const [owner, repo] = parts;
+
+    const payload = stripSecretsForExport(normalizeContent(data));
+    const raw = JSON.stringify(payload, null, 2) + "\n";
+    const content = utf8ToBase64(raw);
+
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    };
+
+    const metaUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(
+      path
+    )}?ref=${encodeURIComponent(branch)}`;
+    const metaRes = await fetch(metaUrl, { headers, cache: "no-store" });
+    let sha;
+    if (metaRes.ok) {
+      const meta = await metaRes.json();
+      sha = meta.sha;
+    } else if (metaRes.status !== 404) {
+      const err = await metaRes.json().catch(() => ({}));
+      throw new Error(err.message || `GitHub GET failed (${metaRes.status})`);
+    }
+
+    const putRes = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(path)}`,
+      {
+        method: "PUT",
+        headers: {
+          ...headers,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message:
+            options.message ||
+            `Admin dashboard: update ${path} (${new Date().toISOString()})`,
+          content,
+          branch,
+          ...(sha ? { sha } : {}),
+        }),
+      }
+    );
+
+    if (!putRes.ok) {
+      const err = await putRes.json().catch(() => ({}));
+      throw new Error(err.message || `GitHub PUT failed (${putRes.status})`);
+    }
+
+    const result = await putRes.json();
+    return {
+      ok: true,
+      commit: result.commit && result.commit.sha,
+      htmlUrl: result.content && result.content.html_url,
+      repo: repoFull,
+      branch,
+      path,
+    };
+  }
+
   function getLevel(data, levelId) {
     return (data.levels || []).find((l) => Number(l.id) === Number(levelId)) || null;
   }
@@ -651,6 +785,9 @@
     clearLocal,
     readLocal,
     exportContent,
+    getGithubSettings,
+    saveGithubSettings,
+    publishToGitHub,
     getLevel,
     examPayloadForLevel,
     createLevel,
