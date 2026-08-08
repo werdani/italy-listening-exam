@@ -1026,7 +1026,10 @@
 
       const stillExists =
         previousLevelId != null && AscoltoContent.getLevel(contentData, previousLevelId);
-      const levelId = stillExists ? previousLevelId : getSelectedLevelId();
+      let levelId = stillExists ? previousLevelId : getSelectedLevelId();
+      if (levelId != null && !AscoltoContent.getLevel(contentData, levelId)) {
+        levelId = contentData.levels[0] ? contentData.levels[0].id : null;
+      }
       setActiveLevel(levelId);
       renderHome({ levelId });
 

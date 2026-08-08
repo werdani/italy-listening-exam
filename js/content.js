@@ -202,9 +202,11 @@
   }
 
   async function loadContent(options = {}) {
-    // Default: load from file so localhost and 127.0.0.1 share the same data.
-    // Set preferLocal:true only when you explicitly want browser-only overrides.
-    const preferLocal = options.preferLocal === true;
+    // forceFile: ignore browser overrides (used by "Ripristina file")
+    const forceFile = options.forceFile === true;
+    // Default: admin edits in localStorage win over the static file in this browser.
+    // This makes Create/Update/Delete visible immediately on the exam page.
+    const preferLocal = options.preferLocal !== false && !forceFile;
 
     if (preferLocal) {
       const local = readLocal();
@@ -227,11 +229,13 @@
       setSiteConfig(data.site);
       return { data, source: "file" };
     } catch (err) {
-      const local = readLocal();
-      if (local) {
-        local.site.googleApiKey = readStoredApiKey() || local.site.googleApiKey || "";
-        setSiteConfig(local.site);
-        return { data: local, source: "local" };
+      if (!forceFile) {
+        const local = readLocal();
+        if (local) {
+          local.site.googleApiKey = readStoredApiKey() || local.site.googleApiKey || "";
+          setSiteConfig(local.site);
+          return { data: local, source: "local" };
+        }
       }
       throw err;
     }
@@ -327,8 +331,9 @@
   }
 
   function deleteLevel(data, levelId) {
+    const id = Number(levelId);
     const before = data.levels.length;
-    data.levels = data.levels.filter((l) => Number(l.id) !== Number(levelId));
+    data.levels = (data.levels || []).filter((l) => Number(l.id) !== id);
     return data.levels.length < before;
   }
 
@@ -366,8 +371,9 @@
   function deleteQuestion(data, levelId, questionId) {
     const level = getLevel(data, levelId);
     if (!level) return false;
+    const qid = Number(questionId);
     const before = level.questions.length;
-    level.questions = level.questions.filter((q) => Number(q.id) !== Number(questionId));
+    level.questions = level.questions.filter((q) => Number(q.id) !== qid);
     return level.questions.length < before;
   }
 

@@ -164,16 +164,20 @@
     els.confirmOk.focus();
   }
 
-  async function persist() {
+  async function persist(options = {}) {
     try {
       const result = await AscoltoContent.saveContentRemote(content);
       content = result.data;
       contentSource = result.source === "api" ? "file" : "local";
       updateSourceBanner();
-      if (result.source === "api") {
-        // saved to questions.json — exam will see it on any host
-      } else if (result.error) {
-        showToast("Salvato solo nel browser (avvia python3 server.py).");
+      if (!options.silent) {
+        if (result.source === "api") {
+          showToast("Salvato — l’esame è aggiornato.");
+        } else if (/\.github\.io$/i.test(location.hostname)) {
+          showToast("Salvato in questo browser. Esporta JSON per GitHub Pages.");
+        } else if (result.error) {
+          showToast("Salvato nel browser. Avvia python3 server.py per il file.");
+        }
       }
       return result;
     } catch (err) {
@@ -186,15 +190,17 @@
   function updateSourceBanner() {
     if (!els.sourceBanner) return;
     els.sourceBanner.hidden = false;
+    const onPages = /\.github\.io$/i.test(location.hostname);
     if (contentSource === "file") {
-      els.sourceBanner.innerHTML =
-        "Modifiche salvate in <code>data/questions.json</code> — l’esame le mostra subito (anche su 127.0.0.1 o localhost).";
+      els.sourceBanner.innerHTML = onPages
+        ? "Contenuti da GitHub. Dopo Create/Edit/Delete: usa <strong>Esporta JSON</strong> e fai push per aggiornare il sito pubblico."
+        : "Modifiche scritte in <code>data/questions.json</code> — visibili nell’esame dopo refresh.";
     } else if (contentSource === "local") {
-      els.sourceBanner.innerHTML =
-        "Salvato solo in questo browser. Per aggiornare il file: avvia <code>python3 server.py</code> oppure usa <strong>Esporta JSON</strong>.";
+      els.sourceBanner.innerHTML = onPages
+        ? "<strong>CRUD attivo in questo browser.</strong> L’esame (stesso browser) vede subito le modifiche. Per il sito pubblico: <strong>Esporta JSON</strong> → push su GitHub."
+        : "Modifiche salvate in questo browser. L’esame le usa subito. Per il file: <code>python3 server.py</code> oppure <strong>Esporta JSON</strong>.";
     } else {
-      els.sourceBanner.textContent =
-        "Contenuti caricati da data/questions.json.";
+      els.sourceBanner.textContent = "Contenuti caricati da data/questions.json.";
     }
   }
 
@@ -309,7 +315,7 @@
     }
 
     AscoltoContent.updateSite(content, { ownerName, ownerTagline, ownerPhoto, googleApiKey });
-    await persist();
+    await persist({ silent: true });
     fillSiteForm();
     showToast("Profilo salvato — visibile sul sito.");
   }
@@ -373,12 +379,12 @@
 
     if (id) {
       AscoltoContent.updateLevel(content, id, { name, description });
-      await persist();
+      await persist({ silent: true });
       showToast("Livello aggiornato.");
     } else {
       AscoltoContent.createLevel(content, { name, description });
-      await persist();
-      showToast("Livello creato — aggiorna l’esame per vederlo.");
+      await persist({ silent: true });
+      showToast("Livello creato — visibile nell’esame dopo refresh.");
     }
     closeAllModals();
     if (activeLevelId && Number(id) === Number(activeLevelId)) {
@@ -391,14 +397,32 @@
   function requestDeleteLevel(levelId) {
     const level = AscoltoContent.getLevel(content, levelId);
     if (!level) return;
+    if ((content.levels || []).length <= 1) {
+      showToast("Non puoi eliminare l’unico livello.");
+      return;
+    }
     openConfirm({
       title: "Eliminare il livello?",
       message: `«${level.name}» e tutte le sue ${level.questions.length} domande verranno eliminate.`,
       confirmLabel: "Elimina",
       onConfirm: async () => {
-        AscoltoContent.deleteLevel(content, levelId);
-        await persist();
-        showToast("Livello eliminato.");
+        const id = Number(levelId);
+        const ok = AscoltoContent.deleteLevel(content, id);
+        if (!ok) {
+          showToast("Eliminazione non riuscita.");
+          return;
+        }
+        // Drop selected-level preference if it pointed to the deleted level
+        try {
+          if (Number(localStorage.getItem("ascoltoit-selected-level")) === id) {
+            localStorage.removeItem("ascoltoit-selected-level");
+          }
+        } catch {
+          /* ignore */
+        }
+        if (Number(activeLevelId) === id) activeLevelId = null;
+        await persist({ silent: true });
+        showToast(`Livello eliminato. Restano ${content.levels.length} livelli.`);
         renderLevels();
       },
     });
@@ -682,7 +706,7 @@
       showToast("Domanda aggiunta.");
     }
 
-    await persist();
+    await persist({ silent: true });
     closeAllModals();
     renderLevelDetail(activeLevelId);
   }
@@ -697,7 +721,7 @@
       confirmLabel: "Elimina",
       onConfirm: async () => {
         AscoltoContent.deleteQuestion(content, activeLevelId, questionId);
-        await persist();
+        await persist({ silent: true });
         showToast("Domanda eliminata.");
         renderLevelDetail(activeLevelId);
       },
@@ -719,7 +743,7 @@
       confirmLabel: "Ripristina",
       onConfirm: async () => {
         AscoltoContent.clearLocal();
-        await loadData({ preferLocal: false });
+        await loadData({ forceFile: true, preferLocal: false });
         showToast("Contenuti ripristinati dal file.");
         renderLevels();
       },
@@ -782,28 +806,12 @@
   }
 
   async function loadData(options = {}) {
-    const { data, source } = await AscoltoContent.loadContent({
-      preferLocal: false,
-      ...options,
-    });
+    const { data, source } = await AscoltoContent.loadContent(options);
     content = data;
     contentSource = source === "local" ? "local" : "file";
     AscoltoContent.setSiteConfig(content.site);
     if (AscoltoContent.detectDriveProxy) {
       await AscoltoContent.detectDriveProxy();
-    }
-
-    // If browser had more levels than the file (old save), keep them and write to disk
-    const local = AscoltoContent.readLocal();
-    if (
-      local &&
-      Array.isArray(local.levels) &&
-      local.levels.length > (content.levels || []).length
-    ) {
-      content = local;
-      contentSource = "local";
-      AscoltoContent.setSiteConfig(content.site);
-      await persist();
     }
   }
 
