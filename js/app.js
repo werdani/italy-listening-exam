@@ -6,14 +6,18 @@
   "use strict";
 
   const STORAGE_KEY = "ascoltoit-exam-state";
-  const STORAGE_VERSION = 3;
+  const STORAGE_VERSION = 4;
   const THEME_KEY = "listenlab-theme";
-  const DATA_URL = "data/questions.json";
+  const LEVEL_KEY = "ascoltoit-selected-level";
 
-  /** @type {{ exam: object, questions: Array }} */
+  /** @type {object|null} Full content with levels */
+  let contentData = null;
+
+  /** @type {{ exam: object, questions: Array }|null} Active level exam payload */
   let examData = null;
 
   const state = {
+    levelId: null,
     currentIndex: 0,
     answers: /** @type {(number|null)[]} */ ([]),
     listened: /** @type {boolean[]} */ ([]),
@@ -39,6 +43,14 @@
     results: $("#screenResults"),
     examTitle: $("#examTitle"),
     examDescription: $("#examDescription"),
+    brandLogo: $("#brandLogo"),
+    brandName: $("#brandName"),
+    brandTagline: $("#brandTagline"),
+    homeLogo: $("#homeLogo"),
+    teacherCreditName: $("#teacherCreditName"),
+    teacherCreditTagline: $("#teacherCreditTagline"),
+    levelSelect: $("#levelSelect"),
+    levelDescription: $("#levelDescription"),
     metaQuestions: $("#metaQuestions"),
     metaMarks: $("#metaMarks"),
     metaDuration: $("#metaDuration"),
@@ -110,6 +122,7 @@
     if (state.status !== "in_progress") return;
     const payload = {
       version: STORAGE_VERSION,
+      levelId: state.levelId,
       currentIndex: state.currentIndex,
       answers: state.answers,
       listened: state.listened,
@@ -151,6 +164,9 @@
     const saved = loadSavedState();
     if (!saved || saved.status !== "in_progress") return false;
     if (!examData) return false;
+    if (saved.levelId != null && Number(saved.levelId) !== Number(state.levelId)) {
+      return false;
+    }
     if (!Array.isArray(saved.answers) || saved.answers.length !== examData.questions.length) {
       return false;
     }
@@ -158,6 +174,45 @@
       return false;
     }
     return typeof saved.remainingSeconds === "number" && saved.remainingSeconds > 0;
+  }
+
+  function getSelectedLevelId() {
+    if (!contentData || !contentData.levels.length) return null;
+
+    // 1) Explicit active level (set by user choice / setActiveLevel)
+    if (state.levelId != null && AscoltoContent.getLevel(contentData, state.levelId)) {
+      return Number(state.levelId);
+    }
+
+    // 2) Last choice saved in localStorage
+    const saved = Number(localStorage.getItem(LEVEL_KEY));
+    if (!Number.isNaN(saved) && AscoltoContent.getLevel(contentData, saved)) {
+      return saved;
+    }
+
+    // 3) Current <select> value (only if options already exist)
+    if (els.levelSelect && els.levelSelect.options.length > 0) {
+      const fromSelect = Number(els.levelSelect.value);
+      if (!Number.isNaN(fromSelect) && AscoltoContent.getLevel(contentData, fromSelect)) {
+        return fromSelect;
+      }
+    }
+
+    return contentData.levels[0].id;
+  }
+
+  function setActiveLevel(levelId) {
+    const id = Number(levelId);
+    const payload = AscoltoContent.examPayloadForLevel(contentData, id);
+    if (!payload) {
+      examData = null;
+      state.levelId = Number.isNaN(id) ? null : id;
+      return false;
+    }
+    examData = payload;
+    state.levelId = id;
+    localStorage.setItem(LEVEL_KEY, String(id));
+    return true;
   }
 
   /* ---------- Screens ---------- */
@@ -221,24 +276,115 @@
     return state.answers[index] !== null && state.answers[index] !== undefined;
   }
 
+  /* ---------- Site branding ---------- */
+
+  function applySiteBranding() {
+    if (!contentData || !contentData.site) return;
+    const site = contentData.site;
+    const photo = AscoltoContent.resolveImageSrc(site.ownerPhoto || "assets/images/logo.svg");
+    const name = site.ownerName || "Signora Reham Ramadan";
+    const tagline = site.ownerTagline || "Insegnante di italiano in Italia";
+
+    if (els.brandLogo) {
+      els.brandLogo.src = photo;
+      els.brandLogo.alt = name;
+      els.brandLogo.onerror = () => {
+        els.brandLogo.onerror = null;
+        els.brandLogo.src = "assets/images/logo.svg";
+      };
+    }
+    if (els.homeLogo) {
+      els.homeLogo.src = photo;
+      els.homeLogo.alt = name;
+      els.homeLogo.onerror = () => {
+        els.homeLogo.onerror = null;
+        els.homeLogo.src = "assets/images/logo.svg";
+      };
+    }
+    if (els.brandName) els.brandName.textContent = name;
+    if (els.brandTagline) els.brandTagline.textContent = tagline;
+    if (els.teacherCreditName) els.teacherCreditName.textContent = name;
+    if (els.teacherCreditTagline) {
+      els.teacherCreditTagline.textContent = tagline ? ` — ${tagline}` : "";
+    }
+    document.title = `${name} — Esame di Ascolto`;
+  }
+
   /* ---------- Home ---------- */
 
-  function renderHome() {
-    const { exam, questions } = examData;
+  function populateLevelSelect(preferredId) {
+    if (!els.levelSelect || !contentData) return;
+    const levels = contentData.levels || [];
+    const keepId =
+      preferredId != null
+        ? Number(preferredId)
+        : state.levelId != null
+          ? Number(state.levelId)
+          : getSelectedLevelId();
+
+    els.levelSelect.innerHTML = "";
+    levels.forEach((level) => {
+      const opt = document.createElement("option");
+      opt.value = String(level.id);
+      opt.textContent = `${level.name} (${level.questions.length} domande)`;
+      els.levelSelect.appendChild(opt);
+    });
+
+    const exists = keepId != null && AscoltoContent.getLevel(contentData, keepId);
+    const value = exists ? keepId : levels[0] ? levels[0].id : "";
+    if (value !== "" && value != null) {
+      els.levelSelect.value = String(value);
+    }
+  }
+
+  function renderHome(options = {}) {
+    if (!contentData) return;
+
+    applySiteBranding();
+
+    const preferred =
+      options.levelId != null ? Number(options.levelId) : getSelectedLevelId();
+    setActiveLevel(preferred);
+    populateLevelSelect(state.levelId);
+
+    const levelId = state.levelId;
+    const level = AscoltoContent.getLevel(contentData, levelId);
+    const { exam } = contentData;
+    const questions = examData ? examData.questions : [];
     const totalMarks = questions.length * (exam.marksPerQuestion || 1);
 
     els.examTitle.textContent = exam.title;
     els.examDescription.textContent = exam.description;
+    if (els.levelDescription) {
+      els.levelDescription.textContent = level
+        ? level.description || `${level.name} — ${questions.length} domande`
+        : "";
+    }
     els.metaQuestions.textContent = String(questions.length);
     els.metaMarks.textContent = String(totalMarks);
     els.metaDuration.textContent = `${exam.durationMinutes} min`;
     els.metaPass.textContent = `${exam.passPercentage}%`;
     els.preventSkipToggle.checked = exam.preventSkip !== false;
 
-    const resumable = hasResumableAttempt();
+    const canStart = questions.length > 0;
+    els.btnStart.disabled = !canStart;
+
+    const resumable = canStart && hasResumableAttempt();
     els.btnResume.hidden = !resumable;
     els.resumeHint.hidden = !resumable;
-    els.btnStart.textContent = resumable ? "Ricomincia" : "Inizia l'esame";
+    els.btnStart.textContent = !canStart
+      ? "Nessuna domanda"
+      : resumable
+        ? "Ricomincia"
+        : "Inizia l'esame";
+  }
+
+  function onLevelChange() {
+    const levelId = Number(els.levelSelect.value);
+    if (Number.isNaN(levelId)) return;
+    setActiveLevel(levelId);
+    // Re-render meta for the chosen level without resetting the dropdown
+    renderHome({ levelId });
   }
 
   /* ---------- Exam UI ---------- */
@@ -319,14 +465,68 @@
     });
   }
 
+  let audioCandidates = [];
+  let audioCandidateIndex = 0;
+  let audioSourceKey = "";
+
+  function stopExamAudio() {
+    const audio = els.examAudio;
+    if (!audio) return;
+    audioCandidates = [];
+    audioCandidateIndex = 0;
+    audioSourceKey = "";
+    audio.onerror = null;
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+    } catch {
+      /* ignore */
+    }
+    audio.removeAttribute("src");
+    try {
+      audio.load();
+    } catch {
+      /* ignore */
+    }
+  }
+
   function loadAudio(src) {
     const audio = els.examAudio;
-    audio.pause();
-    audio.removeAttribute("src");
-    audio.load();
-    audio.src = src;
+    stopExamAudio();
     audio.setAttribute("controlsList", "nodownload noplaybackrate");
     audio.oncontextmenu = (e) => e.preventDefault();
+
+    audioCandidates = AscoltoContent.getAudioPlaybackCandidates
+      ? AscoltoContent.getAudioPlaybackCandidates(src, {
+          apiKey: contentData?.site?.googleApiKey || "",
+        })
+      : [AscoltoContent.resolveAudioSrc(src)];
+    audioCandidateIndex = 0;
+    audioSourceKey = String(src || "");
+
+    const tryNext = () => {
+      if (String(src || "") !== audioSourceKey) return;
+      if (audioCandidateIndex >= audioCandidates.length) {
+        showToast("Impossibile riprodurre l’audio (controlla condivisione Drive o server.py).");
+        return;
+      }
+      const url = audioCandidates[audioCandidateIndex];
+      audioCandidateIndex += 1;
+      try {
+        audio.pause();
+      } catch {
+        /* ignore */
+      }
+      audio.src = url;
+      audio.load();
+    };
+
+    audio.onerror = () => {
+      if (String(src || "") !== audioSourceKey) return;
+      tryNext();
+    };
+
+    tryNext();
   }
 
   function revealQuestionIfReady() {
@@ -410,6 +610,7 @@
       return;
     }
 
+    stopExamAudio();
     state.currentIndex = index;
     saveState();
     renderQuestion();
@@ -422,6 +623,7 @@
       return;
     }
     if (last) {
+      stopExamAudio();
       requestSubmit();
       return;
     }
@@ -429,6 +631,7 @@
       showToast("Seleziona una risposta prima di continuare.");
       return;
     }
+    stopExamAudio();
     state.currentIndex += 1;
     saveState();
     renderQuestion();
@@ -436,6 +639,7 @@
 
   function goPrev() {
     if (state.currentIndex === 0) return;
+    stopExamAudio();
     state.currentIndex -= 1;
     saveState();
     renderQuestion();
@@ -556,6 +760,7 @@
   function finalizeExam(auto = false) {
     closeModal();
     stopTimer();
+    stopExamAudio();
     state.status = "completed";
     state.results = computeResults();
     clearSavedState();
@@ -620,7 +825,7 @@
         <p>${escapeHtml(item.prompt || "Ascolta e scegli la risposta migliore.")}</p>
         <div class="audio-block">
           <label class="audio-label">Audio</label>
-          <audio class="audio-player" controls controlsList="nodownload noplaybackrate" preload="none" src="${escapeAttr(item.audio)}"></audio>
+          <audio class="audio-player" controls controlsList="nodownload noplaybackrate" preload="none" src="${escapeAttr(AscoltoContent.resolveAudioSrc(item.audio))}"></audio>
         </div>
         <div class="review-meta">
           <span class="tag ${item.isCorrect ? "tag-ok" : "tag-bad"}">
@@ -657,6 +862,7 @@
 
   function initFreshExam() {
     const minutes = examData.exam.durationMinutes || 15;
+    state.levelId = examData.exam.levelId != null ? examData.exam.levelId : state.levelId;
     state.currentIndex = 0;
     state.answers = examData.questions.map(() => null);
     state.listened = examData.questions.map(() => false);
@@ -671,6 +877,11 @@
   }
 
   function restoreExam(saved) {
+    if (saved.levelId != null) {
+      setActiveLevel(saved.levelId);
+      if (els.levelSelect) els.levelSelect.value = String(saved.levelId);
+    }
+    state.levelId = saved.levelId != null ? saved.levelId : state.levelId;
     state.currentIndex = Math.min(saved.currentIndex || 0, examData.questions.length - 1);
     state.answers = saved.answers;
     state.listened = Array.isArray(saved.listened)
@@ -687,6 +898,12 @@
   }
 
   function beginExam(resume = false) {
+    if (!examData || !examData.questions.length) {
+      showToast("Questo livello non ha domande.");
+      return;
+    }
+
+    stopExamAudio();
     const saved = loadSavedState();
     if (resume && saved && hasResumableAttempt()) {
       restoreExam(saved);
@@ -706,10 +923,75 @@
 
   function resetToHome() {
     stopTimer();
+    stopExamAudio();
     state.status = "idle";
     state.results = null;
     showScreen("home");
-    renderHome();
+    refreshContentFromStore({ silent: true });
+  }
+
+  /* ---------- Content sync (admin → exam) ---------- */
+
+  async function refreshContentFromStore(options = {}) {
+    if (!window.AscoltoContent) return false;
+    // Don't interrupt an in-progress exam
+    if (state.status === "in_progress") return false;
+
+    try {
+      const previousLevelId = state.levelId;
+      const { data } = await AscoltoContent.loadContent();
+      contentData = data;
+      AscoltoContent.setSiteConfig(contentData.site);
+
+      if (!contentData.levels || !contentData.levels.length) return false;
+
+      const stillExists =
+        previousLevelId != null && AscoltoContent.getLevel(contentData, previousLevelId);
+      const levelId = stillExists ? previousLevelId : getSelectedLevelId();
+      setActiveLevel(levelId);
+      renderHome({ levelId });
+
+      if (!options.silent) {
+        showToast("Livelli aggiornati dall’admin.");
+      }
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+
+  function bindContentSync() {
+    // Other tab (admin) saved content
+    window.addEventListener("storage", (e) => {
+      if (e.key === AscoltoContent.CONTENT_KEY || e.key === AscoltoContent.CONTENT_KEY + "-tick") {
+        if (!els.home.hidden) refreshContentFromStore();
+      }
+    });
+
+    try {
+      if (typeof BroadcastChannel !== "undefined") {
+        const bc = new BroadcastChannel("ascoltoit-content");
+        bc.onmessage = () => {
+          if (!els.home.hidden) refreshContentFromStore();
+        };
+      }
+    } catch {
+      /* ignore */
+    }
+
+    // Back to this tab / bfcache restore
+    window.addEventListener("pageshow", () => {
+      if (!els.home.hidden) refreshContentFromStore({ silent: true });
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
+        saveState();
+        return;
+      }
+      if (!els.home.hidden) refreshContentFromStore({ silent: true });
+    });
   }
 
   /* ---------- Keyboard ---------- */
@@ -758,6 +1040,9 @@
 
   function bindEvents() {
     els.themeToggle.addEventListener("click", toggleTheme);
+    if (els.levelSelect) {
+      els.levelSelect.addEventListener("change", onLevelChange);
+    }
     els.btnStart.addEventListener("click", () => {
       if (hasResumableAttempt()) {
         openModal({
@@ -804,10 +1089,8 @@
 
     document.addEventListener("keydown", onKeyDown);
 
-    // Persist on tab hide
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden") saveState();
-    });
+    // Persist on tab hide + sync levels from admin
+    bindContentSync();
     window.addEventListener("beforeunload", () => saveState());
   }
 
@@ -818,22 +1101,35 @@
     bindEvents();
 
     try {
-      const res = await fetch(DATA_URL);
-      if (!res.ok) throw new Error(`Impossibile caricare le domande (${res.status})`);
-      examData = await res.json();
+      if (!window.AscoltoContent) {
+        throw new Error("Modulo contenuti non caricato.");
+      }
 
-      if (!examData.questions || !examData.questions.length) {
+      const { data } = await AscoltoContent.loadContent();
+      contentData = data;
+      AscoltoContent.setSiteConfig(contentData.site);
+      if (AscoltoContent.detectDriveProxy) {
+        await AscoltoContent.detectDriveProxy();
+      }
+
+      if (!contentData.levels || !contentData.levels.length) {
+        throw new Error("Nessun livello trovato nel file dati.");
+      }
+
+      const levelId = getSelectedLevelId();
+      setActiveLevel(levelId);
+
+      // Allow home even if some levels are empty (new levels from admin)
+      const hasAnyQuestions = contentData.levels.some((l) => l.questions && l.questions.length);
+      if (!hasAnyQuestions && !AscoltoContent.readLocal()) {
         throw new Error("Nessuna domanda trovata nel file dati.");
       }
 
       renderHome();
+      showScreen("home");
 
-      // Auto-resume if an attempt is in progress
       if (hasResumableAttempt()) {
-        showScreen("home");
         showToast("Trovato un esame non concluso — riprendi o ricomincia.");
-      } else {
-        showScreen("home");
       }
     } catch (err) {
       console.error(err);

@@ -8,7 +8,7 @@ A production-ready, client-side **Italian listening exam** web application built
 
 ## Features
 
-- Home screen with exam title, description, question count, total marks, and duration
+- Home screen with exam title, description, **level picker**, question count, total marks, and duration
 - Timed exam with auto-submit when the countdown reaches zero
 - Per-question MP3 audio player (replay allowed; download controls discouraged)
 - Multiple-choice answers with Previous / Next navigation
@@ -18,6 +18,7 @@ A production-ready, client-side **Italian listening exam** web application built
 - Results page with Pass / Fail verdict and full question review (green / red)
 - Light & dark themes with preference saved in `localStorage`
 - Exam progress persistence (question index, answers, remaining time) with resume on refresh
+- **Admin Dashboard** (`/admin/`) to manage levels and voice questions
 - Keyboard support (arrows, 1–4 for choices, modal Escape)
 - Fully responsive layout (desktop, tablet, mobile)
 - Accessible labels, focus styles, skip link, and reduced-motion support
@@ -45,24 +46,73 @@ You can capture screenshots from your browser and save them as:
 
 Because the app loads `data/questions.json` with `fetch()`, it must be served over **HTTP** (opening `index.html` via `file://` will fail in most browsers).
 
-### Option A — Python
+### Option A — Python (recommended — saves admin changes to disk)
 
 ```bash
 cd ListeningExam   # or your clone directory
+python3 server.py
+```
+
+Open [http://127.0.0.1:8080](http://127.0.0.1:8080) and admin at [http://127.0.0.1:8080/admin/](http://127.0.0.1:8080/admin/).
+
+This server writes admin changes to `data/questions.json`, so new levels appear on the exam immediately.
+
+### Option B — Plain static server (no auto-save to file)
+
+```bash
 python3 -m http.server 8080
 ```
 
-Open [http://localhost:8080](http://localhost:8080).
+Admin changes stay in the browser only unless you use **Esporta JSON**.
 
-### Option B — Node (npx)
+### Option C — Node (npx)
 
 ```bash
 npx serve .
 ```
 
-### Option C — VS Code / Cursor
+### Option D — VS Code / Cursor
 
 Use the “Live Server” (or similar) extension and open `index.html`.
+
+---
+
+## Admin Dashboard
+
+Manage **levels → voice questions → answer options → correct answer** at [`admin/`](admin/).
+
+1. Open `/admin/` (or click **Area admin** on the home page).
+2. Sign in with default credentials: **`Reham`** / **`Ammar45@@`**
+3. Create or edit levels, then open a level to add voice questions (upload audio or set a path like `assets/audio/q1.mp3`).
+4. Changes are saved to **`data/questions.json`** when you run `python3 server.py` (recommended). The exam then shows them on refresh.
+5. Click **Esporta JSON** if you only use a plain static server and need a downloadable file.
+6. **Ripristina file** reloads from `data/questions.json`.
+
+### Data model (levels)
+
+```json
+{
+  "exam": { "title": "…", "durationMinutes": 15, "…": "…" },
+  "levels": [
+    {
+      "id": 1,
+      "name": "Livello 1",
+      "description": "…",
+      "questions": [
+        {
+          "id": 1,
+          "prompt": "Dove lavora?",
+          "audio": "assets/audio/q1.mp3",
+          "choices": ["A", "B", "C", "D"],
+          "correct": 0
+        }
+      ]
+    }
+  ]
+}
+```
+
+Learners pick a level on the home screen before starting the exam.
 
 ---
 
@@ -70,18 +120,25 @@ Use the “Live Server” (or similar) extension and open `index.html`.
 
 ```
 ListeningExam/
-├── index.html              # App shell & screens
+├── index.html              # Exam app shell
+├── admin/
+│   ├── index.html          # Admin login + dashboard
+│   ├── css/admin.css
+│   └── js/
+│       ├── auth.js         # Login / session
+│       └── admin.js        # Levels & questions CRUD
 ├── css/
-│   └── style.css           # Themes, layout, animations
+│   └── style.css
 ├── js/
+│   ├── content.js          # Shared content store (exam + admin)
 │   └── app.js              # Exam engine
 ├── data/
-│   └── questions.json      # Exam config + 10 sample questions
+│   └── questions.json      # Exam config + levels + questions
 ├── assets/
-│   ├── audio/              # q1.mp3 … q10.mp3
-│   └── images/             # Logo & screenshot placeholders
+│   ├── audio/
+│   └── images/
 ├── .gitignore
-├── .nojekyll               # GitHub Pages (bypass Jekyll)
+├── .nojekyll
 └── README.md
 ```
 
@@ -89,7 +146,7 @@ ListeningExam/
 
 ## Question data format
 
-Edit `data/questions.json`:
+Edit `data/questions.json` (or use the Admin Dashboard):
 
 ```json
 {
@@ -101,20 +158,27 @@ Edit `data/questions.json`:
     "passPercentage": 60,
     "preventSkip": true
   },
-  "questions": [
+  "levels": [
     {
       "id": 1,
-      "prompt": "Quale frutto viene menzionato nella registrazione?",
-      "audio": "assets/audio/q1.mp3",
-      "choices": ["Mela", "Arancia", "Banana", "Mango"],
-      "correct": 0
+      "name": "Livello 1",
+      "description": "Domande di ascolto di base.",
+      "questions": [
+        {
+          "id": 1,
+          "prompt": "Quale frutto viene menzionato nella registrazione?",
+          "audio": "assets/audio/q1.mp3",
+          "choices": ["Mela", "Arancia", "Banana", "Mango"],
+          "correct": 0
+        }
+      ]
     }
   ]
 }
 ```
 
 - `correct` is a **zero-based** index into `choices`.
-- `audio` paths must be **relative** to `index.html`.
+- `audio` paths must be **relative** to `index.html` (or a `data:` URL from admin upload).
 - Sample MP3 files are Italian speech clips (TTS) matched to the answer key — replace them with your own recordings if needed.
 
 ---

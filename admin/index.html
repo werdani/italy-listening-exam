@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1a73e8" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Admin — Signora Reham Ramadan</title>
+  <link rel="icon" href="../assets/images/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body class="admin-body">
+  <a class="skip-link" href="#main">Vai al contenuto</a>
+
+  <!-- Login -->
+  <section id="screenLogin" class="admin-screen" hidden>
+    <div class="login-wrap fade-in">
+      <div class="card login-card">
+        <div class="login-brand">
+          <img src="../assets/images/logo.svg" alt="" width="56" height="56" class="home-logo" />
+          <p class="eyebrow">Pannello di amministrazione</p>
+          <h1>Accedi</h1>
+          <p class="lead">Gestisci livelli, audio e risposte dell’esame di ascolto.</p>
+        </div>
+        <form id="loginForm" class="login-form" novalidate>
+          <div class="form-field">
+            <label class="field-label" for="loginUser">Username o email</label>
+            <input type="text" id="loginUser" name="username" autocomplete="username" required placeholder="Reham" />
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="loginPass">Password</label>
+            <input type="password" id="loginPass" name="password" autocomplete="current-password" required placeholder="••••••••" />
+          </div>
+          <p class="form-error" id="loginError" hidden role="alert"></p>
+          <button type="submit" class="btn btn-primary btn-lg btn-block">Accedi</button>
+        </form>
+        <p class="hint">
+          <a href="../index.html">← Torna all’esame</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard shell -->
+  <div id="screenApp" class="admin-app" hidden>
+    <header class="site-header admin-header" role="banner">
+      <div class="header-inner admin-header-inner">
+        <div class="brand">
+          <img
+            id="adminBrandLogo"
+            src="../assets/images/logo.svg"
+            alt=""
+            width="40"
+            height="40"
+            class="brand-logo brand-logo-circle"
+          />
+          <div class="brand-text">
+            <span class="brand-name">Admin Dashboard</span>
+            <span class="brand-tagline" id="adminBrandTagline">Signora Reham Ramadan</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <a class="btn btn-ghost btn-sm" href="../index.html" title="Apri l’esame">Esame</a>
+          <button type="button" class="icon-btn" id="themeToggle" aria-label="Cambia tema" title="Cambia tema">
+            <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+            </svg>
+            <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
+            </svg>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnLogout">Esci</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="admin-main" tabindex="-1">
+      <!-- Levels list -->
+      <section id="viewLevels" class="admin-view" hidden>
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Dashboard</p>
+            <h1>Livelli</h1>
+            <p class="lead">Organizza le domande vocali per livello. Apri un livello per gestirne gli audio.</p>
+          </div>
+          <div class="page-actions">
+            <button type="button" class="btn btn-secondary" id="btnExport">Esporta JSON</button>
+            <button type="button" class="btn btn-secondary" id="btnResetLocal" title="Ripristina dal file questions.json">Ripristina file</button>
+            <button type="button" class="btn btn-primary" id="btnAddLevel">+ Nuovo livello</button>
+          </div>
+        </div>
+
+        <div class="source-banner" id="sourceBanner" hidden></div>
+
+        <section class="card branding-card" aria-labelledby="brandingTitle">
+          <div class="branding-card-head">
+            <div>
+              <p class="eyebrow">Sito web</p>
+              <h2 id="brandingTitle">Foto e nome del titolare</h2>
+              <p class="lead branding-lead">
+                La foto circolare appare accanto al nome nell’header e nella home. Puoi usare un link Google Drive.
+              </p>
+            </div>
+            <div class="branding-preview-wrap">
+              <img
+                id="sitePhotoPreview"
+                class="branding-preview brand-logo-circle"
+                src="../assets/images/logo.svg"
+                alt="Anteprima foto"
+                width="72"
+                height="72"
+              />
+            </div>
+          </div>
+          <form id="siteForm" class="admin-form branding-form">
+            <div class="form-field">
+              <label class="field-label" for="siteOwnerName">Nome</label>
+              <input type="text" id="siteOwnerName" maxlength="80" required placeholder="Signora Reham Ramadan" />
+            </div>
+            <div class="form-field">
+              <label class="field-label" for="siteOwnerTagline">Sottotitolo</label>
+              <input type="text" id="siteOwnerTagline" maxlength="120" placeholder="Insegnante di italiano in Italia" />
+            </div>
+            <div class="form-field">
+              <label class="field-label" for="siteOwnerPhoto">Foto (link Google Drive / URL / percorso)</label>
+              <div class="audio-url-row">
+                <input
+                  type="text"
+                  id="siteOwnerPhoto"
+                  placeholder="https://drive.google.com/file/d/…/view"
+                />
+                <button type="button" class="btn btn-secondary btn-sm" id="btnNormalizePhoto">
+                  Converti Drive
+                </button>
+              </div>
+              <p class="field-hint">
+                Condividi la foto su Drive come <em>Chiunque abbia il link</em>, poi incolla il link qui.
+              </p>
+              <p class="drive-status" id="photoDriveStatus" hidden></p>
+            </div>
+            <div class="form-field">
+              <label class="field-label" for="siteGoogleApiKey">Google API Key (per audio Drive su GitHub Pages)</label>
+              <input
+                type="password"
+                id="siteGoogleApiKey"
+                autocomplete="off"
+                placeholder="AIza… (opzionale ma consigliata online)"
+              />
+              <p class="field-hint">
+                Deve iniziare con <code>AIza...</code> (API key), non un Client ID.
+                Su GitHub Pages serve per far funzionare gli audio Drive per i visitatori.
+                Restringi la key per referrer: <code>https://werdani.github.io/*</code>
+              </p>
+            </div>
+            <div class="page-actions">
+              <button type="submit" class="btn btn-primary" id="btnSaveSite">Salva profilo</button>
+            </div>
+          </form>
+        </section>
+
+        <div class="levels-grid" id="levelsGrid"></div>
+        <p class="empty-state" id="levelsEmpty" hidden>Nessun livello. Crea il primo livello per iniziare.</p>
+      </section>
+
+      <!-- Level detail / questions -->
+      <section id="viewLevel" class="admin-view" hidden>
+        <div class="page-head">
+          <div>
+            <button type="button" class="btn-back" id="btnBackLevels">← Tutti i livelli</button>
+            <h1 id="levelTitle">Livello</h1>
+            <p class="lead" id="levelLead"></p>
+          </div>
+          <div class="page-actions">
+            <button type="button" class="btn btn-secondary" id="btnEditLevel">Modifica livello</button>
+            <button type="button" class="btn btn-primary" id="btnAddQuestion">+ Nuova domanda audio</button>
+          </div>
+        </div>
+
+        <div class="breadcrumb-trail" aria-label="Percorso">
+          <span>Livello</span>
+          <span aria-hidden="true">→</span>
+          <span>Domanda audio</span>
+          <span aria-hidden="true">→</span>
+          <span>Opzioni</span>
+          <span aria-hidden="true">→</span>
+          <span>Risposta corretta</span>
+        </div>
+
+        <div class="questions-list" id="questionsList"></div>
+        <p class="empty-state" id="questionsEmpty" hidden>Nessuna domanda in questo livello. Aggiungi una domanda audio.</p>
+      </section>
+    </main>
+  </div>
+
+  <!-- Level modal -->
+  <div class="modal" id="levelModal" hidden role="dialog" aria-modal="true" aria-labelledby="levelModalTitle">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card modal-card-wide" role="document">
+      <h2 id="levelModalTitle">Nuovo livello</h2>
+      <form id="levelForm" class="admin-form">
+        <input type="hidden" id="levelFormId" />
+        <div class="form-field">
+          <label class="field-label" for="levelName">Nome</label>
+          <input type="text" id="levelName" required maxlength="80" placeholder="es. Livello 1" />
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="levelDesc">Descrizione</label>
+          <textarea id="levelDesc" rows="3" maxlength="300" placeholder="Breve descrizione del livello"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close-modal>Annulla</button>
+          <button type="submit" class="btn btn-primary" id="levelFormSubmit">Salva</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Question modal -->
+  <div class="modal" id="questionModal" hidden role="dialog" aria-modal="true" aria-labelledby="questionModalTitle">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card modal-card-wide" role="document">
+      <h2 id="questionModalTitle">Nuova domanda audio</h2>
+      <form id="questionForm" class="admin-form">
+        <input type="hidden" id="questionFormId" />
+
+        <div class="form-field">
+          <label class="field-label" for="questionPrompt">Testo della domanda (opzionale)</label>
+          <input type="text" id="questionPrompt" maxlength="200" placeholder="es. Dove lavora?" />
+        </div>
+
+        <fieldset class="form-fieldset">
+          <legend class="field-label">Audio / voce</legend>
+
+          <div class="drive-tip">
+            <strong>Google Drive</strong>
+            <ol>
+              <li>Carica il file audio su Google Drive</li>
+              <li>Condivisione → <em>Chiunque abbia il link</em></li>
+              <li>Incolla qui il link di condivisione (verrà convertito automaticamente)</li>
+            </ol>
+          </div>
+
+          <div class="form-field">
+            <label class="field-label" for="questionAudioPath">Link Drive / percorso / URL</label>
+            <div class="audio-url-row">
+              <input
+                type="text"
+                id="questionAudioPath"
+                placeholder="https://drive.google.com/file/d/…/view oppure assets/audio/q1.mp3"
+              />
+              <button type="button" class="btn btn-secondary btn-sm" id="btnNormalizeDrive">
+                Converti Drive
+              </button>
+            </div>
+            <p class="field-hint" id="audioPathHint">
+              Incolla un link Google Drive, un URL https, oppure un percorso tipo <code>assets/audio/q1.mp3</code>.
+            </p>
+            <p class="drive-status" id="driveStatus" hidden></p>
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="questionAudioFile">Oppure carica file audio</label>
+            <input type="file" id="questionAudioFile" accept="audio/*,.mp3,.wav,.ogg,.m4a" />
+            <p class="field-hint" id="audioFileHint">Il file verrà salvato localmente (base64). Preferisci Drive per GitHub Pages.</p>
+          </div>
+          <div class="audio-preview" id="audioPreviewWrap" hidden>
+            <label class="field-label">Anteprima</label>
+            <audio id="audioPreview" class="audio-player" controls preload="metadata"></audio>
+            <p class="field-hint">Se l’anteprima Drive non parte, controlla che il file sia pubblico «Chiunque abbia il link».</p>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-fieldset">
+          <legend class="field-label">Opzioni di risposta</legend>
+          <div class="choices-edit" id="choicesEdit">
+            <div class="choice-edit-row">
+              <label class="choice-radio-label">
+                <input type="radio" name="correctChoice" value="0" checked />
+                <span class="choice-letter">A</span>
+              </label>
+              <input type="text" class="choice-input" id="choice0" required maxlength="200" placeholder="Risposta A" />
+            </div>
+            <div class="choice-edit-row">
+              <label class="choice-radio-label">
+                <input type="radio" name="correctChoice" value="1" />
+                <span class="choice-letter">B</span>
+              </label>
+              <input type="text" class="choice-input" id="choice1" required maxlength="200" placeholder="Risposta B" />
+            </div>
+            <div class="choice-edit-row">
+              <label class="choice-radio-label">
+                <input type="radio" name="correctChoice" value="2" />
+                <span class="choice-letter">C</span>
+              </label>
+              <input type="text" class="choice-input" id="choice2" required maxlength="200" placeholder="Risposta C" />
+            </div>
+            <div class="choice-edit-row">
+              <label class="choice-radio-label">
+                <input type="radio" name="correctChoice" value="3" />
+                <span class="choice-letter">D</span>
+              </label>
+              <input type="text" class="choice-input" id="choice3" required maxlength="200" placeholder="Risposta D" />
+            </div>
+          </div>
+          <p class="field-hint">Seleziona il cerchio accanto alla risposta corretta.</p>
+        </fieldset>
+
+        <p class="form-error" id="questionFormError" hidden role="alert"></p>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close-modal>Annulla</button>
+          <button type="submit" class="btn btn-primary" id="questionFormSubmit">Salva domanda</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirm modal -->
+  <div class="modal" id="confirmModal" hidden role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card" role="document">
+      <h2 id="confirmTitle">Conferma</h2>
+      <p id="confirmMessage">Sei sicuro?</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" data-close-modal>Annulla</button>
+        <button type="button" class="btn btn-danger" id="confirmOk">Elimina</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="../js/content.js" defer></script>
+  <script src="js/auth.js" defer></script>
+  <script src="js/admin.js" defer></script>
+</body>
+</html>

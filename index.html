@@ -18,10 +18,17 @@
   <header class="site-header" role="banner">
     <div class="header-inner">
       <div class="brand">
-        <img src="assets/images/logo.svg" alt="" width="36" height="36" class="brand-logo" />
+        <img
+          id="brandLogo"
+          src="assets/images/logo.svg"
+          alt=""
+          width="40"
+          height="40"
+          class="brand-logo brand-logo-circle"
+        />
         <div class="brand-text">
-          <span class="brand-name">Signora Reham Ramadan</span>
-          <span class="brand-tagline">Insegnante di italiano in Italia</span>
+          <span class="brand-name" id="brandName">Signora Reham Ramadan</span>
+          <span class="brand-tagline" id="brandTagline">Insegnante di italiano in Italia</span>
         </div>
       </div>
       <div class="header-actions">
@@ -58,11 +65,27 @@
     <section id="screenHome" class="screen" hidden aria-labelledby="examTitle">
       <div class="card home-card fade-in">
         <div class="home-hero">
-          <img src="assets/images/logo.svg" alt="" width="64" height="64" class="home-logo" />
+          <img
+            id="homeLogo"
+            src="assets/images/logo.svg"
+            alt=""
+            width="88"
+            height="88"
+            class="home-logo brand-logo-circle"
+          />
           <p class="eyebrow">Valutazione di ascolto</p>
           <h1 id="examTitle">Esame di Ascolto — Italiano</h1>
-          <p class="teacher-credit">A cura di <strong>Signora Reham Ramadan</strong> — insegnante di italiano in Italia</p>
+          <p class="teacher-credit" id="teacherCredit">
+            A cura di <strong id="teacherCreditName">Signora Reham Ramadan</strong>
+            <span id="teacherCreditTagline"> — insegnante di italiano in Italia</span>
+          </p>
           <p id="examDescription" class="lead"></p>
+        </div>
+
+        <div class="level-picker" id="levelPicker" aria-label="Seleziona livello">
+          <label class="field-label" for="levelSelect">Livello</label>
+          <select id="levelSelect" class="level-select"></select>
+          <p class="level-desc muted" id="levelDescription"></p>
         </div>
 
         <ul class="meta-grid" aria-label="Dettagli esame">
@@ -96,6 +119,7 @@
           <button type="button" class="btn btn-ghost" id="btnResume" hidden>Riprendi l’esame</button>
         </div>
         <p class="hint" id="resumeHint" hidden>È stato trovato un tentativo non concluso. Puoi riprendere o ricominciare.</p>
+        <p class="hint admin-entry"><a href="admin/">Area admin</a></p>
       </div>
     </section>
 
@@ -227,6 +251,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
+  <script src="js/content.js" defer></script>
   <script src="js/app.js" defer></script>
 </body>
 </html>
