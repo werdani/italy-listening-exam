@@ -414,6 +414,16 @@
     return `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w400`;
   }
 
+  function toGoogleDrivePreviewUrl(fileId) {
+    // Embedded Drive player — works on GitHub Pages for public files
+    return `https://drive.google.com/file/d/${encodeURIComponent(fileId)}/preview`;
+  }
+
+  function isGitHubPagesHost() {
+    const host = (global.location && global.location.hostname) || "";
+    return /\.github\.io$/i.test(host);
+  }
+
   function resolveApiRoot() {
     const path = global.location.pathname || "";
     if (path.includes("/admin")) return "..";
@@ -432,6 +442,11 @@
   }
 
   async function detectDriveProxy() {
+    // Never expect local API on GitHub Pages
+    if (isGitHubPagesHost()) {
+      driveProxyAvailable = false;
+      return false;
+    }
     try {
       const res = await fetch(`${resolveApiRoot()}/api/content`, {
         method: "GET",
@@ -451,7 +466,6 @@
 
   /**
    * Playback candidates for Drive links.
-   * Order is tuned so GitHub Pages works without server.py when possible.
    */
   function getAudioPlaybackCandidates(src, options = {}) {
     if (!src) return [];
@@ -468,33 +482,50 @@
     const apiKey = getGoogleApiKey(options);
     const list = [];
 
-    // 1) Local proxy (python3 server.py) — best when available
-    if (driveProxyAvailable) {
+    if (driveProxyAvailable === true) {
       list.push(toDriveProxyUrl(fileId));
     }
 
-    // 2) Google Drive API (works on GitHub Pages if API key is set)
-    if (apiKey) {
+    if (apiKey && isLikelyGoogleApiKey(apiKey)) {
       list.push(toGoogleDriveApiMediaUrl(fileId, apiKey));
     }
 
-    // 3) Public direct download URLs (static hosting / GitHub Pages)
+    // Direct links (often blocked in <audio> on GitHub Pages, but try anyway)
     list.push(toGoogleDriveDirectUrl(fileId));
-    list.push(
-      `https://docs.google.com/uc?export=open&id=${encodeURIComponent(fileId)}`
-    );
-    list.push(
-      `https://drive.google.com/uc?export=download&id=${encodeURIComponent(
-        fileId
-      )}&confirm=t`
-    );
-
-    // 4) Try proxy last even if detection failed (maybe server came up later)
-    if (!driveProxyAvailable) {
-      list.push(toDriveProxyUrl(fileId));
-    }
+    list.push(`https://docs.google.com/uc?export=open&id=${encodeURIComponent(fileId)}`);
 
     return [...new Set(list)];
+  }
+
+  /**
+   * Fetch Drive file via API key into a blob: URL (best for GitHub Pages).
+   */
+  async function fetchDriveAudioBlobUrl(src, options = {}) {
+    const fileId = extractGoogleDriveFileId(src);
+    const apiKey = getGoogleApiKey(options);
+    if (!fileId || !isLikelyGoogleApiKey(apiKey)) return null;
+
+    const url = toGoogleDriveApiMediaUrl(fileId, apiKey);
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) {
+      throw new Error(`Drive API ${res.status}`);
+    }
+    const blob = await res.blob();
+    if (!blob || blob.size < 100) {
+      throw new Error("Drive file vuoto");
+    }
+    return URL.createObjectURL(blob);
+  }
+
+  function prefersDriveEmbed(src, options = {}) {
+    const fileId = extractGoogleDriveFileId(src);
+    if (!fileId) return false;
+    if (!(isGoogleDriveUrl(src) || /\/api\/drive\//.test(src))) return false;
+    // On GitHub Pages without a valid API key / proxy, use embed player
+    const apiKey = getGoogleApiKey(options);
+    if (driveProxyAvailable === true) return false;
+    if (isLikelyGoogleApiKey(apiKey)) return false;
+    return isGitHubPagesHost() || driveProxyAvailable === false;
   }
 
   /**
@@ -633,6 +664,10 @@
     toGoogleDriveDirectUrl,
     toGoogleDriveImageUrl,
     toGoogleDriveApiMediaUrl,
+    toGoogleDrivePreviewUrl,
+    fetchDriveAudioBlobUrl,
+    prefersDriveEmbed,
+    isGitHubPagesHost,
     normalizeAudioUrl,
     normalizeImageUrl,
     describeAudioSource,

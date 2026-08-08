@@ -68,6 +68,10 @@
     questionBadge: $("#questionBadge"),
     questionPrompt: $("#questionPrompt"),
     examAudio: $("#examAudio"),
+    driveAudioWrap: $("#driveAudioWrap"),
+    driveAudioFrame: $("#driveAudioFrame"),
+    btnDriveHeard: $("#btnDriveHeard"),
+    audioHintDefault: $("#audioHintDefault"),
     choicesFieldset: $("#choicesFieldset"),
     afterAudioBlock: $("#afterAudioBlock"),
     listenFirstHint: $("#listenFirstHint"),
@@ -468,46 +472,120 @@
   let audioCandidates = [];
   let audioCandidateIndex = 0;
   let audioSourceKey = "";
+  let audioBlobUrl = null;
 
-  function stopExamAudio() {
-    const audio = els.examAudio;
-    if (!audio) return;
-    audioCandidates = [];
-    audioCandidateIndex = 0;
-    audioSourceKey = "";
-    audio.onerror = null;
-    try {
-      audio.pause();
-      audio.currentTime = 0;
-    } catch {
-      /* ignore */
-    }
-    audio.removeAttribute("src");
-    try {
-      audio.load();
-    } catch {
-      /* ignore */
+  function revokeAudioBlob() {
+    if (audioBlobUrl) {
+      try {
+        URL.revokeObjectURL(audioBlobUrl);
+      } catch {
+        /* ignore */
+      }
+      audioBlobUrl = null;
     }
   }
 
-  function loadAudio(src) {
+  function hideDriveEmbed() {
+    if (els.driveAudioWrap) els.driveAudioWrap.hidden = true;
+    if (els.driveAudioFrame) els.driveAudioFrame.removeAttribute("src");
+    if (els.examAudio) els.examAudio.hidden = false;
+    if (els.audioHintDefault) els.audioHintDefault.hidden = false;
+  }
+
+  function showDriveEmbed(fileId) {
+    if (!els.driveAudioWrap || !els.driveAudioFrame) return false;
+    const preview = AscoltoContent.toGoogleDrivePreviewUrl(fileId);
+    if (els.examAudio) els.examAudio.hidden = true;
+    if (els.audioHintDefault) els.audioHintDefault.hidden = true;
+    els.driveAudioWrap.hidden = false;
+    els.driveAudioFrame.src = preview;
+    if (els.btnDriveHeard) {
+      els.btnDriveHeard.hidden = !!state.listened[state.currentIndex];
+    }
+    return true;
+  }
+
+  function stopExamAudio() {
+    const audio = els.examAudio;
+    audioCandidates = [];
+    audioCandidateIndex = 0;
+    audioSourceKey = "";
+    if (audio) {
+      audio.onerror = null;
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch {
+        /* ignore */
+      }
+      audio.removeAttribute("src");
+      try {
+        audio.load();
+      } catch {
+        /* ignore */
+      }
+    }
+    revokeAudioBlob();
+    hideDriveEmbed();
+  }
+
+  async function loadAudio(src) {
     const audio = els.examAudio;
     stopExamAudio();
+    audioSourceKey = String(src || "");
     audio.setAttribute("controlsList", "nodownload noplaybackrate");
     audio.oncontextmenu = (e) => e.preventDefault();
 
+    const apiKey = contentData?.site?.googleApiKey || "";
+    const fileId = AscoltoContent.extractGoogleDriveFileId(src);
+    const isDrive = !!(fileId && AscoltoContent.isGoogleDriveUrl(src));
+
+    // GitHub Pages / no proxy: use Drive embed player (reliable for public files)
+    if (
+      isDrive &&
+      AscoltoContent.prefersDriveEmbed &&
+      AscoltoContent.prefersDriveEmbed(src, { apiKey })
+    ) {
+      showDriveEmbed(fileId);
+      return;
+    }
+
+    // Try Drive API → blob URL (best when API key is configured)
+    if (isDrive && AscoltoContent.fetchDriveAudioBlobUrl) {
+      try {
+        const blobUrl = await AscoltoContent.fetchDriveAudioBlobUrl(src, { apiKey });
+        if (blobUrl && String(src || "") === audioSourceKey) {
+          audioBlobUrl = blobUrl;
+          audio.hidden = false;
+          hideDriveEmbed();
+          if (els.driveAudioWrap) els.driveAudioWrap.hidden = true;
+          audio.src = blobUrl;
+          audio.load();
+          return;
+        }
+      } catch (err) {
+        console.warn("Drive API blob failed", err);
+      }
+    }
+
     audioCandidates = AscoltoContent.getAudioPlaybackCandidates
-      ? AscoltoContent.getAudioPlaybackCandidates(src, {
-          apiKey: contentData?.site?.googleApiKey || "",
-        })
+      ? AscoltoContent.getAudioPlaybackCandidates(src, { apiKey })
       : [AscoltoContent.resolveAudioSrc(src)];
     audioCandidateIndex = 0;
-    audioSourceKey = String(src || "");
+
+    const failToEmbedOrToast = () => {
+      if (isDrive) {
+        showDriveEmbed(fileId);
+        showToast("Uso il player Google Drive.");
+        return;
+      }
+      showToast("Impossibile riprodurre l’audio. Controlla il file o la condivisione Drive.");
+    };
 
     const tryNext = () => {
       if (String(src || "") !== audioSourceKey) return;
       if (audioCandidateIndex >= audioCandidates.length) {
-        showToast("Impossibile riprodurre l’audio (controlla condivisione Drive o server.py).");
+        failToEmbedOrToast();
         return;
       }
       const url = audioCandidates[audioCandidateIndex];
@@ -517,6 +595,7 @@
       } catch {
         /* ignore */
       }
+      audio.hidden = false;
       audio.src = url;
       audio.load();
     };
@@ -1076,6 +1155,12 @@
 
     // Reveal question only after the learner starts listening
     els.examAudio.addEventListener("play", markListened);
+    if (els.btnDriveHeard) {
+      els.btnDriveHeard.addEventListener("click", () => {
+        markListened();
+        els.btnDriveHeard.hidden = true;
+      });
+    }
 
     els.modalConfirm.addEventListener("click", () => {
       const action = pendingConfirmAction;

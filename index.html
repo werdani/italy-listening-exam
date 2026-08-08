@@ -155,7 +155,20 @@
             >
               Il tuo browser non supporta l’elemento audio.
             </audio>
-            <p class="audio-hint">Puoi riprodurre l’audio tutte le volte che ti servono.</p>
+            <div id="driveAudioWrap" class="drive-audio-wrap" hidden>
+              <iframe
+                id="driveAudioFrame"
+                class="drive-audio-frame"
+                title="Audio Google Drive"
+                allow="autoplay"
+                allowfullscreen
+              ></iframe>
+              <button type="button" class="btn btn-primary btn-sm" id="btnDriveHeard">
+                Ho ascoltato — mostra la domanda
+              </button>
+              <p class="audio-hint">Se l’audio non parte, apri il player Drive qui sopra e premi play.</p>
+            </div>
+            <p class="audio-hint" id="audioHintDefault">Puoi riprodurre l’audio tutte le volte che ti servono.</p>
           </div>
 
           <div id="afterAudioBlock" class="after-audio" hidden>
