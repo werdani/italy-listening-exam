@@ -68,6 +68,7 @@
     questionBadge: $("#questionBadge"),
     questionPrompt: $("#questionPrompt"),
     examAudio: $("#examAudio"),
+    examAudioBlock: $("#examAudioBlock"),
     driveAudioWrap: $("#driveAudioWrap"),
     driveAudioFrame: $("#driveAudioFrame"),
     btnDriveHeard: $("#btnDriveHeard"),
@@ -608,10 +609,28 @@
     tryNext();
   }
 
+  function isListeningQuestion(q) {
+    return AscoltoContent.isListeningQuestion
+      ? AscoltoContent.isListeningQuestion(q)
+      : (q?.type || "listening") !== "mcq";
+  }
+
+  function mustListenCurrent() {
+    const q = examData?.questions?.[state.currentIndex];
+    return isListeningQuestion(q) && !state.listened[state.currentIndex];
+  }
+
   function revealQuestionIfReady() {
-    const heard = !!state.listened[state.currentIndex];
+    const q = examData?.questions?.[state.currentIndex];
+    const listening = isListeningQuestion(q);
+    const heard = !listening || !!state.listened[state.currentIndex];
     if (els.afterAudioBlock) els.afterAudioBlock.hidden = !heard;
-    if (els.listenFirstHint) els.listenFirstHint.hidden = heard;
+    if (els.listenFirstHint) {
+      els.listenFirstHint.hidden = heard;
+      els.listenFirstHint.textContent = listening
+        ? "Ascolta prima l’audio, poi apparirà la domanda."
+        : "Scegli la risposta migliore.";
+    }
   }
 
   function markListened() {
@@ -624,10 +643,24 @@
   function renderQuestion() {
     const q = examData.questions[state.currentIndex];
     const n = state.currentIndex + 1;
+    const listening = isListeningQuestion(q);
 
     els.questionBadge.textContent = `D${n}`;
-    els.questionPrompt.textContent = q.prompt || "Ascolta l'audio e scegli la risposta migliore.";
-    loadAudio(q.audio);
+    els.questionPrompt.textContent =
+      q.prompt ||
+      (listening
+        ? "Ascolta l'audio e scegli la risposta migliore."
+        : "Scegli la risposta migliore.");
+
+    if (els.examAudioBlock) els.examAudioBlock.hidden = !listening;
+
+    if (listening) {
+      loadAudio(q.audio);
+    } else {
+      stopExamAudio();
+      state.listened[state.currentIndex] = true;
+    }
+
     renderChoices(q);
     revealQuestionIfReady();
     updateProgress();
@@ -670,7 +703,7 @@
       return;
     }
 
-    if (!state.listened[state.currentIndex] && index > state.currentIndex) {
+    if (mustListenCurrent() && index > state.currentIndex) {
       showToast("Ascolta prima l'audio.");
       return;
     }
@@ -697,7 +730,7 @@
 
   function goNext() {
     const last = state.currentIndex === examData.questions.length - 1;
-    if (!state.listened[state.currentIndex]) {
+    if (mustListenCurrent()) {
       showToast("Ascolta prima l'audio.");
       return;
     }
@@ -786,6 +819,7 @@
       if (ok) correct += 1;
       return {
         id: q.id,
+        type: isListeningQuestion(q) ? "listening" : "mcq",
         prompt: q.prompt,
         audio: q.audio,
         choices: q.choices,
@@ -898,14 +932,19 @@
           ? "Nessuna risposta"
           : item.choices[item.userIndex];
       const correctText = item.choices[item.correctIndex];
+      const listening = item.type !== "mcq" && item.audio;
 
       card.innerHTML = `
         <h3>Domanda ${i + 1}</h3>
-        <p>${escapeHtml(item.prompt || "Ascolta e scegli la risposta migliore.")}</p>
-        <div class="audio-block">
+        <p>${escapeHtml(item.prompt || (listening ? "Ascolta e scegli la risposta migliore." : "Scegli la risposta migliore."))}</p>
+        ${
+          listening
+            ? `<div class="audio-block">
           <label class="audio-label">Audio</label>
           <audio class="audio-player" controls controlsList="nodownload noplaybackrate" preload="none" src="${escapeAttr(AscoltoContent.resolveAudioSrc(item.audio))}"></audio>
-        </div>
+        </div>`
+            : `<p class="muted" style="margin:0.5rem 0 0">Domanda a scelta multipla</p>`
+        }
         <div class="review-meta">
           <span class="tag ${item.isCorrect ? "tag-ok" : "tag-bad"}">
             ${item.isCorrect ? "Corretta" : "Errata"}
@@ -944,7 +983,7 @@
     state.levelId = examData.exam.levelId != null ? examData.exam.levelId : state.levelId;
     state.currentIndex = 0;
     state.answers = examData.questions.map(() => null);
-    state.listened = examData.questions.map(() => false);
+    state.listened = examData.questions.map((q) => !isListeningQuestion(q));
     state.totalSeconds = minutes * 60;
     state.remainingSeconds = state.totalSeconds;
     state.startedAt = Date.now();
@@ -963,9 +1002,11 @@
     state.levelId = saved.levelId != null ? saved.levelId : state.levelId;
     state.currentIndex = Math.min(saved.currentIndex || 0, examData.questions.length - 1);
     state.answers = saved.answers;
-    state.listened = Array.isArray(saved.listened)
-      ? saved.listened
-      : examData.questions.map((_, i) => state.answers[i] !== null);
+    state.listened = examData.questions.map((q, i) => {
+      if (!isListeningQuestion(q)) return true;
+      if (Array.isArray(saved.listened)) return !!saved.listened[i];
+      return state.answers[i] !== null;
+    });
     state.remainingSeconds = saved.remainingSeconds;
     state.totalSeconds = saved.totalSeconds || examData.exam.durationMinutes * 60;
     state.startedAt = saved.startedAt || Date.now();
@@ -1215,6 +1256,10 @@
 
       renderHome();
       showScreen("home");
+
+      if (window.AscoltoVisitors && AscoltoVisitors.registerVisit) {
+        AscoltoVisitors.registerVisit().catch(() => {});
+      }
 
       if (hasResumableAttempt()) {
         showToast("Trovato un esame non concluso — riprendi o ricomincia.");

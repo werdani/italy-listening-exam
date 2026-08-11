@@ -55,6 +55,9 @@
     ghBranch: $("#ghBranch"),
     ghAutoPublish: $("#ghAutoPublish"),
     githubStatus: $("#githubStatus"),
+    visitorCount: $("#visitorCount"),
+    visitorStatsHint: $("#visitorStatsHint"),
+    btnRefreshVisitors: $("#btnRefreshVisitors"),
     btnBackLevels: $("#btnBackLevels"),
     btnEditLevel: $("#btnEditLevel"),
     btnAddQuestion: $("#btnAddQuestion"),
@@ -73,6 +76,8 @@
     questionForm: $("#questionForm"),
     questionFormId: $("#questionFormId"),
     questionPrompt: $("#questionPrompt"),
+    questionPromptLabel: $("#questionPromptLabel"),
+    audioFieldset: $("#audioFieldset"),
     questionAudioPath: $("#questionAudioPath"),
     questionAudioFile: $("#questionAudioFile"),
     audioPathHint: $("#audioPathHint"),
@@ -405,12 +410,44 @@
 
   /* ---------- Levels view ---------- */
 
+  async function refreshVisitorStats() {
+    if (!els.visitorCount) return;
+    if (els.visitorStatsHint) els.visitorStatsHint.textContent = "Aggiornamento…";
+    try {
+      if (!window.AscoltoVisitors || !AscoltoVisitors.getVisitorStats) {
+        throw new Error("Modulo visitatori non disponibile.");
+      }
+      const stats = await AscoltoVisitors.getVisitorStats();
+      els.visitorCount.textContent = String(stats.count ?? 0);
+      if (els.visitorStatsHint) {
+        if (stats.source === "api") {
+          els.visitorStatsHint.textContent = stats.updatedAt
+            ? `Aggiornato: ${stats.updatedAt}`
+            : "Dati dal server locale.";
+        } else if (stats.source === "counterapi") {
+          els.visitorStatsHint.textContent =
+            "Dati dal contatore online (GitHub Pages). Ogni dispositivo conta una volta.";
+        } else {
+          els.visitorStatsHint.textContent =
+            stats.error || "Impossibile leggere le statistiche. Avvia python3 server.py oppure apri il sito online.";
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      els.visitorCount.textContent = "—";
+      if (els.visitorStatsHint) {
+        els.visitorStatsHint.textContent = err.message || "Errore nel caricamento.";
+      }
+    }
+  }
+
   function renderLevels() {
     showView("levels");
     activeLevelId = null;
     updateSourceBanner();
     fillSiteForm();
     fillGithubForm();
+    refreshVisitorStats();
 
     const levels = content.levels || [];
     els.levelsGrid.innerHTML = "";
@@ -425,7 +462,7 @@
           <h2>${escapeHtml(level.name)}</h2>
         </div>
         <p class="level-card-desc">${escapeHtml(level.description || "Nessuna descrizione")}</p>
-        <p class="level-card-meta">${level.questions.length} domand${level.questions.length === 1 ? "a" : "e"} audio</p>
+        <p class="level-card-meta">${escapeHtml(formatQuestionCounts(level.questions))}</p>
         <div class="level-card-actions">
           <button type="button" class="btn btn-primary btn-sm" data-open-level="${level.id}">Apri</button>
           <button type="button" class="btn btn-secondary btn-sm" data-edit-level="${level.id}">Modifica</button>
@@ -514,6 +551,66 @@
 
   /* ---------- Level detail / questions ---------- */
 
+  function isListening(q) {
+    return AscoltoContent.isListeningQuestion
+      ? AscoltoContent.isListeningQuestion(q)
+      : (q?.type || "listening") !== "mcq";
+  }
+
+  function formatQuestionCounts(questions) {
+    const list = questions || [];
+    const listening = list.filter((q) => isListening(q)).length;
+    const mcq = list.length - listening;
+    if (!list.length) return "0 domande";
+    const parts = [];
+    if (listening) parts.push(`${listening} ascolto`);
+    if (mcq) parts.push(`${mcq} scelta`);
+    return `${list.length} domand${list.length === 1 ? "a" : "e"} (${parts.join(" · ")})`;
+  }
+
+  function getSelectedQuestionType() {
+    const checked = $('input[name="questionType"]:checked');
+    return checked && checked.value === "mcq" ? "mcq" : "listening";
+  }
+
+  function setQuestionType(type) {
+    const value = type === "mcq" ? "mcq" : "listening";
+    const radio = $(`input[name="questionType"][value="${value}"]`);
+    if (radio) radio.checked = true;
+    syncQuestionTypeUi();
+  }
+
+  function syncQuestionTypeUi() {
+    const type = getSelectedQuestionType();
+    const isMcq = type === "mcq";
+    if (els.audioFieldset) {
+      els.audioFieldset.hidden = isMcq;
+      els.audioFieldset.setAttribute("aria-hidden", isMcq ? "true" : "false");
+      // Extra guard: .form-fieldset { display:flex } can override [hidden]
+      els.audioFieldset.style.display = isMcq ? "none" : "";
+    }
+    if (els.questionPromptLabel) {
+      els.questionPromptLabel.textContent = isMcq
+        ? "Testo della domanda"
+        : "Testo della domanda (opzionale)";
+    }
+    if (els.questionPrompt) {
+      els.questionPrompt.required = isMcq;
+      els.questionPrompt.placeholder = isMcq
+        ? "es. Qual è il plurale di «libro»?"
+        : "es. Dove lavora?";
+    }
+    // Clear audio when switching to MCQ so it cannot be saved by mistake
+    if (isMcq) {
+      pendingAudioDataUrl = null;
+      if (els.questionAudioPath) els.questionAudioPath.value = "";
+      if (els.questionAudioFile) els.questionAudioFile.value = "";
+      if (els.audioPreviewWrap) els.audioPreviewWrap.hidden = true;
+      if (els.audioPreview) els.audioPreview.removeAttribute("src");
+      setDriveStatus("");
+    }
+  }
+
   function renderLevelDetail(levelId) {
     const level = AscoltoContent.getLevel(content, levelId);
     if (!level) {
@@ -526,16 +623,21 @@
     els.levelTitle.textContent = level.name;
     els.levelLead.textContent =
       level.description ||
-      `Gestisci le domande audio di ${level.name}. Livello → Domanda → Opzioni → Risposta corretta.`;
+      `Gestisci le domande di ${level.name}. Puoi mischiare ascolto e scelta multipla.`;
 
     const questions = level.questions || [];
     els.questionsList.innerHTML = "";
     els.questionsEmpty.hidden = questions.length > 0;
 
     questions.forEach((q, index) => {
+      const listening = isListening(q);
       const correctLetter = LETTERS[q.correct] || "?";
       const correctText = q.choices[q.correct] || "—";
-      const audioLabel = AscoltoContent.describeAudioSource(q.audio);
+      const audioLabel = listening
+        ? AscoltoContent.describeAudioSource(q.audio)
+        : "Senza audio";
+      const typeLabel = listening ? "Ascolto" : "Scelta";
+      const typeClass = listening ? "type-listening" : "type-mcq";
 
       const card = document.createElement("article");
       card.className = "question-admin-card";
@@ -543,15 +645,20 @@
         <div class="question-admin-head">
           <span class="question-badge">V${index + 1}</span>
           <div class="question-admin-title">
-            <h2>${escapeHtml(q.prompt || `Voce ${index + 1}`)}</h2>
-            <p class="muted audio-path-label">${escapeHtml(audioLabel)}</p>
+            <h2>${escapeHtml(q.prompt || (listening ? `Voce ${index + 1}` : `Scelta ${index + 1}`))}</h2>
+            <p class="muted audio-path-label">
+              <span class="q-type-pill ${typeClass}">${typeLabel}</span>
+              ${escapeHtml(audioLabel)}
+            </p>
           </div>
           <div class="question-admin-actions">
             <button type="button" class="btn btn-secondary btn-sm" data-edit-question="${q.id}">Modifica</button>
             <button type="button" class="btn btn-danger-outline btn-sm" data-delete-question="${q.id}">Elimina</button>
           </div>
         </div>
-        <div class="audio-block">
+        ${
+          listening
+            ? `<div class="audio-block">
           <label class="audio-label">Anteprima audio</label>
           ${
             q.audio
@@ -560,7 +667,9 @@
                 )}"></audio>`
               : `<p class="muted">Nessun file audio</p>`
           }
-        </div>
+        </div>`
+            : ""
+        }
         <ul class="admin-choices">
           ${q.choices
             .map(
@@ -652,13 +761,18 @@
     $$('input[name="correctChoice"]').forEach((r, i) => {
       r.checked = i === 0;
     });
+    setQuestionType("listening");
   }
 
   function openQuestionModal(question = null) {
     resetQuestionForm();
     if (question) {
-      els.questionModalTitle.textContent = "Modifica domanda audio";
+      const listening = isListening(question);
+      els.questionModalTitle.textContent = listening
+        ? "Modifica domanda audio"
+        : "Modifica domanda a scelta";
       els.questionFormId.value = String(question.id);
+      setQuestionType(listening ? "listening" : "mcq");
       els.questionPrompt.value = question.prompt || "";
       els.questionAudioPath.value =
         question.audio && !question.audio.startsWith("data:") ? question.audio : "";
@@ -673,13 +787,14 @@
       });
       const radio = $(`input[name="correctChoice"][value="${question.correct}"]`);
       if (radio) radio.checked = true;
-      if (els.questionAudioPath.value) {
+      if (listening && els.questionAudioPath.value) {
         applyDriveNormalization({ preview: true });
-      } else {
+      } else if (listening) {
         updateAudioPreview(question.audio);
       }
     } else {
-      els.questionModalTitle.textContent = "Nuova domanda audio";
+      els.questionModalTitle.textContent = "Nuova domanda";
+      setQuestionType("listening");
     }
     els.questionModal.hidden = false;
     els.questionPrompt.focus();
@@ -756,6 +871,7 @@
     e.preventDefault();
     els.questionFormError.hidden = true;
 
+    const type = getSelectedQuestionType();
     const choices = [0, 1, 2, 3].map((i) => ($(`#choice${i}`)?.value || "").trim());
     if (choices.some((c) => !c)) {
       els.questionFormError.hidden = false;
@@ -765,17 +881,28 @@
 
     const correctRadio = $('input[name="correctChoice"]:checked');
     const correct = correctRadio ? Number(correctRadio.value) : 0;
-    const path = applyDriveNormalization({ preview: false });
-    const audio = pendingAudioDataUrl || path;
+    const prompt = els.questionPrompt.value.trim();
 
-    if (!audio) {
+    if (type === "mcq" && !prompt) {
       els.questionFormError.hidden = false;
-      els.questionFormError.textContent = "Seleziona un percorso audio o carica un file.";
+      els.questionFormError.textContent = "Scrivi il testo della domanda.";
       return;
     }
 
+    let audio = "";
+    if (type === "listening") {
+      const path = applyDriveNormalization({ preview: false });
+      audio = pendingAudioDataUrl || path;
+      if (!audio) {
+        els.questionFormError.hidden = false;
+        els.questionFormError.textContent = "Seleziona un percorso audio o carica un file.";
+        return;
+      }
+    }
+
     const payload = {
-      prompt: els.questionPrompt.value.trim(),
+      type,
+      prompt,
       audio,
       choices,
       correct,
@@ -941,6 +1068,12 @@
     if (els.btnPublishGithub) els.btnPublishGithub.addEventListener("click", publishHandler);
     if (els.btnPublishGithub2) els.btnPublishGithub2.addEventListener("click", publishHandler);
     if (els.githubForm) els.githubForm.addEventListener("submit", onGithubFormSubmit);
+    if (els.btnRefreshVisitors) {
+      els.btnRefreshVisitors.addEventListener("click", () => {
+        refreshVisitorStats();
+        showToast("Statistiche aggiornate.");
+      });
+    }
     els.btnBackLevels.addEventListener("click", renderLevels);
     els.btnEditLevel.addEventListener("click", () => {
       openLevelModal(AscoltoContent.getLevel(content, activeLevelId));
@@ -948,6 +1081,17 @@
     els.btnAddQuestion.addEventListener("click", () => openQuestionModal(null));
     els.levelForm.addEventListener("submit", onLevelFormSubmit);
     els.questionForm.addEventListener("submit", onQuestionFormSubmit);
+    $$('input[name="questionType"]').forEach((radio) => {
+      radio.addEventListener("change", syncQuestionTypeUi);
+    });
+    $$(".type-pick").forEach((label) => {
+      label.addEventListener("click", () => {
+        const input = $("input[name='questionType']", label);
+        if (!input) return;
+        input.checked = true;
+        syncQuestionTypeUi();
+      });
+    });
     if (els.siteForm) {
       els.siteForm.addEventListener("submit", onSiteFormSubmit);
     }

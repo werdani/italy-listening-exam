@@ -99,6 +99,24 @@
 
         <div class="source-banner" id="sourceBanner" hidden></div>
 
+        <section class="card stats-card" aria-labelledby="visitorsTitle">
+          <div class="stats-card-head">
+            <div>
+              <p class="eyebrow">Statistiche</p>
+              <h2 id="visitorsTitle">Visitatori unici</h2>
+              <p class="lead branding-lead">
+                Ogni dispositivo viene contato una sola volta, anche se rientra più volte.
+              </p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnRefreshVisitors">Aggiorna</button>
+          </div>
+          <div class="visitor-stat">
+            <span class="visitor-stat-value" id="visitorCount">—</span>
+            <span class="visitor-stat-label">dispositivi unici</span>
+          </div>
+          <p class="field-hint" id="visitorStatsHint">Caricamento…</p>
+        </section>
+
         <section class="card publish-card" aria-labelledby="publishTitle">
           <p class="eyebrow">GitHub Pages</p>
           <h2 id="publishTitle">Pubblicazione automatica</h2>
@@ -218,14 +236,14 @@
           </div>
           <div class="page-actions">
             <button type="button" class="btn btn-secondary" id="btnEditLevel">Modifica livello</button>
-            <button type="button" class="btn btn-primary" id="btnAddQuestion">+ Nuova domanda audio</button>
+            <button type="button" class="btn btn-primary" id="btnAddQuestion">+ Nuova domanda</button>
           </div>
         </div>
 
         <div class="breadcrumb-trail" aria-label="Percorso">
           <span>Livello</span>
           <span aria-hidden="true">→</span>
-          <span>Domanda audio</span>
+          <span>Domanda</span>
           <span aria-hidden="true">→</span>
           <span>Opzioni</span>
           <span aria-hidden="true">→</span>
@@ -233,7 +251,7 @@
         </div>
 
         <div class="questions-list" id="questionsList"></div>
-        <p class="empty-state" id="questionsEmpty" hidden>Nessuna domanda in questo livello. Aggiungi una domanda audio.</p>
+        <p class="empty-state" id="questionsEmpty" hidden>Nessuna domanda in questo livello. Aggiungi una domanda audio o a scelta multipla.</p>
       </section>
     </main>
   </div>
@@ -265,16 +283,36 @@
   <div class="modal" id="questionModal" hidden role="dialog" aria-modal="true" aria-labelledby="questionModalTitle">
     <div class="modal-backdrop" data-close-modal></div>
     <div class="modal-card modal-card-wide" role="document">
-      <h2 id="questionModalTitle">Nuova domanda audio</h2>
+      <h2 id="questionModalTitle">Nuova domanda</h2>
       <form id="questionForm" class="admin-form">
         <input type="hidden" id="questionFormId" />
 
+        <fieldset class="form-fieldset">
+          <legend class="field-label">Tipo di domanda</legend>
+          <div class="question-type-picks" role="radiogroup" aria-label="Tipo di domanda">
+            <label class="type-pick">
+              <input type="radio" name="questionType" value="listening" checked />
+              <span class="type-pick-card">
+                <strong>Ascolto</strong>
+                <span>Audio + scelte</span>
+              </span>
+            </label>
+            <label class="type-pick">
+              <input type="radio" name="questionType" value="mcq" />
+              <span class="type-pick-card">
+                <strong>Scelta multipla</strong>
+                <span>Solo testo, senza audio</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
         <div class="form-field">
-          <label class="field-label" for="questionPrompt">Testo della domanda (opzionale)</label>
+          <label class="field-label" for="questionPrompt" id="questionPromptLabel">Testo della domanda (opzionale)</label>
           <input type="text" id="questionPrompt" maxlength="200" placeholder="es. Dove lavora?" />
         </div>
 
-        <fieldset class="form-fieldset">
+        <fieldset class="form-fieldset" id="audioFieldset">
           <legend class="field-label">Audio / voce</legend>
 
           <div class="drive-tip">
@@ -376,6 +414,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="../js/content.js" defer></script>
+  <script src="../js/visitors.js" defer></script>
   <script src="js/auth.js" defer></script>
   <script src="js/admin.js" defer></script>
 </body>

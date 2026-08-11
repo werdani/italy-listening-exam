@@ -8,7 +8,9 @@
 
 .admin-screen[hidden],
 .admin-app[hidden],
-.admin-view[hidden] {
+.admin-view[hidden],
+.form-fieldset[hidden],
+#audioFieldset[hidden] {
   display: none !important;
 }
 
@@ -146,6 +148,81 @@
   padding: 0 0.35rem;
 }
 
+.question-type-picks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.type-pick {
+  display: block;
+  cursor: pointer;
+}
+
+.type-pick input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+}
+
+.type-pick-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.type-pick-card strong {
+  font-size: 0.95rem;
+}
+
+.type-pick-card span {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.type-pick input:checked + .type-pick-card {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 25%, transparent);
+}
+
+.q-type-pill {
+  display: inline-block;
+  margin-right: 0.4rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
+
+.q-type-pill.type-listening {
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+  color: var(--primary);
+}
+
+.q-type-pill.type-mcq {
+  background: color-mix(in srgb, #0f766e 16%, transparent);
+  color: #0f766e;
+}
+
+[data-theme="dark"] .q-type-pill.type-mcq {
+  color: #5eead4;
+}
+
+@media (max-width: 560px) {
+  .question-type-picks {
+    grid-template-columns: 1fr;
+  }
+}
+
 .admin-form {
   display: flex;
   flex-direction: column;
@@ -245,6 +322,39 @@
 .branding-card {
   margin-bottom: 1.25rem;
   padding: 1.35rem 1.4rem;
+}
+
+.stats-card {
+  margin-bottom: 1.25rem;
+}
+
+.stats-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.visitor-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.visitor-stat-value {
+  font-family: var(--font-display, Outfit, sans-serif);
+  font-size: clamp(2.4rem, 5vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--primary);
+}
+
+.visitor-stat-label {
+  font-size: 0.95rem;
+  color: var(--muted);
+  font-weight: 500;
 }
 
 .publish-card {

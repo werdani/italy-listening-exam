@@ -9,6 +9,8 @@ Local static server with APIs for content + Google Drive media proxy.
 POST/PUT /api/content     → writes data/questions.json
 GET      /api/content     → returns data/questions.json
 GET      /api/drive/<id>  → streams a public Google Drive file (audio/images)
+POST     /api/visit       → register unique device visit
+GET      /api/visitors    → unique visitor stats
 """
 
 from __future__ import annotations
@@ -17,6 +19,8 @@ import json
 import os
 import re
 import sys
+import threading
+from datetime import datetime, timezone
 from http import HTTPStatus
 from http.cookiejar import CookieJar
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -27,6 +31,7 @@ from urllib.request import HTTPCookieProcessor, Request, build_opener
 
 ROOT = Path(__file__).resolve().parent
 DATA_FILE = ROOT / "data" / "questions.json"
+VISITORS_FILE = ROOT / "data" / "visitors.json"
 HOST = os.environ.get("HOST", "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8080"))
 UA = (
@@ -34,6 +39,43 @@ UA = (
     "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 )
 DRIVE_ID_RE = re.compile(r"^[a-zA-Z0-9_-]{10,}$")
+DEVICE_ID_RE = re.compile(r"^[a-zA-Z0-9_-]{8,80}$")
+_visitors_lock = threading.Lock()
+
+
+def utc_now_iso() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def load_visitors() -> dict:
+    if VISITORS_FILE.is_file():
+        try:
+            data = json.loads(VISITORS_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                devices = data.get("devices")
+                if not isinstance(devices, dict):
+                    devices = {}
+                return {
+                    "count": int(data.get("count") or len(devices)),
+                    "updatedAt": data.get("updatedAt"),
+                    "devices": devices,
+                }
+        except (OSError, json.JSONDecodeError, TypeError, ValueError):
+            pass
+    return {"count": 0, "updatedAt": None, "devices": {}}
+
+
+def save_visitors(data: dict) -> None:
+    VISITORS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "count": int(data.get("count") or 0),
+        "updatedAt": data.get("updatedAt"),
+        "devices": data.get("devices") or {},
+    }
+    text = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    tmp = VISITORS_FILE.with_suffix(".json.tmp")
+    tmp.write_text(text, encoding="utf-8")
+    tmp.replace(VISITORS_FILE)
 
 
 def fetch_google_drive_file(file_id: str) -> tuple[bytes, str]:
@@ -135,6 +177,10 @@ class Handler(SimpleHTTPRequestHandler):
             self._send_content_file()
             return
 
+        if path == "/api/visitors":
+            self._send_visitors()
+            return
+
         if path.startswith("/api/drive/"):
             file_id = unquote(path[len("/api/drive/") :])
             # allow ?id= fallback
@@ -147,10 +193,97 @@ class Handler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self) -> None:  # noqa: N802
+        parsed = urlparse(self.path)
+        path = parsed.path.rstrip("/") or "/"
+        if path == "/api/visit":
+            self._handle_visit()
+            return
         self._handle_save()
 
     def do_PUT(self) -> None:  # noqa: N802
         self._handle_save()
+
+    def _json_response(self, status: int, payload: dict) -> None:
+        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self._cors()
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _send_visitors(self) -> None:
+        with _visitors_lock:
+            data = load_visitors()
+        self._json_response(
+            HTTPStatus.OK,
+            {
+                "ok": True,
+                "count": int(data.get("count") or 0),
+                "updatedAt": data.get("updatedAt"),
+                "source": "api",
+            },
+        )
+
+    def _handle_visit(self) -> None:
+        length = int(self.headers.get("Content-Length", "0") or 0)
+        if length <= 0 or length > 4096:
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid body")
+            return
+
+        try:
+            body = self.rfile.read(length)
+            payload = json.loads(body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid JSON")
+            return
+
+        device_id = str((payload or {}).get("deviceId") or "").strip()
+        if not DEVICE_ID_RE.match(device_id):
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid deviceId")
+            return
+
+        client_ip = (self.client_address[0] if self.client_address else "") or ""
+        now = utc_now_iso()
+
+        with _visitors_lock:
+            data = load_visitors()
+            devices = data.setdefault("devices", {})
+            existing = devices.get(device_id)
+            is_new = existing is None
+            if is_new:
+                devices[device_id] = {
+                    "firstSeen": now,
+                    "lastSeen": now,
+                    "visits": 1,
+                    "ip": client_ip,
+                }
+                data["count"] = len(devices)
+                data["updatedAt"] = now
+            else:
+                existing["lastSeen"] = now
+                existing["visits"] = int(existing.get("visits") or 1) + 1
+                if client_ip:
+                    existing["ip"] = client_ip
+                data["updatedAt"] = now
+            # Keep count aligned with unique devices
+            data["count"] = len(devices)
+            save_visitors(data)
+
+        print(
+            f"[visit] {'new' if is_new else 'known'} device={device_id[:12]}… "
+            f"count={data['count']} ip={client_ip}",
+            flush=True,
+        )
+        self._json_response(
+            HTTPStatus.OK,
+            {
+                "ok": True,
+                "isNew": is_new,
+                "count": int(data["count"]),
+                "source": "api",
+            },
+        )
 
     def _send_content_file(self) -> None:
         if not DATA_FILE.is_file():
@@ -245,6 +378,8 @@ def main() -> None:
     print(f"Admin: http://{HOST}:{PORT}/admin/")
     print("POST /api/content saves data/questions.json")
     print("GET  /api/drive/<fileId> proxies Google Drive media")
+    print("POST /api/visit registers unique devices")
+    print("GET  /api/visitors returns unique visitor count")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

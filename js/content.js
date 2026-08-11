@@ -104,13 +104,7 @@
       name: level.name || `Livello ${index + 1}`,
       description: level.description || "",
       questions: Array.isArray(level.questions)
-        ? level.questions.map((q, qi) => ({
-            id: q.id != null ? Number(q.id) : qi + 1,
-            prompt: q.prompt || "",
-            audio: normalizeAudioUrl(q.audio || ""),
-            choices: Array.isArray(q.choices) ? q.choices.slice(0, 4) : ["", "", "", ""],
-            correct: typeof q.correct === "number" ? q.correct : 0,
-          }))
+        ? level.questions.map((q, qi) => normalizeQuestion(q, qi))
         : [],
     }));
 
@@ -471,17 +465,38 @@
     return data.levels.length < before;
   }
 
+  function normalizeQuestionType(raw, hasAudio) {
+    const t = String(raw || "").toLowerCase().trim();
+    if (t === "mcq" || t === "choice" || t === "text" || t === "scelta") return "mcq";
+    if (t === "listening" || t === "audio" || t === "ascolto") return "listening";
+    // Legacy questions (no type): keep as listening so existing exams stay unchanged
+    void hasAudio;
+    return "listening";
+  }
+
+  function isListeningQuestion(q) {
+    if (!q) return true;
+    return normalizeQuestionType(q.type, !!(q.audio && String(q.audio).trim())) === "listening";
+  }
+
+  function normalizeQuestion(q, qi = 0) {
+    const audio = normalizeAudioUrl(q.audio || "");
+    const type = normalizeQuestionType(q.type, !!audio);
+    return {
+      id: q.id != null ? Number(q.id) : qi + 1,
+      type,
+      prompt: q.prompt || "",
+      audio: type === "listening" ? audio : "",
+      choices: Array.isArray(q.choices) ? q.choices.slice(0, 4) : ["", "", "", ""],
+      correct: typeof q.correct === "number" ? q.correct : 0,
+    };
+  }
+
   function createQuestion(data, levelId, question) {
     const level = getLevel(data, levelId);
     if (!level) return null;
     const id = nextId(level.questions);
-    const q = {
-      id,
-      prompt: question.prompt || "",
-      audio: normalizeAudioUrl(question.audio || ""),
-      choices: (question.choices || ["", "", "", ""]).slice(0, 4),
-      correct: typeof question.correct === "number" ? question.correct : 0,
-    };
+    const q = normalizeQuestion({ ...question, id }, level.questions.length);
     while (q.choices.length < 4) q.choices.push("");
     level.questions.push(q);
     return q;
@@ -492,6 +507,7 @@
     if (!level) return null;
     const q = level.questions.find((item) => Number(item.id) === Number(questionId));
     if (!q) return null;
+    if (patch.type != null) q.type = normalizeQuestionType(patch.type, !!(patch.audio ?? q.audio));
     if (patch.prompt != null) q.prompt = String(patch.prompt);
     if (patch.audio != null) q.audio = normalizeAudioUrl(String(patch.audio));
     if (Array.isArray(patch.choices)) {
@@ -499,6 +515,7 @@
       while (q.choices.length < 4) q.choices.push("");
     }
     if (typeof patch.correct === "number") q.correct = patch.correct;
+    if (q.type === "mcq") q.audio = "";
     return q;
   }
 
@@ -796,6 +813,8 @@
     createQuestion,
     updateQuestion,
     deleteQuestion,
+    isListeningQuestion,
+    normalizeQuestionType,
     isLikelyGoogleApiKey,
     isLikelyOAuthClientId,
     sanitizeApiKey,
