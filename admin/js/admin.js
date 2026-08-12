@@ -71,6 +71,7 @@
     levelFormId: $("#levelFormId"),
     levelName: $("#levelName"),
     levelDesc: $("#levelDesc"),
+    levelDuration: $("#levelDuration"),
     questionModal: $("#questionModal"),
     questionModalTitle: $("#questionModalTitle"),
     questionForm: $("#questionForm"),
@@ -462,7 +463,7 @@
           <h2>${escapeHtml(level.name)}</h2>
         </div>
         <p class="level-card-desc">${escapeHtml(level.description || "Nessuna descrizione")}</p>
-        <p class="level-card-meta">${escapeHtml(formatQuestionCounts(level.questions))}</p>
+        <p class="level-card-meta">${escapeHtml(formatQuestionCounts(level.questions))} · ${escapeHtml(formatLevelDuration(level))} min</p>
         <div class="level-card-actions">
           <button type="button" class="btn btn-primary btn-sm" data-open-level="${level.id}">Apri</button>
           <button type="button" class="btn btn-secondary btn-sm" data-edit-level="${level.id}">Modifica</button>
@@ -473,19 +474,31 @@
     });
   }
 
+  function formatLevelDuration(level) {
+    if (AscoltoContent.getLevelDurationMinutes) {
+      return String(AscoltoContent.getLevelDurationMinutes(level, content.exam));
+    }
+    return String(level?.durationMinutes || content.exam?.durationMinutes || 15);
+  }
+
   function openLevelModal(level = null) {
     els.levelForm.reset();
+    const defaultMinutes = AscoltoContent.DEFAULT_DURATION_MINUTES || 15;
     if (level) {
       els.levelModalTitle.textContent = "Modifica livello";
       els.levelFormId.value = String(level.id);
       els.levelName.value = level.name;
       els.levelDesc.value = level.description || "";
+      if (els.levelDuration) {
+        els.levelDuration.value = String(formatLevelDuration(level));
+      }
     } else {
       els.levelModalTitle.textContent = "Nuovo livello";
       els.levelFormId.value = "";
       const next = AscoltoContent.nextId(content.levels);
       els.levelName.value = `Livello ${next}`;
       els.levelDesc.value = "";
+      if (els.levelDuration) els.levelDuration.value = String(defaultMinutes);
     }
     els.levelModal.hidden = false;
     els.levelName.focus();
@@ -498,12 +511,17 @@
     const description = els.levelDesc.value.trim();
     if (!name) return;
 
+    const rawDuration = els.levelDuration ? els.levelDuration.value : "";
+    const durationMinutes = AscoltoContent.clampDurationMinutes
+      ? AscoltoContent.clampDurationMinutes(rawDuration, AscoltoContent.DEFAULT_DURATION_MINUTES || 15)
+      : Math.max(1, Math.min(180, Math.round(Number(rawDuration) || 15)));
+
     if (id) {
-      AscoltoContent.updateLevel(content, id, { name, description });
+      AscoltoContent.updateLevel(content, id, { name, description, durationMinutes });
       await persist({ silent: true });
       showToast("Livello aggiornato.");
     } else {
-      AscoltoContent.createLevel(content, { name, description });
+      AscoltoContent.createLevel(content, { name, description, durationMinutes });
       await persist({ silent: true });
       showToast("Livello creato — visibile nell’esame dopo refresh.");
     }
@@ -621,9 +639,10 @@
     activeLevelId = Number(level.id);
     showView("level");
     els.levelTitle.textContent = level.name;
+    const minutes = formatLevelDuration(level);
     els.levelLead.textContent =
-      level.description ||
-      `Gestisci le domande di ${level.name}. Puoi mischiare ascolto e scelta multipla.`;
+      (level.description ? `${level.description} · ` : "") +
+      `Tempo esame: ${minutes} min. Puoi mischiare ascolto e scelta multipla.`;
 
     const questions = level.questions || [];
     els.questionsList.innerHTML = "";

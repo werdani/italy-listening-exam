@@ -57,9 +57,31 @@
     return clone;
   }
 
+  const DEFAULT_DURATION_MINUTES = 15;
+  const MIN_DURATION_MINUTES = 1;
+  const MAX_DURATION_MINUTES = 180;
+
   function nextId(items) {
     if (!items || !items.length) return 1;
     return Math.max(...items.map((item) => Number(item.id) || 0)) + 1;
+  }
+
+  function clampDurationMinutes(value, fallback = DEFAULT_DURATION_MINUTES) {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n <= 0) return fallback;
+    return Math.min(MAX_DURATION_MINUTES, Math.max(MIN_DURATION_MINUTES, Math.round(n)));
+  }
+
+  /** Per-level timer; falls back to exam default (15 min). */
+  function getLevelDurationMinutes(level, exam) {
+    const examDefault = clampDurationMinutes(
+      exam?.durationMinutes,
+      DEFAULT_DURATION_MINUTES
+    );
+    if (level && level.durationMinutes != null && level.durationMinutes !== "") {
+      return clampDurationMinutes(level.durationMinutes, examDefault);
+    }
+    return examDefault;
   }
 
   function normalizeContent(raw) {
@@ -67,11 +89,15 @@
     data.exam = data.exam || {
       title: "Esame di Ascolto — Italiano",
       description: "",
-      durationMinutes: 15,
+      durationMinutes: DEFAULT_DURATION_MINUTES,
       marksPerQuestion: 1,
       passPercentage: 60,
       preventSkip: true,
     };
+    data.exam.durationMinutes = clampDurationMinutes(
+      data.exam.durationMinutes,
+      DEFAULT_DURATION_MINUTES
+    );
 
     const siteIn = data.site || {};
     data.site = {
@@ -99,14 +125,24 @@
       delete data.questions;
     }
 
-    data.levels = data.levels.map((level, index) => ({
-      id: level.id != null ? Number(level.id) : index + 1,
-      name: level.name || `Livello ${index + 1}`,
-      description: level.description || "",
-      questions: Array.isArray(level.questions)
-        ? level.questions.map((q, qi) => normalizeQuestion(q, qi))
-        : [],
-    }));
+    data.levels = data.levels.map((level, index) => {
+      const normalized = {
+        id: level.id != null ? Number(level.id) : index + 1,
+        name: level.name || `Livello ${index + 1}`,
+        description: level.description || "",
+        questions: Array.isArray(level.questions)
+          ? level.questions.map((q, qi) => normalizeQuestion(q, qi))
+          : [],
+      };
+      // Keep per-level timer only when explicitly set; otherwise use exam default
+      if (level.durationMinutes != null && level.durationMinutes !== "") {
+        normalized.durationMinutes = clampDurationMinutes(
+          level.durationMinutes,
+          data.exam.durationMinutes
+        );
+      }
+      return normalized;
+    });
 
     data.levels.sort((a, b) => a.id - b.id);
     return data;
@@ -431,18 +467,23 @@
         title: `${data.exam.title} — ${level.name}`,
         levelId: level.id,
         levelName: level.name,
+        durationMinutes: getLevelDurationMinutes(level, data.exam),
       },
       questions: level.questions || [],
     };
   }
 
-  function createLevel(data, { name, description } = {}) {
+  function createLevel(data, { name, description, durationMinutes } = {}) {
     const levels = data.levels || [];
     const id = nextId(levels);
     const level = {
       id,
       name: name || `Livello ${id}`,
       description: description || "",
+      durationMinutes: clampDurationMinutes(
+        durationMinutes,
+        data.exam?.durationMinutes || DEFAULT_DURATION_MINUTES
+      ),
       questions: [],
     };
     levels.push(level);
@@ -455,6 +496,16 @@
     if (!level) return null;
     if (patch.name != null) level.name = String(patch.name).trim() || level.name;
     if (patch.description != null) level.description = String(patch.description);
+    if (Object.prototype.hasOwnProperty.call(patch, "durationMinutes")) {
+      if (patch.durationMinutes == null || patch.durationMinutes === "") {
+        delete level.durationMinutes;
+      } else {
+        level.durationMinutes = clampDurationMinutes(
+          patch.durationMinutes,
+          data.exam?.durationMinutes || DEFAULT_DURATION_MINUTES
+        );
+      }
+    }
     return level;
   }
 
@@ -806,6 +857,11 @@
     saveGithubSettings,
     publishToGitHub,
     getLevel,
+    getLevelDurationMinutes,
+    clampDurationMinutes,
+    DEFAULT_DURATION_MINUTES,
+    MIN_DURATION_MINUTES,
+    MAX_DURATION_MINUTES,
     examPayloadForLevel,
     createLevel,
     updateLevel,

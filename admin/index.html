@@ -271,6 +271,20 @@
           <label class="field-label" for="levelDesc">Descrizione</label>
           <textarea id="levelDesc" rows="3" maxlength="300" placeholder="Breve descrizione del livello"></textarea>
         </div>
+        <div class="form-field">
+          <label class="field-label" for="levelDuration">Tempo dell’esame (minuti)</label>
+          <input
+            type="number"
+            id="levelDuration"
+            min="1"
+            max="180"
+            step="1"
+            value="15"
+            required
+            inputmode="numeric"
+          />
+          <p class="field-hint">Predefinito: 15 minuti. Ogni livello può avere un tempo diverso.</p>
+        </div>
         <div class="modal-actions">
           <button type="button" class="btn btn-secondary" data-close-modal>Annulla</button>
           <button type="submit" class="btn btn-primary" id="levelFormSubmit">Salva</button>

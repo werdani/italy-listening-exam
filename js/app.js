@@ -331,7 +331,10 @@
     levels.forEach((level) => {
       const opt = document.createElement("option");
       opt.value = String(level.id);
-      opt.textContent = `${level.name} (${level.questions.length} domande)`;
+      const mins = AscoltoContent.getLevelDurationMinutes
+        ? AscoltoContent.getLevelDurationMinutes(level, contentData.exam)
+        : contentData.exam?.durationMinutes || 15;
+      opt.textContent = `${level.name} (${level.questions.length} domande · ${mins} min)`;
       els.levelSelect.appendChild(opt);
     });
 
@@ -357,6 +360,9 @@
     const { exam } = contentData;
     const questions = examData ? examData.questions : [];
     const totalMarks = questions.length * (exam.marksPerQuestion || 1);
+    const durationMinutes = AscoltoContent.getLevelDurationMinutes
+      ? AscoltoContent.getLevelDurationMinutes(level, exam)
+      : examData?.exam?.durationMinutes || exam.durationMinutes || 15;
 
     els.examTitle.textContent = exam.title;
     els.examDescription.textContent = exam.description;
@@ -367,7 +373,7 @@
     }
     els.metaQuestions.textContent = String(questions.length);
     els.metaMarks.textContent = String(totalMarks);
-    els.metaDuration.textContent = `${exam.durationMinutes} min`;
+    els.metaDuration.textContent = `${durationMinutes} min`;
     els.metaPass.textContent = `${exam.passPercentage}%`;
     els.preventSkipToggle.checked = exam.preventSkip !== false;
 
@@ -992,6 +998,7 @@
     state.results = null;
     clearSavedState();
     saveState();
+    if (els.timerDisplay) els.timerDisplay.textContent = formatTime(state.remainingSeconds);
   }
 
   function restoreExam(saved) {
