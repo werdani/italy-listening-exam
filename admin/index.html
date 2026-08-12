@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../css/style.css" />
-  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="stylesheet" href="../css/style.css?v=duration2" />
+  <link rel="stylesheet" href="css/admin.css?v=duration2" />
 </head>
 <body class="admin-body">
   <a class="skip-link" href="#main">Vai al contenuto</a>
@@ -269,19 +269,22 @@
         </div>
         <div class="form-field">
           <label class="field-label" for="levelDesc">Descrizione</label>
-          <textarea id="levelDesc" rows="3" maxlength="300" placeholder="Breve descrizione del livello"></textarea>
+          <textarea id="levelDesc" class="admin-control" rows="3" maxlength="300" placeholder="Breve descrizione del livello"></textarea>
         </div>
         <div class="form-field">
           <label class="field-label" for="levelDuration">Tempo dell’esame (minuti)</label>
           <input
-            type="number"
+            type="text"
             id="levelDuration"
-            min="1"
-            max="180"
-            step="1"
+            class="admin-control"
             value="15"
             required
             inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="3"
+            autocomplete="off"
+            placeholder="15"
+            style="background:var(--surface);color:var(--text);border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);padding:0.7rem 0.85rem;width:100%;box-sizing:border-box;font:inherit;"
           />
           <p class="field-hint">Predefinito: 15 minuti. Ogni livello può avere un tempo diverso.</p>
         </div>
@@ -427,9 +430,9 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-  <script src="../js/content.js" defer></script>
-  <script src="../js/visitors.js" defer></script>
-  <script src="js/auth.js" defer></script>
-  <script src="js/admin.js" defer></script>
+  <script src="../js/content.js?v=duration3" defer></script>
+  <script src="../js/visitors.js?v=duration3" defer></script>
+  <script src="js/auth.js?v=duration3" defer></script>
+  <script src="js/admin.js?v=duration3" defer></script>
 </body>
 </html>

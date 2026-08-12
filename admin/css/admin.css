@@ -94,28 +94,45 @@
 .form-field input[type="text"],
 .form-field input[type="password"],
 .form-field input[type="email"],
+.form-field input[type="number"],
 .form-field textarea,
-.form-field input[type="file"] {
+.form-field input[type="file"],
+.admin-control {
   width: 100%;
   border: 1.5px solid var(--border-strong);
   border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--text);
+  background: var(--surface) !important;
+  background-color: var(--surface) !important;
+  color: var(--text) !important;
   padding: 0.7rem 0.85rem;
+  font: inherit;
   transition: border-color var(--transition), box-shadow var(--transition);
+  -webkit-text-fill-color: var(--text);
+  box-shadow: none;
 }
 
-.form-field textarea {
+.form-field textarea,
+textarea.admin-control {
   resize: vertical;
   min-height: 80px;
-  font: inherit;
 }
 
 .form-field input:focus,
-.form-field textarea:focus {
+.form-field textarea:focus,
+.admin-control:focus {
   border-color: var(--primary);
   outline: none;
   box-shadow: var(--focus);
+}
+
+/* Kill browser autofill / UA white wash */
+.form-field input.admin-control:-webkit-autofill,
+.form-field input.admin-control:-webkit-autofill:hover,
+.form-field input.admin-control:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--surface) inset !important;
+  -webkit-text-fill-color: var(--text) !important;
+  caret-color: var(--text);
+  transition: background-color 99999s ease-out;
 }
 
 .field-hint {

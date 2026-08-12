@@ -38,6 +38,7 @@
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --primary: #8ab4f8;
   --primary-hover: #aecbfa;
   --primary-soft: rgba(138, 180, 248, 0.16);

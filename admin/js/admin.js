@@ -481,8 +481,33 @@
     return String(level?.durationMinutes || content.exam?.durationMinutes || 15);
   }
 
+  function styleLevelDurationInput() {
+    const input = els.levelDuration;
+    if (!input) return;
+    // Convert leftover number inputs (e.g. cached / old deploy) to text
+    if (input.type === "number") input.type = "text";
+    input.classList.add("admin-control");
+    input.setAttribute("inputmode", "numeric");
+    input.setAttribute("autocomplete", "off");
+    input.setAttribute("maxlength", "3");
+    const surface = getComputedStyle(document.documentElement).getPropertyValue("--surface").trim() || "#1a1f27";
+    const text = getComputedStyle(document.documentElement).getPropertyValue("--text").trim() || "#e8eaed";
+    const border = getComputedStyle(document.documentElement).getPropertyValue("--border-strong").trim() || "#3c4654";
+    input.style.setProperty("background", surface, "important");
+    input.style.setProperty("background-color", surface, "important");
+    input.style.setProperty("color", text, "important");
+    input.style.setProperty("-webkit-text-fill-color", text, "important");
+    input.style.setProperty("border", `1.5px solid ${border}`, "important");
+    input.style.setProperty("border-radius", "10px", "important");
+    input.style.setProperty("padding", "0.7rem 0.85rem", "important");
+    input.style.setProperty("width", "100%", "important");
+    input.style.setProperty("box-shadow", "none", "important");
+    input.style.setProperty("font", "inherit", "important");
+  }
+
   function openLevelModal(level = null) {
     els.levelForm.reset();
+    styleLevelDurationInput();
     const defaultMinutes = AscoltoContent.DEFAULT_DURATION_MINUTES || 15;
     if (level) {
       els.levelModalTitle.textContent = "Modifica livello";
@@ -1178,6 +1203,8 @@
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeAllModals();
     });
+
+    styleLevelDurationInput();
   }
 
   async function init() {

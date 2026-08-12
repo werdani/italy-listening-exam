@@ -164,6 +164,14 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Range")
         self.send_header("Cache-Control", "no-store")
 
+    def end_headers(self) -> None:
+        # Avoid stale HTML/CSS while editing admin UI locally
+        path = urlparse(self.path).path.lower()
+        if path.endswith((".html", ".css", ".js", "/")) or path.endswith("/admin"):
+            self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+            self.send_header("Pragma", "no-cache")
+        super().end_headers()
+
     def do_OPTIONS(self) -> None:  # noqa: N802
         self.send_response(HTTPStatus.NO_CONTENT)
         self._cors()
