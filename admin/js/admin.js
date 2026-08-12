@@ -430,7 +430,8 @@
             "Dati dal contatore online (GitHub Pages). Ogni dispositivo conta una volta.";
         } else {
           els.visitorStatsHint.textContent =
-            stats.error || "Impossibile leggere le statistiche. Avvia python3 server.py oppure apri il sito online.";
+            stats.error ||
+            "Impossibile leggere le statistiche. Avvia python3 server.py oppure pubblica il sito e riprova.";
         }
       }
     } catch (err) {

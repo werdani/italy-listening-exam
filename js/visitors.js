@@ -1,7 +1,7 @@
 /**
  * Unique visitor tracking — one count per device (localStorage id).
  * Local: POST /api/visit → data/visitors.json
- * GitHub Pages: CounterAPI (shared public counter), still once per device.
+ * GitHub Pages: Abacus public counter (countapi-compatible), still once per device.
  */
 (() => {
   "use strict";
@@ -10,6 +10,8 @@
   const COUNTED_KEY = "ascolto-visit-counted";
   const COUNTER_NS = "werdani-italy-listening";
   const COUNTER_NAME = "unique-devices";
+  // countapi.xyz successor — no API key required (CounterAPI v1 was retired Aug 2026)
+  const ABACUS_BASE = "https://abacus.jasoncameron.dev";
 
   function uuid() {
     if (crypto && typeof crypto.randomUUID === "function") {
@@ -47,6 +49,16 @@
     }
   }
 
+  function parseCountPayload(data) {
+    const raw =
+      typeof data?.count === "number"
+        ? data.count
+        : typeof data?.value === "number"
+          ? data.value
+          : Number(data?.count ?? data?.value ?? 0);
+    return Number.isFinite(raw) ? raw : 0;
+  }
+
   async function registerWithLocalApi(deviceId) {
     const res = await fetch("/api/visit", {
       method: "POST",
@@ -58,18 +70,12 @@
     return res.json();
   }
 
-  async function registerWithCounterApi() {
-    const url = `https://api.counterapi.dev/v1/${COUNTER_NS}/${COUNTER_NAME}/up`;
+  async function registerWithPublicCounter() {
+    const url = `${ABACUS_BASE}/hit/${encodeURIComponent(COUNTER_NS)}/${encodeURIComponent(COUNTER_NAME)}`;
     const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`counter api ${res.status}`);
+    if (!res.ok) throw new Error(`public counter ${res.status}`);
     const data = await res.json();
-    const count =
-      typeof data?.count === "number"
-        ? data.count
-        : typeof data?.value === "number"
-          ? data.value
-          : Number(data?.count || data?.value || 0);
-    return { ok: true, count, source: "counterapi", isNew: true };
+    return { ok: true, count: parseCountPayload(data), source: "counterapi", isNew: true };
   }
 
   async function fetchLocalStats() {
@@ -78,20 +84,14 @@
     return res.json();
   }
 
-  async function fetchCounterStats() {
-    const url = `https://api.counterapi.dev/v1/${COUNTER_NS}/${COUNTER_NAME}`;
+  async function fetchPublicCounterStats() {
+    const url = `${ABACUS_BASE}/get/${encodeURIComponent(COUNTER_NS)}/${encodeURIComponent(COUNTER_NAME)}`;
     const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`counter get ${res.status}`);
+    if (!res.ok) throw new Error(`public counter get ${res.status}`);
     const data = await res.json();
-    const count =
-      typeof data?.count === "number"
-        ? data.count
-        : typeof data?.value === "number"
-          ? data.value
-          : Number(data?.count || data?.value || 0);
     return {
       ok: true,
-      count: Number.isFinite(count) ? count : 0,
+      count: parseCountPayload(data),
       source: "counterapi",
       updatedAt: null,
     };
@@ -115,7 +115,7 @@
     }
 
     try {
-      const result = await registerWithCounterApi();
+      const result = await registerWithPublicCounter();
       markCountedLocally();
       return { ...result, deviceId, counted: true };
     } catch (err) {
@@ -140,7 +140,7 @@
     }
 
     try {
-      return await fetchCounterStats();
+      return await fetchPublicCounterStats();
     } catch (err) {
       return {
         count: 0,
