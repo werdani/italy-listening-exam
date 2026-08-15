@@ -10,7 +10,7 @@
   "site": {
     "ownerName": "Signora Reham Ramadan",
     "ownerTagline": "Insegnante di italiano in Italia",
-    "ownerPhoto": "https://drive.google.com/thumbnail?id=1U9HZeyfuTjqaIcOWvjkWPvKc0KpeuqP3&sz=w400",
+    "ownerPhoto": "https://drive.google.com/thumbnail?id=1ROcC7uBIws56iIGHfoTofg_WXKnSkib7&sz=w400",
     "googleApiKey": ""
   },
   "levels": [
@@ -148,9 +148,269 @@
             "A Torino"
           ],
           "correct": 1
+        },
+        {
+          "id": 11,
+          "type": "mcq",
+          "prompt": "Io ___ egiziana.",
+          "audio": "",
+          "choices": [
+            "Ho",
+            "Sono",
+            "È",
+            "Sei"
+          ],
+          "correct": 1
+        },
+        {
+          "id": 12,
+          "type": "mcq",
+          "prompt": "Marco ___ 20 anni.",
+          "audio": "",
+          "choices": [
+            "È",
+            "Hai",
+            "Ho",
+            "Ha"
+          ],
+          "correct": 3
+        },
+        {
+          "id": 13,
+          "type": "mcq",
+          "prompt": "___ libro è interessante.",
+          "audio": "",
+          "choices": [
+            "Lo",
+            "La",
+            "L'",
+            "Il"
+          ],
+          "correct": 3
+        },
+        {
+          "id": 14,
+          "type": "mcq",
+          "prompt": "Ho ___ mela.",
+          "audio": "",
+          "choices": [
+            "Una",
+            "Un",
+            "Uno",
+            "Un'"
+          ],
+          "correct": 0
+        },
+        {
+          "id": 15,
+          "type": "mcq",
+          "prompt": "Vado ___ scuola.",
+          "audio": "",
+          "choices": [
+            "Per",
+            "Con",
+            "A",
+            "Di"
+          ],
+          "correct": 2
+        },
+        {
+          "id": 16,
+          "type": "mcq",
+          "prompt": "Il contrario di grande è:",
+          "audio": "",
+          "choices": [
+            "Corte",
+            "Piccolo",
+            "Basso",
+            "Alto"
+          ],
+          "correct": 1
+        },
+        {
+          "id": 17,
+          "type": "mcq",
+          "prompt": "Come si dice \"الساعة ثلاثة\"?",
+          "audio": "",
+          "choices": [
+            "È tre",
+            "Sono tre ore",
+            "Sono tre",
+            "Sono le tre"
+          ],
+          "correct": 3
+        },
+        {
+          "id": 18,
+          "type": "mcq",
+          "prompt": "Sono ___ Egitto.",
+          "audio": "",
+          "choices": [
+            "A",
+            "Da",
+            "Con",
+            "Di"
+          ],
+          "correct": 3
+        },
+        {
+          "id": 19,
+          "type": "mcq",
+          "prompt": "Io ___ a Roma.",
+          "audio": "",
+          "choices": [
+            "Abiti",
+            "Abito",
+            "Abita",
+            "Abitiamo"
+          ],
+          "correct": 1
+        },
+        {
+          "id": 20,
+          "type": "mcq",
+          "prompt": "Tu ___ un caffè?",
+          "audio": "",
+          "choices": [
+            "Voglio",
+            "Vuole",
+            "Vogliamo",
+            "Vuoi"
+          ],
+          "correct": 3
+        },
+        {
+          "id": 21,
+          "type": "mcq",
+          "prompt": "Che giorno viene dopo lunedì?",
+          "audio": "",
+          "choices": [
+            "Martedì",
+            "Sabato",
+            "Dominica",
+            "Mercoledì"
+          ],
+          "correct": 0
+        },
+        {
+          "id": 22,
+          "type": "mcq",
+          "prompt": "Ho due ___ .",
+          "audio": "",
+          "choices": [
+            "Fratello",
+            "Fratella",
+            "Fratelli",
+            "Fratellino"
+          ],
+          "correct": 2
+        },
+        {
+          "id": 23,
+          "type": "mcq",
+          "prompt": "La mattina mi ___ alle sette.",
+          "audio": "",
+          "choices": [
+            "Sveglia",
+            "Scegliete",
+            "Svegliamo",
+            "Sveglio"
+          ],
+          "correct": 3
+        },
+        {
+          "id": 24,
+          "type": "mcq",
+          "prompt": "Quanti anni hai?",
+          "audio": "",
+          "choices": [
+            "Ha 20 anni",
+            "Hai 20 anni",
+            "Ho 20 anni",
+            "Abbiamo 20 anni"
+          ],
+          "correct": 2
+        },
+        {
+          "id": 25,
+          "type": "mcq",
+          "prompt": "Che cosa bevi?",
+          "audio": "",
+          "choices": [
+            "Un caffè",
+            "Una pizza",
+            "Un libro",
+            "Una mezz'ora"
+          ],
+          "correct": 0
+        },
+        {
+          "id": 26,
+          "type": "mcq",
+          "prompt": "Mia sorella ___ sempre la colazione alle otto.",
+          "audio": "",
+          "choices": [
+            "Fai",
+            "Facciamo",
+            "Faccio",
+            "Fa"
+          ],
+          "correct": 3
+        },
+        {
+          "id": 27,
+          "type": "mcq",
+          "prompt": "La mia casa è ___ centro della città.",
+          "audio": "",
+          "choices": [
+            "Di",
+            "Fra",
+            "In",
+            "Su"
+          ],
+          "correct": 2
+        },
+        {
+          "id": 28,
+          "type": "mcq",
+          "prompt": "Dove facciamo la doccia?",
+          "audio": "",
+          "choices": [
+            "Cucina",
+            "Bagno",
+            "Camera",
+            "Balcone"
+          ],
+          "correct": 1
+        },
+        {
+          "id": 29,
+          "type": "mcq",
+          "prompt": "Il divano si trova normalmente…",
+          "audio": "",
+          "choices": [
+            "Nel soggiorno",
+            "Nel bagno",
+            "Nella camera da letto",
+            "Nel parcheggio"
+          ],
+          "correct": 0
+        },
+        {
+          "id": 30,
+          "type": "mcq",
+          "prompt": "Qual è il contrario di “calmo”?",
+          "audio": "",
+          "choices": [
+            "Gentile",
+            "Pigro",
+            "Generoso",
+            "Nervoso"
+          ],
+          "correct": 3
         }
       ],
-      "durationMinutes": 8
+      "durationMinutes": 15
     },
     {
       "id": 2,
@@ -287,8 +547,7 @@
           ],
           "correct": 0
         }
-      ],
-      "durationMinutes": 10
+      ]
     }
   ]
 }
