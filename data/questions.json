@@ -969,6 +969,19 @@
             "miei / le mie"
           ],
           "correct": 0
+        },
+        {
+          "id": 13,
+          "type": "mcq",
+          "prompt": "Domani andiamo a casa ______ nonni.",
+          "audio": "",
+          "choices": [
+            "dei nostre",
+            "dei nostri",
+            "dei nostro",
+            "dei nostra"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 20
