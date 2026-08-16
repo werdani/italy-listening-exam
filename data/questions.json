@@ -598,6 +598,19 @@
             "È andata"
           ],
           "correct": 3
+        },
+        {
+          "id": 16,
+          "type": "mcq",
+          "prompt": "___ mai ___ in Italia?",
+          "audio": "",
+          "choices": [
+            "Hai / stato",
+            "Sei / stato",
+            "Hai / stata",
+            "Sei / state"
+          ],
+          "correct": 1
         }
       ]
     }
