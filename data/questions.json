@@ -982,6 +982,58 @@
             "dei nostra"
           ],
           "correct": 1
+        },
+        {
+          "id": 14,
+          "type": "mcq",
+          "prompt": "Quando ero piccola, ______ sempre con le mie amiche.",
+          "audio": "",
+          "choices": [
+            "giocherò",
+            "ho giocato",
+            "gioco",
+            "giocavo"
+          ],
+          "correct": 3
+        },
+        {
+          "id": 15,
+          "type": "mcq",
+          "prompt": "Mentre noi ______ la cena, è arrivato nostro padre.",
+          "audio": "",
+          "choices": [
+            "abbiamo preparato",
+            "prepareremo",
+            "prepariamo",
+            "prepareremo"
+          ],
+          "correct": 3
+        },
+        {
+          "id": 16,
+          "type": "mcq",
+          "prompt": "Da bambina, Laura ______ paura dei cani.",
+          "audio": "",
+          "choices": [
+            "aveva",
+            "ha avuto",
+            "avrà",
+            "ha"
+          ],
+          "correct": 0
+        },
+        {
+          "id": 17,
+          "type": "mcq",
+          "prompt": "Quale di questi alimenti si usa per fare il pane?",
+          "audio": "",
+          "choices": [
+            "Il caffè",
+            "Il pepe",
+            "La farina",
+            "La frutta"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
