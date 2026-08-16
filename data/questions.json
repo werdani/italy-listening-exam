@@ -715,6 +715,19 @@
             "Bravissima"
           ],
           "correct": 0
+        },
+        {
+          "id": 25,
+          "type": "mcq",
+          "prompt": "A: Grazie, sei stato gentilissimo! B: ___",
+          "audio": "",
+          "choices": [
+            "Scusa",
+            "Salute",
+            "Prego",
+            "A presto ieri"
+          ],
+          "correct": 2
         }
       ]
     }
