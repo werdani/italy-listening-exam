@@ -546,6 +546,45 @@
             "14:10"
           ],
           "correct": 0
+        },
+        {
+          "id": 12,
+          "type": "mcq",
+          "prompt": "Il libro è ___ zaino di Marco.",
+          "audio": "",
+          "choices": [
+            "Nel",
+            "Nello",
+            "Nella",
+            "Nell'"
+          ],
+          "correct": 1
+        },
+        {
+          "id": 13,
+          "type": "mcq",
+          "prompt": "Il colore ___ macchina è bellissimo.",
+          "audio": "",
+          "choices": [
+            "Della",
+            "Nella",
+            "Dalle",
+            "Sulla"
+          ],
+          "correct": 0
+        },
+        {
+          "id": 14,
+          "type": "mcq",
+          "prompt": "Ieri ___ un film italiano.",
+          "audio": "",
+          "choices": [
+            "Guarda",
+            "Sono guardato",
+            "Ho guardato",
+            "Ho guardata"
+          ],
+          "correct": 2
         }
       ]
     }
