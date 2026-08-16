@@ -780,8 +780,41 @@
             "Il 15 agosto"
           ],
           "correct": 0
+        },
+        {
+          "id": 30,
+          "type": "mcq",
+          "prompt": "Un caffè con un po’ di latte si chiama:",
+          "audio": "",
+          "choices": [
+            "Espresso",
+            "Macchiato",
+            "Lungo",
+            "Caffelatte"
+          ],
+          "correct": 1
+        },
+        {
+          "id": 31,
+          "type": "mcq",
+          "prompt": "Un caffè senza zucchero è:",
+          "audio": "",
+          "choices": [
+            "Amaro",
+            "Dolce",
+            "Salato",
+            "Piccante"
+          ],
+          "correct": 0
         }
       ]
+    },
+    {
+      "id": 3,
+      "name": "Livello 3",
+      "description": "Esame di ascolto e scegliere",
+      "questions": [],
+      "durationMinutes": 20
     }
   ]
 }
