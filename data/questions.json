@@ -1060,6 +1060,71 @@
             "Secondo → primo → antipasto → dolce"
           ],
           "correct": 1
+        },
+        {
+          "id": 20,
+          "type": "mcq",
+          "prompt": "“Passami il coltello, per favore.” Cosa vuole fare la persona?",
+          "audio": "",
+          "choices": [
+            "Bere qualcosa",
+            "Cuocere la pasta",
+            "Lavare i piatti",
+            "Tagliare qualcosa"
+          ],
+          "correct": 3
+        },
+        {
+          "id": 21,
+          "type": "mcq",
+          "prompt": "Penso che dovremmo partire presto domani. — Sì, ______. Così",
+          "audio": "",
+          "choices": [
+            "non sono d'accordo",
+            "No, penso no",
+            "Hai ragione",
+            "invece no"
+          ],
+          "correct": 2
+        },
+        {
+          "id": 22,
+          "type": "mcq",
+          "prompt": "Quando sono arrivata a casa, mia madre ______ già ______.",
+          "audio": "",
+          "choices": [
+            "ha / cucinato",
+            "è / cucinato",
+            "era / cucinata",
+            "aveva / cucinato"
+          ],
+          "correct": 3
+        },
+        {
+          "id": 23,
+          "type": "mcq",
+          "prompt": "Quando siamo arrivati al ristorante, i nostri amici ______ già ______.",
+          "audio": "",
+          "choices": [
+            "erano arrivati",
+            "avevano arrivato",
+            "sono arrivati",
+            "arrivavano"
+          ],
+          "correct": 0
+        },
+        {
+          "id": 24,
+          "type": "mcq",
+          "prompt": "Non ho trovato le chiavi perché ______ a casa",
+          "audio": "",
+          "choices": [
+            "ero lasciato",
+            "avevo lasciato",
+            "ho lasciate",
+            "lasciavo"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 20
