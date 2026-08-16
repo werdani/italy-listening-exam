@@ -754,6 +754,32 @@
             "ventoso"
           ],
           "correct": 0
+        },
+        {
+          "id": 28,
+          "type": "mcq",
+          "prompt": "Durante Carnevale, le persone spesso:",
+          "audio": "",
+          "choices": [
+            "vanno al mare",
+            "fanno l’albero di Natale",
+            "festeggiano il nuovo anno",
+            "indossano maschere e costumi"
+          ],
+          "correct": 3
+        },
+        {
+          "id": 29,
+          "type": "mcq",
+          "prompt": "La Festa della Repubblica italiana è:",
+          "audio": "",
+          "choices": [
+            "Il 2 giugno",
+            "Il 25 aprile",
+            "Il 1° maggio",
+            "Il 15 agosto"
+          ],
+          "correct": 0
         }
       ]
     }
