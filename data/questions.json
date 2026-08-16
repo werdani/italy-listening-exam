@@ -728,6 +728,19 @@
             "A presto ieri"
           ],
           "correct": 2
+        },
+        {
+          "id": 26,
+          "type": "mcq",
+          "prompt": "Com’è il tempo oggi?",
+          "audio": "",
+          "choices": [
+            "Ho fame",
+            "Sono stanco",
+            "È caldo",
+            "Fa caldo"
+          ],
+          "correct": 3
         }
       ]
     }
