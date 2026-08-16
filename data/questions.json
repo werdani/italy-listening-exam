@@ -1116,13 +1116,52 @@
         {
           "id": 24,
           "type": "mcq",
-          "prompt": "Non ho trovato le chiavi perché ______ a casa",
+          "prompt": "Non ho trovato le chiavi perché le ______ a casa",
           "audio": "",
           "choices": [
             "ero lasciato",
-            "avevo lasciato",
+            "avevo lasciate",
             "ho lasciate",
             "lasciavo"
+          ],
+          "correct": 1
+        },
+        {
+          "id": 25,
+          "type": "mcq",
+          "prompt": "Quando compri le scarpe? — ______ compro domani",
+          "audio": "",
+          "choices": [
+            "Le",
+            "Lo",
+            "La",
+            "Li"
+          ],
+          "correct": 0
+        },
+        {
+          "id": 26,
+          "type": "mcq",
+          "prompt": "Quanti libri hai letto? — ______ ho letti tre.",
+          "audio": "",
+          "choices": [
+            "Ii",
+            "Le",
+            "Ne",
+            "Ci"
+          ],
+          "correct": 2
+        },
+        {
+          "id": 27,
+          "type": "mcq",
+          "prompt": "Devo comprare una macchina nuova. ______ voglio comprare l'anno prossimo",
+          "audio": "",
+          "choices": [
+            "Lo",
+            "La",
+            "Li",
+            "L'"
           ],
           "correct": 1
         }
