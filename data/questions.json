@@ -1034,6 +1034,32 @@
             "La frutta"
           ],
           "correct": 2
+        },
+        {
+          "id": 18,
+          "type": "mcq",
+          "prompt": "Un cliente dice: “Vorrei iniziare con qualcosa di leggero.” Quale piatto può scegliere?",
+          "audio": "",
+          "choices": [
+            "Un secondo",
+            "Un dolce",
+            "Un contorno",
+            "Un antipasto"
+          ],
+          "correct": 3
+        },
+        {
+          "id": 19,
+          "type": "mcq",
+          "prompt": "Qual è l'ordine più comune di un pasto completo italiano?",
+          "audio": "",
+          "choices": [
+            "Dolce → antipasto → primo → secondo",
+            "Antipasto → primo → secondo → dolce",
+            "Primo → antipasto → dolce → secondo",
+            "Secondo → primo → antipasto → dolce"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 20
