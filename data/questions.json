@@ -741,6 +741,19 @@
             "Fa caldo"
           ],
           "correct": 3
+        },
+        {
+          "id": 27,
+          "type": "mcq",
+          "prompt": "Il cielo è pieno di nuvole. È ___ .",
+          "audio": "",
+          "choices": [
+            "nuvoloso",
+            "soleggiato",
+            "nevoso",
+            "ventoso"
+          ],
+          "correct": 0
         }
       ]
     }
