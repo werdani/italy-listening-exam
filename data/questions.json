@@ -1164,6 +1164,32 @@
             "L'"
           ],
           "correct": 1
+        },
+        {
+          "id": 28,
+          "type": "mcq",
+          "prompt": "Posso aiutarti a preparare la cena? — ______, è molto gentile da parte tua.",
+          "audio": "",
+          "choices": [
+            "No, mai",
+            "Non sono d'accordo",
+            "Peccato",
+            "Sì, grazie"
+          ],
+          "correct": 3
+        },
+        {
+          "id": 29,
+          "type": "mcq",
+          "prompt": "Quale risposta indica un rifiuto educato dell'aiuto?",
+          "audio": "",
+          "choices": [
+            "Sì, grazie!",
+            "Volentieri!",
+            "No, grazie, faccio da solo/a.",
+            "Certo"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
