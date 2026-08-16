@@ -956,6 +956,19 @@
             "Il sue"
           ],
           "correct": 2
+        },
+        {
+          "id": 12,
+          "type": "mcq",
+          "prompt": "______ padre lavora in banca, mentre ______ madre è insegnante.",
+          "audio": "",
+          "choices": [
+            "Mio / mia",
+            "Il mio / la mia",
+            "I miei / le mie",
+            "miei / le mie"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 20
