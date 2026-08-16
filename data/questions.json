@@ -624,6 +624,32 @@
             "sono tornati"
           ],
           "correct": 3
+        },
+        {
+          "id": 18,
+          "type": "mcq",
+          "prompt": "Stamattina ___ la colazione alle sette.",
+          "audio": "",
+          "choices": [
+            "Ho fatto",
+            "Ho visto",
+            "Ho parlato",
+            "Ho detto"
+          ],
+          "correct": 0
+        },
+        {
+          "id": 19,
+          "type": "mcq",
+          "prompt": "Domani ___ a scuola alle otto.",
+          "audio": "",
+          "choices": [
+            "Vado",
+            "Sono andato",
+            "Andrò",
+            "Andavo"
+          ],
+          "correct": 2
         }
       ]
     }
