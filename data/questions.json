@@ -1190,6 +1190,19 @@
             "Certo"
           ],
           "correct": 2
+        },
+        {
+          "id": 30,
+          "type": "mcq",
+          "prompt": "Voglio comprare penne, quaderni e matite. Vado ______.",
+          "audio": "",
+          "choices": [
+            "in macelleria",
+            "in farmacia",
+            "in panetteria",
+            "In libreria"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
