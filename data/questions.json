@@ -650,6 +650,71 @@
             "Andavo"
           ],
           "correct": 2
+        },
+        {
+          "id": 20,
+          "type": "mcq",
+          "prompt": "L’anno prossimo ___ in Italia.",
+          "audio": "",
+          "choices": [
+            "viaggio",
+            "viaggerò",
+            "viaggi",
+            "Viaggiare"
+          ],
+          "correct": 1
+        },
+        {
+          "id": 21,
+          "type": "mcq",
+          "prompt": "Noi ___ una nuova casa l’anno prossimo.",
+          "audio": "",
+          "choices": [
+            "compreremo",
+            "abbiamo comprato",
+            "compriamo",
+            "compravamo"
+          ],
+          "correct": 0
+        },
+        {
+          "id": 22,
+          "type": "mcq",
+          "prompt": "Quando arriverai, io ___ già ___.",
+          "audio": "",
+          "choices": [
+            "sarò / mangiare",
+            "sono/ mangiare",
+            "sarò / mangiato",
+            "avrò / mangiato"
+          ],
+          "correct": 3
+        },
+        {
+          "id": 23,
+          "type": "mcq",
+          "prompt": "Quando tornerai, io ___ già ___.",
+          "audio": "",
+          "choices": [
+            "dormirò",
+            "avrò dormito",
+            "dormivo",
+            "ho dormito"
+          ],
+          "correct": 1
+        },
+        {
+          "id": 24,
+          "type": "mcq",
+          "prompt": "A: Grazie per la cena! B: ___",
+          "audio": "",
+          "choices": [
+            "Non c'è di che",
+            "Buonanotte",
+            "Piacere",
+            "Bravissima"
+          ],
+          "correct": 0
         }
       ]
     }
