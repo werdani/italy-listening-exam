@@ -585,6 +585,19 @@
             "Ho guardata"
           ],
           "correct": 2
+        },
+        {
+          "id": 15,
+          "type": "mcq",
+          "prompt": "Maria ___ a Roma l'anno scorso.",
+          "audio": "",
+          "choices": [
+            "Ha andata",
+            "Ha andato",
+            "Sono andata",
+            "È andata"
+          ],
+          "correct": 3
         }
       ]
     }
