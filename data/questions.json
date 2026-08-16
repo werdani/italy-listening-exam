@@ -611,6 +611,19 @@
             "Sei / state"
           ],
           "correct": 1
+        },
+        {
+          "id": 17,
+          "type": "mcq",
+          "prompt": "Marco e Paolo ___ a casa tardi.",
+          "audio": "",
+          "choices": [
+            "hanno tornato",
+            "hanno tornati",
+            "sono tornate",
+            "sono tornati"
+          ],
+          "correct": 3
         }
       ]
     }
