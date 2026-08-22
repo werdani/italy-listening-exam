@@ -245,14 +245,31 @@
     }
   }
 
-  function onGithubFormSubmit(e) {
+  async function onGithubFormSubmit(e) {
     e.preventDefault();
-    AscoltoContent.saveGithubSettings({
-      token: els.ghToken.value.trim(),
-      repo: els.ghRepo.value.trim(),
-      branch: els.ghBranch.value.trim(),
-      autoPublish: !!(els.ghAutoPublish && els.ghAutoPublish.checked),
-    });
+    const token = els.ghToken.value.trim();
+    const repo = els.ghRepo.value.trim();
+    const branch = els.ghBranch.value.trim();
+    const autoPublish = !!(els.ghAutoPublish && els.ghAutoPublish.checked);
+
+    if (token) {
+      setGithubStatus("Verifica token GitHub…", "");
+      try {
+        const check = await AscoltoContent.validateGithubToken(token, repo || "werdani/italy-listening-exam");
+        AscoltoContent.saveGithubSettings({ token, repo, branch, autoPublish });
+        fillGithubForm();
+        updateSourceBanner();
+        setGithubStatus(`Token OK (${check.login}) — puoi pubblicare online.`, "ok");
+        showToast("Token GitHub valido e salvato.");
+        return;
+      } catch (err) {
+        setGithubStatus(err.message || "Token non valido", "warn");
+        showToast(err.message || "Token GitHub non valido.");
+        return;
+      }
+    }
+
+    AscoltoContent.saveGithubSettings({ token, repo, branch, autoPublish });
     fillGithubForm();
     updateSourceBanner();
     showToast("Impostazioni GitHub salvate.");

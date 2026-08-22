@@ -348,7 +348,7 @@
   function saveGithubSettings({ token, repo, branch, autoPublish } = {}) {
     try {
       if (token != null) {
-        const t = String(token).trim();
+        const t = sanitizeGithubToken(token);
         if (t) localStorage.setItem(GH_TOKEN_KEY, t);
         else localStorage.removeItem(GH_TOKEN_KEY);
       }
@@ -376,13 +376,89 @@
     return btoa(binary);
   }
 
+  function sanitizeGithubToken(token) {
+    return String(token || "")
+      .trim()
+      .replace(/^["'`]+|["'`]+$/g, "")
+      .replace(/\s+/g, "");
+  }
+
+  function explainGithubError(status, message, context = "") {
+    const m = String(message || "").toLowerCase();
+    if (status === 401 || m.includes("bad credentials")) {
+      return (
+        "Token GitHub non valido (Bad credentials). Verifica: " +
+        "copia tutto il token senza spazi; token non scaduto; account con accesso al repo. " +
+        "Fine-grained: seleziona werdani/italy-listening-exam + Contents Read and write. " +
+        "Classic: spunta il permesso repo."
+      );
+    }
+    if (status === 403) {
+      return (
+        (message || "Accesso negato") +
+        ". Serve Contents Read and write sul repo (o approvazione SSO org)."
+      );
+    }
+    if (status === 404) {
+      return `Repository/branch non trovato, oppure token senza accesso (${context}).`;
+    }
+    return message || `Errore GitHub (${status})`;
+  }
+
+  async function githubApiFetch(url, token, options = {}) {
+    return fetch(url, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${sanitizeGithubToken(token)}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        ...(options.headers || {}),
+      },
+      cache: "no-store",
+    });
+  }
+
+  /** Quick check before save/publish — throws with a helpful message. */
+  async function validateGithubToken(token, repoFull) {
+    const clean = sanitizeGithubToken(token);
+    if (!clean) throw new Error("Inserisci un GitHub Token.");
+    if (clean.length < 20) {
+      throw new Error("Token troppo corto. Copia l'intero token da GitHub (ghp_… o github_pat_…).");
+    }
+
+    const userRes = await githubApiFetch("https://api.github.com/user", clean);
+    if (!userRes.ok) {
+      const err = await userRes.json().catch(() => ({}));
+      throw new Error(explainGithubError(userRes.status, err.message, "user"));
+    }
+    const user = await userRes.json();
+
+    const parts = String(repoFull || "").trim().split("/").filter(Boolean);
+    if (parts.length !== 2) throw new Error("Repo non valido. Usa il formato owner/repo");
+    const [owner, repo] = parts;
+
+    const repoRes = await githubApiFetch(`https://api.github.com/repos/${owner}/${repo}`, clean);
+    if (!repoRes.ok) {
+      const err = await repoRes.json().catch(() => ({}));
+      throw new Error(explainGithubError(repoRes.status, err.message, `${owner}/${repo}`));
+    }
+    const repoData = await repoRes.json();
+    if (repoData.permissions && repoData.permissions.push === false) {
+      throw new Error(
+        "Token accettato ma senza scrittura sul repo. Imposta Contents: Read and write."
+      );
+    }
+
+    return { ok: true, login: user.login, repo: `${owner}/${repo}` };
+  }
+
   /**
    * Publish questions.json to GitHub via Contents API.
    * Requires a Personal Access Token with Contents: Read and write.
    */
   async function publishToGitHub(data, options = {}) {
     const settings = getGithubSettings();
-    const token = String(options.token || settings.token || "").trim();
+    const token = sanitizeGithubToken(options.token || settings.token || "");
     const repoFull = String(options.repo || settings.repo || "").trim();
     const branch = String(options.branch || settings.branch || "main").trim() || "main";
     const path = options.path || "data/questions.json";
@@ -395,6 +471,8 @@
       throw new Error("Repo non valido. Usa il formato owner/repo");
     }
     const [owner, repo] = parts;
+
+    await validateGithubToken(token, repoFull);
 
     const payload = stripSecretsForExport(normalizeContent(data));
     const raw = JSON.stringify(payload, null, 2) + "\n";
@@ -416,7 +494,7 @@
       sha = meta.sha;
     } else if (metaRes.status !== 404) {
       const err = await metaRes.json().catch(() => ({}));
-      throw new Error(err.message || `GitHub GET failed (${metaRes.status})`);
+      throw new Error(explainGithubError(metaRes.status, err.message, "GET contents"));
     }
 
     const putRes = await fetch(
@@ -440,7 +518,7 @@
 
     if (!putRes.ok) {
       const err = await putRes.json().catch(() => ({}));
-      throw new Error(err.message || `GitHub PUT failed (${putRes.status})`);
+      throw new Error(explainGithubError(putRes.status, err.message, "PUT contents"));
     }
 
     const result = await putRes.json();
@@ -855,6 +933,7 @@
     exportContent,
     getGithubSettings,
     saveGithubSettings,
+    validateGithubToken,
     publishToGitHub,
     getLevel,
     getLevelDurationMinutes,
