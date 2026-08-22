@@ -106,7 +106,7 @@
         String(siteIn.ownerTagline || "Insegnante di italiano in Italia").trim() ||
         "Insegnante di italiano in Italia",
       ownerPhoto: normalizeImageUrl(
-        siteIn.ownerPhoto || "assets/images/logo.svg"
+        siteIn.ownerPhoto || "assets/images/reham.jpeg"
       ),
       googleApiKey: sanitizeApiKey(siteIn.googleApiKey || readStoredApiKey() || ""),
     };

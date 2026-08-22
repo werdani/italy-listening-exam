@@ -286,7 +286,7 @@
   function applySiteBranding() {
     if (!contentData || !contentData.site) return;
     const site = contentData.site;
-    const photo = AscoltoContent.resolveImageSrc(site.ownerPhoto || "assets/images/logo.svg");
+    const photo = AscoltoContent.resolveImageSrc(site.ownerPhoto || "assets/images/reham.jpeg");
     const name = site.ownerName || "Signora Reham Ramadan";
     const tagline = site.ownerTagline || "Insegnante di italiano in Italia";
 
@@ -295,7 +295,7 @@
       els.brandLogo.alt = name;
       els.brandLogo.onerror = () => {
         els.brandLogo.onerror = null;
-        els.brandLogo.src = "assets/images/logo.svg";
+        els.brandLogo.src = "assets/images/reham.jpeg";
       };
     }
     if (els.homeLogo) {
@@ -303,7 +303,7 @@
       els.homeLogo.alt = name;
       els.homeLogo.onerror = () => {
         els.homeLogo.onerror = null;
-        els.homeLogo.src = "assets/images/logo.svg";
+        els.homeLogo.src = "assets/images/reham.jpeg";
       };
     }
     if (els.brandName) els.brandName.textContent = name;

@@ -311,13 +311,13 @@
   function applyAdminBrandChrome() {
     if (!content || !content.site) return;
     const site = content.site;
-    const photo = AscoltoContent.resolveImageSrc(site.ownerPhoto || "../assets/images/logo.svg");
+    const photo = AscoltoContent.resolveImageSrc(site.ownerPhoto || "../assets/images/reham.jpeg");
     if (els.adminBrandLogo) {
       els.adminBrandLogo.src = photo;
       els.adminBrandLogo.alt = site.ownerName || "";
       els.adminBrandLogo.onerror = () => {
         els.adminBrandLogo.onerror = null;
-        els.adminBrandLogo.src = "../assets/images/logo.svg";
+        els.adminBrandLogo.src = "../assets/images/reham.jpeg";
       };
     }
     if (els.adminBrandTagline) {
@@ -340,11 +340,11 @@
 
   function updateSitePhotoPreview(src) {
     if (!els.sitePhotoPreview) return;
-    const resolved = AscoltoContent.resolveImageSrc(src || "assets/images/logo.svg");
+    const resolved = AscoltoContent.resolveImageSrc(src || "assets/images/reham.jpeg");
     els.sitePhotoPreview.src = resolved;
     els.sitePhotoPreview.onerror = () => {
       els.sitePhotoPreview.onerror = null;
-      els.sitePhotoPreview.src = "../assets/images/logo.svg";
+      els.sitePhotoPreview.src = "../assets/images/reham.jpeg";
     };
   }
 
@@ -352,7 +352,7 @@
     const raw = (els.siteOwnerPhoto.value || "").trim();
     if (!raw) {
       setPhotoDriveStatus("");
-      updateSitePhotoPreview("assets/images/logo.svg");
+      updateSitePhotoPreview("assets/images/reham.jpeg");
       return "";
     }
 
@@ -386,7 +386,7 @@
     const ownerName = els.siteOwnerName.value.trim();
     const ownerTagline = els.siteOwnerTagline.value.trim();
     const ownerPhoto =
-      applyPhotoDriveNormalization({ preview: true }) || "assets/images/logo.svg";
+      applyPhotoDriveNormalization({ preview: true }) || "assets/images/reham.jpeg";
     const googleApiKey = els.siteGoogleApiKey ? els.siteGoogleApiKey.value.trim() : "";
 
     if (!ownerName) {
@@ -1156,7 +1156,7 @@
         setTimeout(() => applyPhotoDriveNormalization({ preview: true }), 0);
       });
       els.siteOwnerPhoto.addEventListener("input", () => {
-        updateSitePhotoPreview(els.siteOwnerPhoto.value.trim() || "assets/images/logo.svg");
+        updateSitePhotoPreview(els.siteOwnerPhoto.value.trim() || "assets/images/reham.jpeg");
       });
     }
     els.questionAudioFile.addEventListener("change", onAudioFileChange);
