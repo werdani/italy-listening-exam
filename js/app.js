@@ -1066,7 +1066,7 @@
 
     try {
       const previousLevelId = state.levelId;
-      const { data } = await AscoltoContent.loadContent();
+      const { data } = await AscoltoContent.loadContent({ preferLocal: false });
       contentData = data;
       AscoltoContent.setSiteConfig(contentData.site);
 
@@ -1241,7 +1241,7 @@
         throw new Error("Modulo contenuti non caricato.");
       }
 
-      const { data } = await AscoltoContent.loadContent();
+      const { data } = await AscoltoContent.loadContent({ preferLocal: false });
       contentData = data;
       AscoltoContent.setSiteConfig(contentData.site);
       if (AscoltoContent.detectDriveProxy) {

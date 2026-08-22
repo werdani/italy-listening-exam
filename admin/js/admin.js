@@ -1062,7 +1062,10 @@
   }
 
   async function loadData(options = {}) {
-    const { data, source } = await AscoltoContent.loadContent(options);
+    const { data, source } = await AscoltoContent.loadContent({
+      preferLocal: false,
+      ...options,
+    });
     content = data;
     contentSource = source === "local" ? "local" : "file";
     AscoltoContent.setSiteConfig(content.site);

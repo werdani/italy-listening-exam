@@ -234,9 +234,9 @@
   async function loadContent(options = {}) {
     // forceFile: ignore browser overrides (used by "Ripristina file")
     const forceFile = options.forceFile === true;
-    // Default: admin edits in localStorage win over the static file in this browser.
-    // This makes Create/Update/Delete visible immediately on the exam page.
-    const preferLocal = options.preferLocal !== false && !forceFile;
+    // Default: data/questions.json (or /api/content) is the source of truth.
+    // localStorage is a draft/fallback only — avoids stale browser edits after git pull.
+    const preferLocal = options.preferLocal === true && !forceFile;
 
     if (preferLocal) {
       const local = readLocal();
