@@ -1213,20 +1213,6 @@
       "description": "",
       "questions": [],
       "durationMinutes": 20
-    },
-    {
-      "id": 5,
-      "name": "Livello 4",
-      "description": "",
-      "questions": [],
-      "durationMinutes": 20
-    },
-    {
-      "id": 6,
-      "name": "Livello 4",
-      "description": "",
-      "questions": [],
-      "durationMinutes": 20
     }
   ]
 }
