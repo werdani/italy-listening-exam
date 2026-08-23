@@ -1211,7 +1211,21 @@
       "id": 4,
       "name": "Livello 4",
       "description": "",
-      "questions": [],
+      "questions": [
+        {
+          "id": 1,
+          "type": "mcq",
+          "prompt": "Ieri Giulia non è venuta alla festa perché ___ male.",
+          "audio": "",
+          "choices": [
+            "si sentiva",
+            "si è sentita",
+            "sentiva",
+            "ha sentito"
+          ],
+          "correct": 0
+        }
+      ],
       "durationMinutes": 20
     }
   ]
