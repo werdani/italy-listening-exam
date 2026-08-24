@@ -1393,6 +1393,32 @@
             "Ho 42 euro."
           ],
           "correct": 0
+        },
+        {
+          "id": 15,
+          "type": "mcq",
+          "prompt": "Quale cantante italiana è famosa per “La solitudine”?",
+          "audio": "",
+          "choices": [
+            "Laura Pausini",
+            "Jovanotti",
+            "Tiziano Ferro",
+            "Toto Cutugno"
+          ],
+          "correct": 0
+        },
+        {
+          "id": 16,
+          "type": "mcq",
+          "prompt": "Eros Ramazzotti è famoso soprattutto per:",
+          "audio": "",
+          "choices": [
+            "il rock",
+            "la musica classica",
+            "le canzoni pop e romantiche",
+            "la musica elettronica"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
