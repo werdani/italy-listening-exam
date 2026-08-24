@@ -1328,6 +1328,19 @@
             "Vai / fa’"
           ],
           "correct": 3
+        },
+        {
+          "id": 10,
+          "type": "mcq",
+          "prompt": "Al tuo posto, ___ con il professore.",
+          "audio": "",
+          "choices": [
+            "parlerò",
+            "parlavo",
+            "parlerei",
+            "ho parlato"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
