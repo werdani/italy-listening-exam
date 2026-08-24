@@ -1263,6 +1263,19 @@
             "ci si alza"
           ],
           "correct": 3
+        },
+        {
+          "id": 5,
+          "type": "mcq",
+          "prompt": "Ho telefonato a Marco, ma non ___ ho trovato a casa.",
+          "audio": "",
+          "choices": [
+            "Gli",
+            "Lo",
+            "La",
+            "Le"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 20
