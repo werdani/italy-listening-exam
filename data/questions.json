@@ -1341,6 +1341,19 @@
             "ho parlato"
           ],
           "correct": 2
+        },
+        {
+          "id": 11,
+          "type": "mcq",
+          "prompt": "Mi ___ molto andare in Italia quest’estate.",
+          "audio": "",
+          "choices": [
+            "piacerà",
+            "piaceva",
+            "è piaciuto",
+            "piacerebbe"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
