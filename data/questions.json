@@ -1367,6 +1367,19 @@
             "ti aiuterò"
           ],
           "correct": 1
+        },
+        {
+          "id": 13,
+          "type": "mcq",
+          "prompt": "Vuoi chiedere se esiste lo stesso modello in un altro colore.",
+          "audio": "",
+          "choices": [
+            "Ce l'avete in un'altra taglia di colore?",
+            "Avete un altro prezzo?",
+            "È in taglia?",
+            "Ce l'avete in un altro colore?"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
