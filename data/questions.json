@@ -1276,6 +1276,19 @@
             "Le"
           ],
           "correct": 0
+        },
+        {
+          "id": 6,
+          "type": "mcq",
+          "prompt": "Ho spiegato il problema ai miei colleghi, ma non ___ hanno dato nessuna risposta.",
+          "audio": "",
+          "choices": [
+            "Lo",
+            "La",
+            "Le",
+            "Gli"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
