@@ -1432,6 +1432,19 @@
             "La Repubblica"
           ],
           "correct": 3
+        },
+        {
+          "id": 18,
+          "type": "mcq",
+          "prompt": "Quale giornale italiano ha sede a Milano ed è uno dei più importanti quotidiani economici?",
+          "audio": "",
+          "choices": [
+            "Il Sole 24 Ore",
+            "La Stampa",
+            "Il Messaggero",
+            "Corriere della Sera"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 20
