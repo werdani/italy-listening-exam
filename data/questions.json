@@ -1302,6 +1302,19 @@
             "aprite"
           ],
           "correct": 2
+        },
+        {
+          "id": 8,
+          "type": "mcq",
+          "prompt": "Non ___ di quello che ti ho detto!",
+          "audio": "",
+          "choices": [
+            "dimenticare",
+            "dimentica",
+            "dimentichi",
+            "dimenticate"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 20
