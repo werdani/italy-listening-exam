@@ -1419,6 +1419,19 @@
             "la musica elettronica"
           ],
           "correct": 2
+        },
+        {
+          "id": 17,
+          "type": "mcq",
+          "prompt": "Quale di questi è un famoso quotidiano italiano?",
+          "audio": "",
+          "choices": [
+            "Le Monde",
+            "The Guardian",
+            "El País",
+            "La Repubblica"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
