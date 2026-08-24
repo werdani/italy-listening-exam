@@ -1458,6 +1458,19 @@
             "La chitarra"
           ],
           "correct": 2
+        },
+        {
+          "id": 20,
+          "type": "mcq",
+          "prompt": "Che cos'è il Festival di Sanremo?",
+          "audio": "",
+          "choices": [
+            "Un festival musicale italiano",
+            "Un festival cinematografico",
+            "Una gara sportiva",
+            "Una festa religiosa"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 20
