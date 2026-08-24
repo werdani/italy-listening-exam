@@ -1250,6 +1250,19 @@
             "si mangiamo"
           ],
           "correct": 2
+        },
+        {
+          "id": 4,
+          "type": "mcq",
+          "prompt": "In questo ufficio ___ molto presto.",
+          "audio": "",
+          "choices": [
+            "si alza",
+            "si alzano",
+            "si alzano le persone",
+            "ci si alza"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
