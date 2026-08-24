@@ -1354,6 +1354,19 @@
             "piacerebbe"
           ],
           "correct": 3
+        },
+        {
+          "id": 12,
+          "type": "mcq",
+          "prompt": "Se me lo avessi chiesto, ___ volentieri.",
+          "audio": "",
+          "choices": [
+            "ti aiuterei",
+            "ti avrei aiutato",
+            "ti aiutavo",
+            "ti aiuterò"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 20
