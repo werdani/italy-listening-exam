@@ -1224,19 +1224,6 @@
             "ha sentito"
           ],
           "correct": 0
-        },
-        {
-          "id": 2,
-          "type": "mcq",
-          "prompt": "hello how are you",
-          "audio": "",
-          "choices": [
-            "good",
-            "hello",
-            "hi",
-            "ciao"
-          ],
-          "correct": 0
         }
       ],
       "durationMinutes": 20
