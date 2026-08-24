@@ -1237,6 +1237,19 @@
             "sono emozionato"
           ],
           "correct": 1
+        },
+        {
+          "id": 3,
+          "type": "mcq",
+          "prompt": "In Italia ___ molta pasta.",
+          "audio": "",
+          "choices": [
+            "si mangiano",
+            "mangiano",
+            "si mangia",
+            "si mangiamo"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
