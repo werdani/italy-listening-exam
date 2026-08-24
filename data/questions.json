@@ -1445,6 +1445,19 @@
             "Corriere della Sera"
           ],
           "correct": 0
+        },
+        {
+          "id": 19,
+          "type": "mcq",
+          "prompt": "Quale strumento ha i tasti bianchi e neri?",
+          "audio": "",
+          "choices": [
+            "Il violino",
+            "La batteria",
+            "Il pianoforte",
+            "La chitarra"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
