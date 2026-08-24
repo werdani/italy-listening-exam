@@ -1315,6 +1315,19 @@
             "dimenticate"
           ],
           "correct": 0
+        },
+        {
+          "id": 9,
+          "type": "mcq",
+          "prompt": "___ subito a casa e ___ i compiti!",
+          "audio": "",
+          "choices": [
+            "Vai / fai",
+            "Va’ / fa’",
+            "Vada / faccia",
+            "Vai / fa’"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
