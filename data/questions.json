@@ -1289,6 +1289,19 @@
             "Gli"
           ],
           "correct": 3
+        },
+        {
+          "id": 7,
+          "type": "mcq",
+          "prompt": "Marco, ___ la porta, per favore!",
+          "audio": "",
+          "choices": [
+            "apri",
+            "aprire",
+            "apre",
+            "aprite"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
