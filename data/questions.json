@@ -1224,6 +1224,19 @@
             "ha sentito"
           ],
           "correct": 0
+        },
+        {
+          "id": 2,
+          "type": "mcq",
+          "prompt": "Quando ho visto il risultato dell’esame, ___ molto.",
+          "audio": "",
+          "choices": [
+            "ho emozionato",
+            "mi sono emozionata",
+            "mi emozionavo",
+            "sono emozionato"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 20
