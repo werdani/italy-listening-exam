@@ -9,6 +9,7 @@ Local static server with APIs for content + Google Drive media proxy.
 POST/PUT /api/content     → writes data/questions.json
 GET      /api/content     → returns data/questions.json
 GET      /api/drive/<id>  → streams a public Google Drive file (audio/images)
+POST     /api/audio        → saves uploaded audio to assets/audio/
 POST     /api/visit       → register unique device visit
 GET      /api/visitors    → unique visitor stats
 """
@@ -40,7 +41,29 @@ UA = (
 )
 DRIVE_ID_RE = re.compile(r"^[a-zA-Z0-9_-]{10,}$")
 DEVICE_ID_RE = re.compile(r"^[a-zA-Z0-9_-]{8,80}$")
+AUDIO_NAME_RE = re.compile(r"^[a-zA-Z0-9_.-]{1,80}\.(mp3|wav|ogg|m4a|aac|webm|flac)$", re.I)
+AUDIO_DIR = ROOT / "assets" / "audio"
 _visitors_lock = threading.Lock()
+
+
+def sanitize_audio_filename(name: str) -> str:
+    """Keep basename only; block path traversal."""
+    base = Path(str(name or "audio.mp3")).name.strip()
+    if not AUDIO_NAME_RE.match(base):
+        raise ValueError("Invalid audio filename")
+    return base
+
+
+def save_audio_file(filename: str, raw: bytes) -> Path:
+    if len(raw) > 15 * 1024 * 1024:
+        raise ValueError("Audio file too large (max 15 MB)")
+    safe = sanitize_audio_filename(filename)
+    AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+    dest = AUDIO_DIR / safe
+    tmp = dest.with_suffix(dest.suffix + ".tmp")
+    tmp.write_bytes(raw)
+    tmp.replace(dest)
+    return dest
 
 
 def utc_now_iso() -> str:
@@ -206,6 +229,9 @@ class Handler(SimpleHTTPRequestHandler):
         if path == "/api/visit":
             self._handle_visit()
             return
+        if path == "/api/audio":
+            self._handle_audio_save()
+            return
         self._handle_save()
 
     def do_PUT(self) -> None:  # noqa: N802
@@ -334,6 +360,50 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _handle_audio_save(self) -> None:
+        length = int(self.headers.get("Content-Length", "0") or 0)
+        if length <= 0:
+            self.send_error(HTTPStatus.BAD_REQUEST, "Empty body")
+            return
+        if length > 22 * 1024 * 1024:
+            self.send_error(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, "Payload too large")
+            return
+
+        try:
+            body = self.rfile.read(length)
+            payload = json.loads(body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid JSON")
+            return
+
+        filename = str((payload or {}).get("filename") or "").strip()
+        content_b64 = str((payload or {}).get("content") or "").strip()
+        if not filename or not content_b64:
+            self.send_error(HTTPStatus.BAD_REQUEST, "filename and content required")
+            return
+
+        import base64
+
+        try:
+            raw = base64.b64decode(content_b64, validate=True)
+            dest = save_audio_file(filename, raw)
+        except ValueError as exc:
+            self.send_error(HTTPStatus.BAD_REQUEST, str(exc))
+            return
+        except Exception as exc:  # noqa: BLE001
+            self.send_error(HTTPStatus.BAD_REQUEST, f"Invalid audio data: {exc}")
+            return
+
+        rel = f"assets/audio/{dest.name}"
+        reply = json.dumps({"ok": True, "path": rel, "filename": dest.name}).encode("utf-8")
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(reply)))
+        self._cors()
+        self.end_headers()
+        self.wfile.write(reply)
+        print(f"[audio] Wrote {dest} ({len(raw)} bytes)", flush=True)
+
     def _handle_save(self) -> None:
         parsed = urlparse(self.path)
         if parsed.path.rstrip("/") != "/api/content":
@@ -385,6 +455,7 @@ def main() -> None:
     print(f"Exam:  http://{HOST}:{PORT}/")
     print(f"Admin: http://{HOST}:{PORT}/admin/")
     print("POST /api/content saves data/questions.json")
+    print("POST /api/audio saves assets/audio/*.mp3")
     print("GET  /api/drive/<fileId> proxies Google Drive media")
     print("POST /api/visit registers unique devices")
     print("GET  /api/visitors returns unique visitor count")

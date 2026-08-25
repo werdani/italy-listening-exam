@@ -14,6 +14,8 @@
   let activeLevelId = null;
   /** @type {string|null} pending uploaded audio data URL */
   let pendingAudioDataUrl = null;
+  /** @type {File|null} last selected audio file for naming */
+  let pendingAudioFile = null;
   let pendingConfirmAction = null;
   let toastTimer = null;
 
@@ -88,6 +90,7 @@
     audioPreviewWrap: $("#audioPreviewWrap"),
     audioPreview: $("#audioPreview"),
     questionFormError: $("#questionFormError"),
+    questionFormSubmit: $("#questionFormSubmit"),
     confirmModal: $("#confirmModal"),
     confirmTitle: $("#confirmTitle"),
     confirmMessage: $("#confirmMessage"),
@@ -164,6 +167,7 @@
     });
     pendingConfirmAction = null;
     pendingAudioDataUrl = null;
+    pendingAudioFile = null;
   }
 
   function openConfirm({ title, message, confirmLabel = "Elimina", onConfirm }) {
@@ -178,6 +182,19 @@
     els.confirmOk.focus();
   }
 
+  function friendlySaveError(err) {
+    const name = err && err.name ? String(err.name) : "";
+    const msg = err && err.message ? String(err.message) : String(err || "");
+    if (
+      name === "QuotaExceededError" ||
+      name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+      /quota/i.test(msg)
+    ) {
+      return "Memoria del browser piena. Usa un link Google Drive per l’audio, non caricare il file.";
+    }
+    return msg || "Salvataggio non riuscito.";
+  }
+
   async function persist(options = {}) {
     try {
       const result = await AscoltoContent.saveContentRemote(content);
@@ -186,34 +203,54 @@
       updateSourceBanner();
 
       const gh = AscoltoContent.getGithubSettings ? AscoltoContent.getGithubSettings() : null;
+      const apiOk = result.source === "api";
+      const hasToken = !!(gh && gh.token);
+      // If the local API is down (GitHub Pages), GitHub is the only durable save.
+      const shouldPublish =
+        hasToken &&
+        (options.publish === true ||
+          (gh.autoPublish && options.publish !== false) ||
+          (!apiOk && options.publish !== false));
+
       let published = false;
-      if (gh && gh.token && (options.publish === true || (gh.autoPublish && options.publish !== false))) {
+      let publishError = null;
+      if (shouldPublish) {
         try {
           await publishOnline({ silent: true });
           published = true;
         } catch (pubErr) {
           console.error(pubErr);
-          if (!options.silent) {
-            showToast(pubErr.message || "Pubblicazione GitHub non riuscita.");
-          }
+          publishError = pubErr;
+          showToast(friendlySaveError(pubErr), 5000);
         }
       }
 
-      if (!options.silent) {
-        if (published) {
-          showToast("Salvato e pubblicato online per tutti.");
-        } else if (result.source === "api") {
-          showToast("Salvato — l’esame è aggiornato.");
-        } else if (/\.github\.io$/i.test(location.hostname)) {
-          showToast("Salvato qui. Premi «Pubblica online» per tutti.");
-        } else if (result.error) {
-          showToast("Salvato nel browser. Pubblica su GitHub oppure avvia server.py.");
+      if (apiOk || published) {
+        if (!options.silent) {
+          if (published) {
+            showToast("Salvato e pubblicato online per tutti.");
+          } else {
+            showToast("Salvato — l’esame è aggiornato.");
+          }
         }
+        return result;
       }
-      return result;
+
+      const failMsg = publishError
+        ? friendlySaveError(publishError)
+        : hasToken
+          ? "Salvataggio online non riuscito. Riprova o premi «Pubblica online»."
+          : /\.github\.io$/i.test(location.hostname)
+            ? "Salvataggio non riuscito. Salva il GitHub Token e premi «Pubblica online»."
+            : "Salvataggio non riuscito. Avvia python3 server.py oppure configura GitHub.";
+      showToast(failMsg, 5000);
+      throw new Error(failMsg);
     } catch (err) {
       console.error(err);
-      showToast("Salvataggio non riuscito.");
+      const msg = friendlySaveError(err);
+      if (!String(els.toast.textContent || "").includes(msg)) {
+        showToast(msg, 5000);
+      }
       throw err;
     }
   }
@@ -421,9 +458,13 @@
     }
 
     AscoltoContent.updateSite(content, { ownerName, ownerTagline, ownerPhoto, googleApiKey });
-    await persist({ silent: true });
-    fillSiteForm();
-    showToast("Profilo salvato — visibile sul sito.");
+    try {
+      await persist({ silent: true });
+      fillSiteForm();
+      showToast("Profilo salvato — visibile sul sito.");
+    } catch {
+      fillSiteForm();
+    }
   }
 
   /* ---------- Levels view ---------- */
@@ -559,20 +600,24 @@
       ? AscoltoContent.clampDurationMinutes(rawDuration, AscoltoContent.DEFAULT_DURATION_MINUTES || 15)
       : Math.max(1, Math.min(180, Math.round(Number(rawDuration) || 15)));
 
-    if (id) {
-      AscoltoContent.updateLevel(content, id, { name, description, durationMinutes });
-      await persist({ silent: true });
-      showToast("Livello aggiornato.");
-    } else {
-      AscoltoContent.createLevel(content, { name, description, durationMinutes });
-      await persist({ silent: true });
-      showToast("Livello creato — visibile nell’esame dopo refresh.");
-    }
-    closeAllModals();
-    if (activeLevelId && Number(id) === Number(activeLevelId)) {
-      renderLevelDetail(activeLevelId);
-    } else {
-      renderLevels();
+    try {
+      if (id) {
+        AscoltoContent.updateLevel(content, id, { name, description, durationMinutes });
+        await persist({ silent: true });
+        showToast("Livello aggiornato.");
+      } else {
+        AscoltoContent.createLevel(content, { name, description, durationMinutes });
+        await persist({ silent: true });
+        showToast("Livello creato — visibile nell’esame dopo refresh.");
+      }
+      closeAllModals();
+      if (activeLevelId && Number(id) === Number(activeLevelId)) {
+        renderLevelDetail(activeLevelId);
+      } else {
+        renderLevels();
+      }
+    } catch {
+      /* persist already showed the error */
     }
   }
 
@@ -603,8 +648,12 @@
           /* ignore */
         }
         if (Number(activeLevelId) === id) activeLevelId = null;
-        await persist({ silent: true });
-        showToast(`Livello eliminato. Restano ${content.levels.length} livelli.`);
+        try {
+          await persist({ silent: true });
+          showToast(`Livello eliminato. Restano ${content.levels.length} livelli.`);
+        } catch {
+          /* persist already showed the error */
+        }
         renderLevels();
       },
     });
@@ -664,6 +713,7 @@
     // Clear audio when switching to MCQ so it cannot be saved by mistake
     if (isMcq) {
       pendingAudioDataUrl = null;
+      pendingAudioFile = null;
       if (els.questionAudioPath) els.questionAudioPath.value = "";
       if (els.questionAudioFile) els.questionAudioFile.value = "";
       if (els.audioPreviewWrap) els.audioPreviewWrap.hidden = true;
@@ -814,11 +864,12 @@
     els.questionFormId.value = "";
     els.questionFormError.hidden = true;
     pendingAudioDataUrl = null;
+    pendingAudioFile = null;
     els.questionAudioFile.value = "";
     els.audioPreviewWrap.hidden = true;
     els.audioPreview.removeAttribute("src");
     els.audioFileHint.textContent =
-      "Il file verrà salvato localmente (base64). Preferisci Drive per GitHub Pages.";
+      "Il file va in assets/audio/ — con GitHub Token viene pubblicato su Git automaticamente.";
     setDriveStatus("");
     $$('input[name="correctChoice"]').forEach((r, i) => {
       r.checked = i === 0;
@@ -907,20 +958,28 @@
     });
   }
 
+  function rejectOversizedAudioUpload(file) {
+    if (file.size > 10 * 1024 * 1024) {
+      return "File troppo grande (max 10 MB).";
+    }
+    return "";
+  }
+
   async function onAudioFileChange() {
     const file = els.questionAudioFile.files && els.questionAudioFile.files[0];
     if (!file) return;
-    if (file.size > 4.5 * 1024 * 1024) {
+    const tooBig = rejectOversizedAudioUpload(file);
+    if (tooBig) {
       els.questionFormError.hidden = false;
-      els.questionFormError.textContent =
-        "File troppo grande (max ~4.5 MB per il salvataggio locale). Usa un percorso file invece.";
+      els.questionFormError.textContent = tooBig;
       els.questionAudioFile.value = "";
       return;
     }
     try {
+      pendingAudioFile = file;
       pendingAudioDataUrl = await readFileAsDataUrl(file);
       els.questionAudioPath.value = "";
-      els.audioFileHint.textContent = `Caricato: ${file.name} (${Math.round(file.size / 1024)} KB)`;
+      els.audioFileHint.textContent = `Pronto: ${file.name} (${Math.round(file.size / 1024)} KB) → assets/audio/`;
       updateAudioPreview(pendingAudioDataUrl);
       els.questionFormError.hidden = true;
     } catch (err) {
@@ -954,7 +1013,31 @@
     let audio = "";
     if (type === "listening") {
       const path = applyDriveNormalization({ preview: false });
-      audio = pendingAudioDataUrl || path;
+      if (pendingAudioDataUrl && pendingAudioDataUrl.startsWith("data:")) {
+        if (!AscoltoContent.uploadAudioAsset) {
+          throw new Error("Modulo audio non disponibile. Ricarica la pagina.");
+        }
+        const gh = AscoltoContent.getGithubSettings ? AscoltoContent.getGithubSettings() : null;
+        const onPages = /\.github\.io$/i.test(location.hostname);
+        if (onPages && !(gh && gh.token)) {
+          throw new Error("Su GitHub Pages serve il GitHub Token per caricare audio.");
+        }
+        const upload = await AscoltoContent.uploadAudioAsset({
+          dataUrl: pendingAudioDataUrl,
+          filename: AscoltoContent.suggestAudioAssetName
+            ? AscoltoContent.suggestAudioAssetName(
+                activeLevelId,
+                els.questionFormId.value,
+                pendingAudioFile?.name || "audio.mp3"
+              )
+            : pendingAudioFile?.name || "audio.mp3",
+          levelId: activeLevelId,
+          questionId: els.questionFormId.value,
+        });
+        audio = upload.path;
+      } else {
+        audio = pendingAudioDataUrl || path;
+      }
       if (!audio) {
         els.questionFormError.hidden = false;
         els.questionFormError.textContent = "Seleziona un percorso audio o carica un file.";
@@ -971,17 +1054,36 @@
     };
 
     const qid = els.questionFormId.value;
-    if (qid) {
-      AscoltoContent.updateQuestion(content, activeLevelId, qid, payload);
-      showToast("Domanda aggiornata.");
-    } else {
-      AscoltoContent.createQuestion(content, activeLevelId, payload);
-      showToast("Domanda aggiunta.");
-    }
+    const submitBtn = els.questionFormSubmit;
+    if (submitBtn) submitBtn.disabled = true;
+    const snapshot = AscoltoContent.deepClone ? AscoltoContent.deepClone(content) : JSON.parse(JSON.stringify(content));
 
-    await persist({ silent: true });
-    closeAllModals();
-    renderLevelDetail(activeLevelId);
+    try {
+      if (qid) {
+        const updated = AscoltoContent.updateQuestion(content, activeLevelId, qid, payload);
+        if (!updated) throw new Error("Domanda non trovata. Riapri il livello e riprova.");
+      } else {
+        const created = AscoltoContent.createQuestion(content, activeLevelId, payload);
+        if (!created) throw new Error("Livello non trovato. Riapri il livello e riprova.");
+      }
+
+      await persist({ silent: true });
+      const gh = AscoltoContent.getGithubSettings ? AscoltoContent.getGithubSettings() : null;
+      if (gh && gh.token && /\.github\.io$/i.test(location.hostname)) {
+        showToast(qid ? "Domanda aggiornata e pubblicata su Git." : "Domanda aggiunta e pubblicata su Git.");
+      } else {
+        showToast(qid ? "Domanda aggiornata." : "Domanda aggiunta.");
+      }
+      closeAllModals();
+      renderLevelDetail(activeLevelId);
+    } catch (err) {
+      content = snapshot;
+      const msg = friendlySaveError(err);
+      els.questionFormError.hidden = false;
+      els.questionFormError.textContent = msg;
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+    }
   }
 
   function requestDeleteQuestion(questionId) {
@@ -994,8 +1096,12 @@
       confirmLabel: "Elimina",
       onConfirm: async () => {
         AscoltoContent.deleteQuestion(content, activeLevelId, questionId);
-        await persist({ silent: true });
-        showToast("Domanda eliminata.");
+        try {
+          await persist({ silent: true });
+          showToast("Domanda eliminata.");
+        } catch {
+          /* persist already showed the error */
+        }
         renderLevelDetail(activeLevelId);
       },
     });

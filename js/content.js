@@ -165,33 +165,89 @@
     }
   }
 
-  function writeLocal(data) {
-    const normalized = normalizeContent(data);
-    const key = sanitizeApiKey(normalized.site && normalized.site.googleApiKey);
-    normalized.site.googleApiKey = key;
-    if (key) writeStoredApiKey(key);
+  function isQuotaError(err) {
+    if (!err) return false;
+    const name = String(err.name || "");
+    const code = err.code;
+    const msg = String(err.message || "");
+    return (
+      name === "QuotaExceededError" ||
+      name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+      code === 22 ||
+      code === 1014 ||
+      /quota/i.test(msg)
+    );
+  }
 
-    const payload = {
-      version: CONTENT_VERSION,
-      savedAt: Date.now(),
-      data: normalized,
-    };
-    localStorage.setItem(CONTENT_KEY, JSON.stringify(payload));
-    // Notify other tabs/windows (exam page) that content changed
+  /** Drop inlined base64 audio so localStorage can hold a small draft. */
+  function stripEmbeddedMedia(data) {
+    const clone = deepClone(data);
+    for (const level of clone.levels || []) {
+      for (const q of level.questions || []) {
+        if (typeof q.audio === "string" && q.audio.startsWith("data:")) {
+          q.audio = "";
+        }
+      }
+    }
+    return clone;
+  }
+
+  function notifyContentUpdated(savedAt) {
     try {
-      localStorage.setItem(CONTENT_KEY + "-tick", String(Date.now()));
+      localStorage.setItem(CONTENT_KEY + "-tick", String(savedAt || Date.now()));
     } catch {
       /* ignore */
     }
     try {
       if (typeof BroadcastChannel !== "undefined") {
         const bc = new BroadcastChannel("ascoltoit-content");
-        bc.postMessage({ type: "updated", at: payload.savedAt });
+        bc.postMessage({ type: "updated", at: savedAt || Date.now() });
         bc.close();
       }
     } catch {
       /* ignore */
     }
+  }
+
+  function writeLocal(data) {
+    const normalized = normalizeContent(data);
+    const key = sanitizeApiKey(normalized.site && normalized.site.googleApiKey);
+    normalized.site.googleApiKey = key;
+    if (key) writeStoredApiKey(key);
+
+    const savedAt = Date.now();
+    const payload = {
+      version: CONTENT_VERSION,
+      savedAt,
+      data: normalized,
+    };
+
+    // Never throw: a full questions.json with embedded MP3s exceeds typical
+    // localStorage quotas (~5 MB) and used to abort the real API/GitHub save.
+    try {
+      localStorage.setItem(CONTENT_KEY, JSON.stringify(payload));
+    } catch (err) {
+      if (isQuotaError(err)) {
+        try {
+          localStorage.setItem(
+            CONTENT_KEY,
+            JSON.stringify({
+              version: CONTENT_VERSION,
+              savedAt,
+              data: stripEmbeddedMedia(normalized),
+            })
+          );
+        } catch {
+          try {
+            localStorage.removeItem(CONTENT_KEY);
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+    }
+
+    notifyContentUpdated(savedAt);
     setSiteConfig(normalized.site);
     return normalized;
   }
@@ -229,6 +285,160 @@
     const path = global.location.pathname || "";
     if (path.includes("/admin")) return "../api/content";
     return "/api/content";
+  }
+
+  function resolveAudioApiUrl() {
+    const path = global.location.pathname || "";
+    if (path.includes("/admin")) return "../api/audio";
+    return "/api/audio";
+  }
+
+  function sanitizeAudioFilename(name) {
+    const raw = String(name || "audio.mp3").trim();
+    const extMatch = raw.match(/(\.[a-z0-9]{1,8})$/i);
+    const ext = extMatch ? extMatch[1].toLowerCase() : ".mp3";
+    let base = raw.replace(/\.[^.]+$/, "");
+    base = base
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    if (!base) base = "audio";
+    if (base.length > 60) base = base.slice(0, 60);
+    return `${base}${ext}`;
+  }
+
+  function suggestAudioAssetName(levelId, questionId, originalName) {
+    const safe = sanitizeAudioFilename(originalName);
+    const extMatch = safe.match(/(\.[a-z0-9]{1,8})$/i);
+    const ext = extMatch ? extMatch[1].toLowerCase() : ".mp3";
+    const base = safe.replace(/\.[^.]+$/, "") || "audio";
+    const q = questionId ? `q${questionId}` : "new";
+    const stamp = Date.now().toString(36);
+    const combined = `l${levelId}-${q}-${base}-${stamp}${ext}`;
+    return combined.length > 80 ? combined.slice(0, 80) : combined;
+  }
+
+  function dataUrlToBase64(dataUrl) {
+    const s = String(dataUrl || "").trim();
+    const idx = s.indexOf(",");
+    return idx >= 0 ? s.slice(idx + 1) : s;
+  }
+
+  /**
+   * PUT a binary file (base64) to GitHub Contents API.
+   */
+  async function publishBinaryToGitHub(repoPath, base64Content, options = {}) {
+    const settings = getGithubSettings();
+    const token = sanitizeGithubToken(options.token || settings.token || "");
+    const repoFull = String(options.repo || settings.repo || "").trim();
+    const branch = String(options.branch || settings.branch || "main").trim() || "main";
+    const message =
+      options.message || `Admin dashboard: upload ${repoPath} (${new Date().toISOString()})`;
+
+    if (!token) {
+      throw new Error("Manca il GitHub Token. Salvalo nella sezione Pubblicazione.");
+    }
+    const parts = repoFull.split("/").filter(Boolean);
+    if (parts.length !== 2) {
+      throw new Error("Repo non valido. Usa il formato owner/repo");
+    }
+    const [owner, repo] = parts;
+
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    };
+
+    const metaUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(
+      repoPath
+    )}?ref=${encodeURIComponent(branch)}`;
+    const metaRes = await fetch(metaUrl, { headers, cache: "no-store" });
+    let sha;
+    if (metaRes.ok) {
+      const meta = await metaRes.json();
+      sha = meta.sha;
+    } else if (metaRes.status !== 404) {
+      const err = await metaRes.json().catch(() => ({}));
+      throw new Error(explainGithubError(metaRes.status, err.message, "GET contents"));
+    }
+
+    const putRes = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(repoPath)}`,
+      {
+        method: "PUT",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message,
+          content: base64Content,
+          branch,
+          ...(sha ? { sha } : {}),
+        }),
+      }
+    );
+
+    if (!putRes.ok) {
+      const err = await putRes.json().catch(() => ({}));
+      throw new Error(explainGithubError(putRes.status, err.message, "PUT contents"));
+    }
+
+    const result = await putRes.json();
+    return {
+      ok: true,
+      path: repoPath,
+      commit: result.commit && result.commit.sha,
+      htmlUrl: result.content && result.content.html_url,
+    };
+  }
+
+  /**
+   * Save uploaded audio to assets/audio/ locally (server.py) and/or GitHub.
+   * Returns { path: "assets/audio/…", savedLocally, publishedToGithub }.
+   */
+  async function uploadAudioAsset({ dataUrl, filename, levelId, questionId } = {}) {
+    const base64 = dataUrlToBase64(dataUrl);
+    if (!base64) throw new Error("Dati audio non validi.");
+
+    const safeName =
+      filename ||
+      suggestAudioAssetName(levelId || 1, questionId || "", "audio.mp3");
+    const sanitized = sanitizeAudioFilename(safeName);
+    const path = `assets/audio/${sanitized}`;
+
+    let savedLocally = false;
+    try {
+      const res = await fetch(resolveAudioApiUrl(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: sanitized, content: base64 }),
+        cache: "no-store",
+      });
+      if (res.ok) {
+        savedLocally = true;
+      } else if (!isGitHubPagesHost()) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `Salvataggio audio fallito (${res.status})`);
+      }
+    } catch (err) {
+      if (!isGitHubPagesHost() && !(getGithubSettings().token)) {
+        throw err;
+      }
+    }
+
+    const gh = getGithubSettings();
+    let publishedToGithub = false;
+    if (gh.token) {
+      await publishBinaryToGitHub(path, base64, {
+        message: `Admin dashboard: upload ${path}`,
+      });
+      publishedToGithub = true;
+    } else if (!savedLocally) {
+      throw new Error(
+        "Impossibile salvare l'audio. Avvia python3 server.py oppure configura GitHub Token."
+      );
+    }
+
+    return { ok: true, path, savedLocally, publishedToGithub };
   }
 
   async function loadContent(options = {}) {
@@ -369,10 +579,11 @@
 
   function utf8ToBase64(text) {
     const bytes = new TextEncoder().encode(text);
+    const chunk = 0x8000;
     let binary = "";
-    bytes.forEach((b) => {
-      binary += String.fromCharCode(b);
-    });
+    for (let i = 0; i < bytes.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
+    }
     return btoa(binary);
   }
 
@@ -401,6 +612,20 @@
     }
     if (status === 404) {
       return `Repository/branch non trovato, oppure token senza accesso (${context}).`;
+    }
+    if (status === 409 || m.includes("does not match") || m.includes("sha mismatch")) {
+      return "Conflitto di versione su GitHub. Riprova tra un attimo.";
+    }
+    if (
+      status === 413 ||
+      status === 422 ||
+      m.includes("too large") ||
+      m.includes("must be less than")
+    ) {
+      return (
+        (message || "File troppo grande per GitHub") +
+        ". Per i nuovi ascolti usa un link Google Drive, non il caricamento del file."
+      );
     }
     return message || `Errore GitHub (${status})`;
   }
@@ -452,8 +677,80 @@
     return { ok: true, login: user.login, repo: `${owner}/${repo}` };
   }
 
+  async function githubJson(res, context) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(explainGithubError(res.status, err.message, context));
+  }
+
   /**
-   * Publish questions.json to GitHub via Contents API.
+   * Git Database API — reliable for questions.json larger than ~1 MB
+   * (embedded audio). Contents API often fails on those files.
+   */
+  async function publishViaGitDataApi(owner, repo, branch, path, raw, message, headers) {
+    const refRes = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${encodeURIComponent(branch)}`,
+      { headers, cache: "no-store" }
+    );
+    if (!refRes.ok) await githubJson(refRes, "GET ref");
+    const ref = await refRes.json();
+    const parentSha = ref.object && ref.object.sha;
+    if (!parentSha) throw new Error("Branch GitHub senza commit.");
+
+    const commitRes = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/git/commits/${parentSha}`,
+      { headers, cache: "no-store" }
+    );
+    if (!commitRes.ok) await githubJson(commitRes, "GET commit");
+    const commit = await commitRes.json();
+    const baseTree = commit.tree && commit.tree.sha;
+    if (!baseTree) throw new Error("Commit GitHub senza tree.");
+
+    const blobRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/blobs`, {
+      method: "POST",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({ content: utf8ToBase64(raw), encoding: "base64" }),
+    });
+    if (!blobRes.ok) await githubJson(blobRes, "POST blob");
+    const blob = await blobRes.json();
+
+    const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees`, {
+      method: "POST",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        base_tree: baseTree,
+        tree: [{ path, mode: "100644", type: "blob", sha: blob.sha }],
+      }),
+    });
+    if (!treeRes.ok) await githubJson(treeRes, "POST tree");
+    const tree = await treeRes.json();
+
+    const newCommitRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/commits`, {
+      method: "POST",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message,
+        tree: tree.sha,
+        parents: [parentSha],
+      }),
+    });
+    if (!newCommitRes.ok) await githubJson(newCommitRes, "POST commit");
+    const newCommit = await newCommitRes.json();
+
+    const patchRes = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${encodeURIComponent(branch)}`,
+      {
+        method: "PATCH",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ sha: newCommit.sha }),
+      }
+    );
+    if (!patchRes.ok) await githubJson(patchRes, "PATCH ref");
+
+    return { commit: newCommit.sha };
+  }
+
+  /**
+   * Publish questions.json to GitHub.
    * Requires a Personal Access Token with Contents: Read and write.
    */
   async function publishToGitHub(data, options = {}) {
@@ -462,6 +759,8 @@
     const repoFull = String(options.repo || settings.repo || "").trim();
     const branch = String(options.branch || settings.branch || "main").trim() || "main";
     const path = options.path || "data/questions.json";
+    const message =
+      options.message || `Admin dashboard: update ${path} (${new Date().toISOString()})`;
 
     if (!token) {
       throw new Error("Manca il GitHub Token. Salvalo nella sezione Pubblicazione.");
@@ -476,7 +775,6 @@
 
     const payload = stripSecretsForExport(normalizeContent(data));
     const raw = JSON.stringify(payload, null, 2) + "\n";
-    const content = utf8ToBase64(raw);
 
     const headers = {
       Authorization: `Bearer ${token}`,
@@ -484,6 +782,20 @@
       "X-GitHub-Api-Version": "2022-11-28",
     };
 
+    // Contents API is unreliable above ~1 MB; this repo already embeds audio.
+    if (raw.length > 900 * 1024) {
+      const git = await publishViaGitDataApi(owner, repo, branch, path, raw, message, headers);
+      return {
+        ok: true,
+        commit: git.commit,
+        htmlUrl: `https://github.com/${owner}/${repo}/blob/${encodeURIComponent(branch)}/${path}`,
+        repo: repoFull,
+        branch,
+        path,
+      };
+    }
+
+    const content = utf8ToBase64(raw);
     const metaUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(
       path
     )}?ref=${encodeURIComponent(branch)}`;
@@ -506,9 +818,7 @@
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message:
-            options.message ||
-            `Admin dashboard: update ${path} (${new Date().toISOString()})`,
+          message,
           content,
           branch,
           ...(sha ? { sha } : {}),
@@ -518,6 +828,21 @@
 
     if (!putRes.ok) {
       const err = await putRes.json().catch(() => ({}));
+      const tooLarge =
+        putRes.status === 413 ||
+        putRes.status === 422 ||
+        /too large|must be less than/i.test(String(err.message || ""));
+      if (tooLarge || putRes.status === 409) {
+        const git = await publishViaGitDataApi(owner, repo, branch, path, raw, message, headers);
+        return {
+          ok: true,
+          commit: git.commit,
+          htmlUrl: `https://github.com/${owner}/${repo}/blob/${encodeURIComponent(branch)}/${path}`,
+          repo: repoFull,
+          branch,
+          path,
+        };
+      }
       throw new Error(explainGithubError(putRes.status, err.message, "PUT contents"));
     }
 
@@ -935,6 +1260,10 @@
     saveGithubSettings,
     validateGithubToken,
     publishToGitHub,
+    publishBinaryToGitHub,
+    uploadAudioAsset,
+    sanitizeAudioFilename,
+    suggestAudioAssetName,
     getLevel,
     getLevelDurationMinutes,
     clampDurationMinutes,

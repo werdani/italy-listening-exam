@@ -363,7 +363,7 @@
           <div class="form-field">
             <label class="field-label" for="questionAudioFile">Oppure carica file audio</label>
             <input type="file" id="questionAudioFile" accept="audio/*,.mp3,.wav,.ogg,.m4a" />
-            <p class="field-hint" id="audioFileHint">Il file verrà salvato localmente (base64). Preferisci Drive per GitHub Pages.</p>
+            <p class="field-hint" id="audioFileHint">Il file va in <code>assets/audio/</code>. Con GitHub Token viene pubblicato su Git al salvataggio (senza commit manuale).</p>
           </div>
           <div class="audio-preview" id="audioPreviewWrap" hidden>
             <label class="field-label">Anteprima</label>
@@ -432,9 +432,9 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-  <script src="../js/content.js?v=duration3" defer></script>
+  <script src="../js/content.js?v=savefix2" defer></script>
   <script src="../js/visitors.js?v=visitors2" defer></script>
   <script src="js/auth.js?v=duration3" defer></script>
-  <script src="js/admin.js?v=duration3" defer></script>
+  <script src="js/admin.js?v=savefix2" defer></script>
 </body>
 </html>
