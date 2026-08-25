@@ -144,6 +144,22 @@
     }, ms);
   }
 
+  function setButtonLoading(btn, isLoading, loadingLabel = "Salvataggio…") {
+    if (!btn) return;
+    if (isLoading) {
+      if (!btn.dataset.defaultLabel) {
+        btn.dataset.defaultLabel = btn.textContent.trim();
+      }
+      btn.classList.add("is-loading");
+      btn.setAttribute("aria-busy", "true");
+      btn.textContent = loadingLabel;
+    } else {
+      btn.classList.remove("is-loading");
+      btn.removeAttribute("aria-busy");
+      btn.textContent = btn.dataset.defaultLabel || "Salva domanda";
+    }
+  }
+
   function showLogin() {
     els.screenLogin.hidden = false;
     els.screenApp.hidden = true;
@@ -1015,33 +1031,44 @@
     e.preventDefault();
     els.questionFormError.hidden = true;
 
+    const type = getSelectedQuestionType();
+    const choices = [0, 1, 2, 3].map((i) => ($(`#choice${i}`)?.value || "").trim());
+    if (choices.some((c) => !c)) {
+      els.questionFormError.hidden = false;
+      els.questionFormError.textContent = "Compila tutte e quattro le risposte.";
+      return;
+    }
+
+    const correctRadio = $('input[name="correctChoice"]:checked');
+    const correct = correctRadio ? Number(correctRadio.value) : 0;
+    const prompt = els.questionPrompt.value.trim();
+
+    if (type === "mcq" && !prompt) {
+      els.questionFormError.hidden = false;
+      els.questionFormError.textContent = "Scrivi il testo della domanda.";
+      return;
+    }
+
+    if (type === "listening") {
+      const path = applyDriveNormalization({ preview: false });
+      const hasUpload = pendingAudioDataUrl && pendingAudioDataUrl.startsWith("data:");
+      if (!hasUpload && !pendingAudioDataUrl && !path) {
+        els.questionFormError.hidden = false;
+        els.questionFormError.textContent = "Seleziona un percorso audio o carica un file.";
+        return;
+      }
+    }
+
     const submitBtn = els.questionFormSubmit;
-    if (submitBtn) submitBtn.disabled = true;
+    setButtonLoading(submitBtn, true, "Salvataggio…");
 
     try {
-      const type = getSelectedQuestionType();
-      const choices = [0, 1, 2, 3].map((i) => ($(`#choice${i}`)?.value || "").trim());
-      if (choices.some((c) => !c)) {
-        els.questionFormError.hidden = false;
-        els.questionFormError.textContent = "Compila tutte e quattro le risposte.";
-        return;
-      }
-
-      const correctRadio = $('input[name="correctChoice"]:checked');
-      const correct = correctRadio ? Number(correctRadio.value) : 0;
-      const prompt = els.questionPrompt.value.trim();
-
-      if (type === "mcq" && !prompt) {
-        els.questionFormError.hidden = false;
-        els.questionFormError.textContent = "Scrivi il testo della domanda.";
-        return;
-      }
-
       let audio = "";
       let uploadWarning = "";
       if (type === "listening") {
         const path = applyDriveNormalization({ preview: false });
         if (pendingAudioDataUrl && pendingAudioDataUrl.startsWith("data:")) {
+          setButtonLoading(submitBtn, true, "Caricamento audio…");
           if (!AscoltoContent.uploadAudioAsset) {
             throw new Error("Modulo audio non disponibile. Ricarica la pagina (Ctrl+Shift+R).");
           }
@@ -1066,13 +1093,12 @@
           if (upload.githubError) {
             uploadWarning = upload.githubError;
           }
+          setButtonLoading(submitBtn, true, "Salvataggio…");
         } else {
           audio = pendingAudioDataUrl || path;
         }
         if (!audio) {
-          els.questionFormError.hidden = false;
-          els.questionFormError.textContent = "Seleziona un percorso audio o carica un file.";
-          return;
+          throw new Error("Seleziona un percorso audio o carica un file.");
         }
       }
 
@@ -1096,6 +1122,8 @@
         const created = AscoltoContent.createQuestion(content, activeLevelId, payload);
         if (!created) throw new Error("Livello non trovato. Riapri il livello e riprova.");
       }
+
+      setButtonLoading(submitBtn, true, "Pubblicazione…");
 
       try {
         await persist({ silent: true });
@@ -1124,7 +1152,7 @@
       els.questionFormError.textContent = msg;
       showToast(msg, 5000);
     } finally {
-      if (submitBtn) submitBtn.disabled = false;
+      setButtonLoading(submitBtn, false);
     }
   }
 

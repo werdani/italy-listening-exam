@@ -33,6 +33,32 @@
   filter: brightness(1.05);
 }
 
+.btn.is-loading {
+  position: relative;
+  pointer-events: none;
+  cursor: wait;
+  opacity: 0.92;
+}
+
+.btn.is-loading::after {
+  content: "";
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  margin-left: 0.55em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: admin-btn-spin 0.65s linear infinite;
+  vertical-align: -0.12em;
+}
+
+@keyframes admin-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Login */
 .login-wrap {
   min-height: 100vh;
