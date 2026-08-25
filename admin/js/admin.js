@@ -190,6 +190,9 @@
     els.confirmTitle.textContent = title;
     els.confirmMessage.textContent = message;
     els.confirmOk.textContent = confirmLabel;
+    els.confirmOk.dataset.defaultLabel = confirmLabel;
+    els.confirmOk.classList.remove("is-loading");
+    els.confirmOk.removeAttribute("aria-busy");
     els.confirmOk.className = confirmLabel.toLowerCase().includes("ripristina")
       ? "btn btn-primary"
       : "btn btn-danger";
@@ -1389,8 +1392,33 @@
 
     els.confirmOk.addEventListener("click", async () => {
       const action = pendingConfirmAction;
-      closeAllModals();
-      if (typeof action === "function") await action();
+      if (typeof action !== "function") {
+        closeAllModals();
+        return;
+      }
+
+      const btn = els.confirmOk;
+      const defaultLabel = btn.dataset.defaultLabel || btn.textContent.trim() || "Elimina";
+      const loadingLabel = defaultLabel.toLowerCase().includes("ripristina")
+        ? "Ripristino…"
+        : defaultLabel.toLowerCase().includes("elimina")
+          ? "Eliminazione…"
+          : "Attendere…";
+
+      setButtonLoading(btn, true, loadingLabel);
+
+      try {
+        await action();
+        closeAllModals();
+      } catch (err) {
+        console.error(err);
+        showToast(friendlySaveError(err), 5000);
+      } finally {
+        setButtonLoading(btn, false);
+        btn.className = defaultLabel.toLowerCase().includes("ripristina")
+          ? "btn btn-primary"
+          : "btn btn-danger";
+      }
     });
 
     $$("[data-close-modal]").forEach((el) => {
