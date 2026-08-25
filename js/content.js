@@ -427,18 +427,34 @@
 
     const gh = getGithubSettings();
     let publishedToGithub = false;
+    let githubError = null;
+    const mustPublishGithub = !!(gh.token && (isGitHubPagesHost() || !savedLocally));
+
     if (gh.token) {
-      await publishBinaryToGitHub(path, base64, {
-        message: `Admin dashboard: upload ${path}`,
-      });
-      publishedToGithub = true;
+      try {
+        await publishBinaryToGitHub(path, base64, {
+          message: `Admin dashboard: upload ${path}`,
+        });
+        publishedToGithub = true;
+      } catch (err) {
+        githubError = err;
+        if (mustPublishGithub && !savedLocally) {
+          throw err;
+        }
+      }
     } else if (!savedLocally) {
       throw new Error(
         "Impossibile salvare l'audio. Avvia python3 server.py oppure configura GitHub Token."
       );
     }
 
-    return { ok: true, path, savedLocally, publishedToGithub };
+    return {
+      ok: true,
+      path,
+      savedLocally,
+      publishedToGithub,
+      githubError: githubError ? githubError.message || String(githubError) : null,
+    };
   }
 
   async function loadContent(options = {}) {

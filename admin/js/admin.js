@@ -992,73 +992,80 @@
     e.preventDefault();
     els.questionFormError.hidden = true;
 
-    const type = getSelectedQuestionType();
-    const choices = [0, 1, 2, 3].map((i) => ($(`#choice${i}`)?.value || "").trim());
-    if (choices.some((c) => !c)) {
-      els.questionFormError.hidden = false;
-      els.questionFormError.textContent = "Compila tutte e quattro le risposte.";
-      return;
-    }
-
-    const correctRadio = $('input[name="correctChoice"]:checked');
-    const correct = correctRadio ? Number(correctRadio.value) : 0;
-    const prompt = els.questionPrompt.value.trim();
-
-    if (type === "mcq" && !prompt) {
-      els.questionFormError.hidden = false;
-      els.questionFormError.textContent = "Scrivi il testo della domanda.";
-      return;
-    }
-
-    let audio = "";
-    if (type === "listening") {
-      const path = applyDriveNormalization({ preview: false });
-      if (pendingAudioDataUrl && pendingAudioDataUrl.startsWith("data:")) {
-        if (!AscoltoContent.uploadAudioAsset) {
-          throw new Error("Modulo audio non disponibile. Ricarica la pagina.");
-        }
-        const gh = AscoltoContent.getGithubSettings ? AscoltoContent.getGithubSettings() : null;
-        const onPages = /\.github\.io$/i.test(location.hostname);
-        if (onPages && !(gh && gh.token)) {
-          throw new Error("Su GitHub Pages serve il GitHub Token per caricare audio.");
-        }
-        const upload = await AscoltoContent.uploadAudioAsset({
-          dataUrl: pendingAudioDataUrl,
-          filename: AscoltoContent.suggestAudioAssetName
-            ? AscoltoContent.suggestAudioAssetName(
-                activeLevelId,
-                els.questionFormId.value,
-                pendingAudioFile?.name || "audio.mp3"
-              )
-            : pendingAudioFile?.name || "audio.mp3",
-          levelId: activeLevelId,
-          questionId: els.questionFormId.value,
-        });
-        audio = upload.path;
-      } else {
-        audio = pendingAudioDataUrl || path;
-      }
-      if (!audio) {
-        els.questionFormError.hidden = false;
-        els.questionFormError.textContent = "Seleziona un percorso audio o carica un file.";
-        return;
-      }
-    }
-
-    const payload = {
-      type,
-      prompt,
-      audio,
-      choices,
-      correct,
-    };
-
-    const qid = els.questionFormId.value;
     const submitBtn = els.questionFormSubmit;
     if (submitBtn) submitBtn.disabled = true;
-    const snapshot = AscoltoContent.deepClone ? AscoltoContent.deepClone(content) : JSON.parse(JSON.stringify(content));
 
     try {
+      const type = getSelectedQuestionType();
+      const choices = [0, 1, 2, 3].map((i) => ($(`#choice${i}`)?.value || "").trim());
+      if (choices.some((c) => !c)) {
+        els.questionFormError.hidden = false;
+        els.questionFormError.textContent = "Compila tutte e quattro le risposte.";
+        return;
+      }
+
+      const correctRadio = $('input[name="correctChoice"]:checked');
+      const correct = correctRadio ? Number(correctRadio.value) : 0;
+      const prompt = els.questionPrompt.value.trim();
+
+      if (type === "mcq" && !prompt) {
+        els.questionFormError.hidden = false;
+        els.questionFormError.textContent = "Scrivi il testo della domanda.";
+        return;
+      }
+
+      let audio = "";
+      let uploadWarning = "";
+      if (type === "listening") {
+        const path = applyDriveNormalization({ preview: false });
+        if (pendingAudioDataUrl && pendingAudioDataUrl.startsWith("data:")) {
+          if (!AscoltoContent.uploadAudioAsset) {
+            throw new Error("Modulo audio non disponibile. Ricarica la pagina (Ctrl+Shift+R).");
+          }
+          const gh = AscoltoContent.getGithubSettings ? AscoltoContent.getGithubSettings() : null;
+          const onPages = /\.github\.io$/i.test(location.hostname);
+          if (onPages && !(gh && gh.token)) {
+            throw new Error("Su GitHub Pages serve il GitHub Token per caricare audio.");
+          }
+          const upload = await AscoltoContent.uploadAudioAsset({
+            dataUrl: pendingAudioDataUrl,
+            filename: AscoltoContent.suggestAudioAssetName
+              ? AscoltoContent.suggestAudioAssetName(
+                  activeLevelId,
+                  els.questionFormId.value,
+                  pendingAudioFile?.name || "audio.mp3"
+                )
+              : pendingAudioFile?.name || "audio.mp3",
+            levelId: activeLevelId,
+            questionId: els.questionFormId.value,
+          });
+          audio = upload.path;
+          if (upload.githubError) {
+            uploadWarning = upload.githubError;
+          }
+        } else {
+          audio = pendingAudioDataUrl || path;
+        }
+        if (!audio) {
+          els.questionFormError.hidden = false;
+          els.questionFormError.textContent = "Seleziona un percorso audio o carica un file.";
+          return;
+        }
+      }
+
+      const payload = {
+        type,
+        prompt,
+        audio,
+        choices,
+        correct,
+      };
+
+      const qid = els.questionFormId.value;
+      const snapshot = AscoltoContent.deepClone
+        ? AscoltoContent.deepClone(content)
+        : JSON.parse(JSON.stringify(content));
+
       if (qid) {
         const updated = AscoltoContent.updateQuestion(content, activeLevelId, qid, payload);
         if (!updated) throw new Error("Domanda non trovata. Riapri il livello e riprova.");
@@ -1067,20 +1074,32 @@
         if (!created) throw new Error("Livello non trovato. Riapri il livello e riprova.");
       }
 
-      await persist({ silent: true });
-      const gh = AscoltoContent.getGithubSettings ? AscoltoContent.getGithubSettings() : null;
-      if (gh && gh.token && /\.github\.io$/i.test(location.hostname)) {
-        showToast(qid ? "Domanda aggiornata e pubblicata su Git." : "Domanda aggiunta e pubblicata su Git.");
-      } else {
-        showToast(qid ? "Domanda aggiornata." : "Domanda aggiunta.");
+      try {
+        await persist({ silent: true });
+      } catch (persistErr) {
+        content = snapshot;
+        throw persistErr;
       }
+
+      if (uploadWarning) {
+        showToast(`Domanda salvata. GitHub audio: ${uploadWarning}`, 6000);
+      } else {
+        const gh = AscoltoContent.getGithubSettings ? AscoltoContent.getGithubSettings() : null;
+        if (gh && gh.token && /\.github\.io$/i.test(location.hostname)) {
+          showToast(qid ? "Domanda aggiornata e pubblicata su Git." : "Domanda aggiunta e pubblicata su Git.");
+        } else {
+          showToast(qid ? "Domanda aggiornata." : "Domanda aggiunta.");
+        }
+      }
+
       closeAllModals();
       renderLevelDetail(activeLevelId);
     } catch (err) {
-      content = snapshot;
+      console.error(err);
       const msg = friendlySaveError(err);
       els.questionFormError.hidden = false;
       els.questionFormError.textContent = msg;
+      showToast(msg, 5000);
     } finally {
       if (submitBtn) submitBtn.disabled = false;
     }
