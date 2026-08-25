@@ -195,6 +195,29 @@
     return msg || "Salvataggio non riuscito.";
   }
 
+  /** Token from localStorage, or from Pubblicazione form if user typed but did not save yet. */
+  function getEffectiveGithubSettings() {
+    if (!AscoltoContent.getGithubSettings) return { token: "", repo: "", branch: "main", autoPublish: false };
+    const stored = AscoltoContent.getGithubSettings();
+    const typed = els.ghToken ? els.ghToken.value.trim() : "";
+    if (stored.token || !typed) return stored;
+    AscoltoContent.saveGithubSettings({
+      token: typed,
+      repo: els.ghRepo ? els.ghRepo.value.trim() : stored.repo,
+      branch: els.ghBranch ? els.ghBranch.value.trim() : stored.branch,
+      autoPublish: !!(els.ghAutoPublish && els.ghAutoPublish.checked),
+    });
+    return AscoltoContent.getGithubSettings();
+  }
+
+  function githubTokenRequiredMessage() {
+    return (
+      "Token GitHub non trovato in questo browser. " +
+      "Vai in «Pubblicazione automatica» (pagina principale admin), incolla il token e premi " +
+      "«Salva impostazioni GitHub» finché vedi «Token OK»."
+    );
+  }
+
   async function persist(options = {}) {
     try {
       const result = await AscoltoContent.saveContentRemote(content);
@@ -202,14 +225,14 @@
       contentSource = result.source === "api" ? "file" : "local";
       updateSourceBanner();
 
-      const gh = AscoltoContent.getGithubSettings ? AscoltoContent.getGithubSettings() : null;
+      const effectiveGh = getEffectiveGithubSettings();
+      const hasToken = !!(effectiveGh && effectiveGh.token);
       const apiOk = result.source === "api";
-      const hasToken = !!(gh && gh.token);
       // If the local API is down (GitHub Pages), GitHub is the only durable save.
       const shouldPublish =
         hasToken &&
         (options.publish === true ||
-          (gh.autoPublish && options.publish !== false) ||
+          (effectiveGh.autoPublish && options.publish !== false) ||
           (!apiOk && options.publish !== false));
 
       let published = false;
@@ -1022,10 +1045,10 @@
           if (!AscoltoContent.uploadAudioAsset) {
             throw new Error("Modulo audio non disponibile. Ricarica la pagina (Ctrl+Shift+R).");
           }
-          const gh = AscoltoContent.getGithubSettings ? AscoltoContent.getGithubSettings() : null;
+          const gh = getEffectiveGithubSettings();
           const onPages = /\.github\.io$/i.test(location.hostname);
           if (onPages && !(gh && gh.token)) {
-            throw new Error("Su GitHub Pages serve il GitHub Token per caricare audio.");
+            throw new Error(githubTokenRequiredMessage());
           }
           const upload = await AscoltoContent.uploadAudioAsset({
             dataUrl: pendingAudioDataUrl,
