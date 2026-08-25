@@ -1497,19 +1497,6 @@
             "Un libro"
           ],
           "correct": 3
-        },
-        {
-          "id": 23,
-          "type": "listening",
-          "prompt": "Cosa è successo al treno delle dieci?",
-          "audio": "assets/audio/l4-new-pawlo-mt97l5nl.mp3",
-          "choices": [
-            "È partito in anticipo.",
-            "È arrivato tardi.",
-            "È stato cancellato.",
-            "Ha cambiato binario."
-          ],
-          "correct": 2
         }
       ],
       "durationMinutes": 20
