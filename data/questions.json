@@ -1674,6 +1674,19 @@
             "cui / gliene"
           ],
           "correct": 3
+        },
+        {
+          "id": 6,
+          "type": "mcq",
+          "prompt": "Se vuoi la mia penna, ______ posso prestare.",
+          "audio": "",
+          "choices": [
+            "ti la",
+            "te lo",
+            "te la",
+            "la ti"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
