@@ -1562,6 +1562,19 @@
             "Dal lavoro."
           ],
           "correct": 2
+        },
+        {
+          "id": 28,
+          "type": "listening",
+          "prompt": "Di che colore voleva la giacca inizialmente?",
+          "audio": "assets/audio/l4-new-elevenlabs_2026-08-26t14_32_58_adam---engaging-friend.mp3",
+          "choices": [
+            "Blu",
+            "Nera",
+            "Rossa",
+            "Giallo"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 20
