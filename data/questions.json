@@ -1575,6 +1575,19 @@
             "Giallo"
           ],
           "correct": 1
+        },
+        {
+          "id": 29,
+          "type": "listening",
+          "prompt": "Che problema ha ancora?",
+          "audio": "assets/audio/l4-new-elevenlabs_2026-08-26t14_35_24_adam---engaging-friend.mp3",
+          "choices": [
+            "Male di testa",
+            "Mal di gola",
+            "Mal di denti.",
+            "Mal di schiena."
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 20
