@@ -1523,6 +1523,19 @@
             "Rossi"
           ],
           "correct": 3
+        },
+        {
+          "id": 25,
+          "type": "listening",
+          "prompt": "Dove si incontreranno?",
+          "audio": "assets/audio/l4-new-elevenlabs_2026-08-26t10_25_55_adam---engaging-friend.mp3",
+          "choices": [
+            "Davanti al cinema",
+            "Davanti all’ingresso del parco",
+            "A casa di Marta",
+            "Alla stazione"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 20
