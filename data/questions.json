@@ -1661,6 +1661,19 @@
             "che / che"
           ],
           "correct": 3
+        },
+        {
+          "id": 5,
+          "type": "mcq",
+          "prompt": "Questo è uno dei motivi per ______ ho deciso di cambiare lavoro, anche se ______ avevo già parlato con alcuni amici.",
+          "audio": "",
+          "choices": [
+            "che / glielo",
+            "quale / ne gli",
+            "dove / gliela",
+            "cui / gliene"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
