@@ -1536,6 +1536,19 @@
             "Alla stazione"
           ],
           "correct": 1
+        },
+        {
+          "id": 26,
+          "type": "listening",
+          "prompt": "Perché non parte giovedì?",
+          "audio": "assets/audio/l4-new-elevenlabs_2026-08-26t14_22_22_adam---engaging-friend.mp3",
+          "choices": [
+            "Deve lavorare.",
+            "Non sta bene.",
+            "Non ha prenotato l’albergo.",
+            "Non ha trovato un treno comodo."
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
