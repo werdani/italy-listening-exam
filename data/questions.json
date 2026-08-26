@@ -1622,6 +1622,19 @@
             "quale / cui"
           ],
           "correct": 0
+        },
+        {
+          "id": 2,
+          "type": "mcq",
+          "prompt": "Ho comprato un regalo per Anna e domani ______ darò.",
+          "audio": "",
+          "choices": [
+            "Gliela",
+            "lo le",
+            "Glielo",
+            "Le lo"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
