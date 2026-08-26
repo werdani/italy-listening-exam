@@ -175,11 +175,22 @@
   function showView(name) {
     els.viewLevels.hidden = name !== "levels";
     els.viewLevel.hidden = name !== "level";
+    const libView = document.getElementById("viewLibrary");
+    const libLevelView = document.getElementById("viewLibraryLevel");
+    if (libView) libView.hidden = name !== "library";
+    if (libLevelView) libLevelView.hidden = name !== "libraryLevel";
+    if (window.LibraryAdmin) LibraryAdmin.setContent(content);
   }
 
   function closeAllModals() {
-    [els.levelModal, els.questionModal, els.confirmModal].forEach((m) => {
-      m.hidden = true;
+    [
+      els.levelModal,
+      els.questionModal,
+      els.confirmModal,
+      document.getElementById("libraryLevelModal"),
+      document.getElementById("bookModal"),
+    ].forEach((m) => {
+      if (m) m.hidden = true;
     });
     pendingConfirmAction = null;
     pendingAudioDataUrl = null;
@@ -241,6 +252,7 @@
     try {
       const result = await AscoltoContent.saveContentRemote(content);
       content = result.data;
+      if (window.LibraryAdmin) LibraryAdmin.setContent(content);
       contentSource = result.source === "api" ? "file" : "local";
       updateSourceBanner();
 
@@ -1270,10 +1282,41 @@
     }
   }
 
+  function initLibraryAdmin() {
+    if (!window.LibraryAdmin) return;
+    LibraryAdmin.init({
+      persist,
+      showToast,
+      openConfirm,
+      closeModal: (el) => {
+        if (el) el.hidden = true;
+      },
+      friendlySaveError,
+      getEffectiveGithubSettings,
+      githubTokenRequiredMessage,
+      showView,
+    });
+  }
+
+  function switchAdminNav(target) {
+    $$("[data-admin-nav]").forEach((b) => {
+      b.classList.toggle("is-active", b.getAttribute("data-admin-nav") === target);
+    });
+    if (target === "library" && window.LibraryAdmin) {
+      LibraryAdmin.setContent(content);
+      LibraryAdmin.renderList();
+    } else {
+      renderLevels();
+    }
+  }
+
   async function enterDashboard() {
     showApp();
+    showView("levels");
+    initLibraryAdmin();
     try {
       await loadData();
+      if (window.LibraryAdmin) LibraryAdmin.setContent(content);
       renderLevels();
     } catch (err) {
       console.error(err);
@@ -1427,6 +1470,13 @@
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeAllModals();
+    });
+
+    initLibraryAdmin();
+    $$("[data-admin-nav]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        switchAdminNav(btn.getAttribute("data-admin-nav"));
+      });
     });
 
     styleLevelDurationInput();

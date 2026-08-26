@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/style.css?v=duration2" />
   <link rel="stylesheet" href="css/admin.css?v=savefix6" />
+  <link rel="stylesheet" href="../css/library.css?v=1" />
 </head>
 <body class="admin-body">
   <a class="skip-link" href="#main">Vai al contenuto</a>
@@ -79,6 +80,11 @@
     </header>
 
     <main id="main" class="admin-main" tabindex="-1">
+      <nav class="admin-nav" aria-label="Sezioni admin">
+        <button type="button" class="admin-nav-btn is-active" data-admin-nav="levels">Livelli esame</button>
+        <button type="button" class="admin-nav-btn" data-admin-nav="library">Biblioteca libri</button>
+      </nav>
+
       <!-- Levels list -->
       <section id="viewLevels" class="admin-view" hidden>
         <div class="page-head">
@@ -255,6 +261,38 @@
         <div class="questions-list" id="questionsList"></div>
         <p class="empty-state" id="questionsEmpty" hidden>Nessuna domanda in questo livello. Aggiungi una domanda audio o a scelta multipla.</p>
       </section>
+
+      <!-- Book library (separate from exam) -->
+      <section id="viewLibrary" class="admin-view" hidden>
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Leggi il libro</p>
+            <h1>Biblioteca libri</h1>
+            <p class="lead">Livelli indipendenti dall’esame (es. A1, A2). Carica PDF per ogni livello.</p>
+          </div>
+          <div class="page-actions">
+            <button type="button" class="btn btn-primary" id="btnAddLibraryLevel">+ Nuovo livello</button>
+          </div>
+        </div>
+        <div class="levels-grid" id="libraryGrid"></div>
+        <p class="empty-state" id="libraryEmpty" hidden>Nessun livello. Crea il primo (es. A1).</p>
+      </section>
+
+      <section id="viewLibraryLevel" class="admin-view" hidden>
+        <div class="page-head">
+          <div>
+            <button type="button" class="btn-back" id="btnBackLibrary">← Tutti i livelli biblioteca</button>
+            <h1 id="libraryLevelTitle">Livello</h1>
+            <p class="lead" id="libraryLevelLead"></p>
+          </div>
+          <div class="page-actions">
+            <button type="button" class="btn btn-secondary" id="btnEditLibraryLevel">Modifica livello</button>
+            <button type="button" class="btn btn-primary" id="btnAddBook">+ Carica PDF</button>
+          </div>
+        </div>
+        <div class="questions-list" id="booksList"></div>
+        <p class="empty-state" id="booksEmpty" hidden>Nessun libro. Carica un file .pdf.</p>
+      </section>
     </main>
   </div>
 
@@ -417,6 +455,54 @@
     </div>
   </div>
 
+  <!-- Library level modal -->
+  <div class="modal" id="libraryLevelModal" hidden role="dialog" aria-modal="true" aria-labelledby="libraryLevelModalTitle">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card" role="document">
+      <h2 id="libraryLevelModalTitle">Nuovo livello biblioteca</h2>
+      <form id="libraryLevelForm" class="admin-form">
+        <input type="hidden" id="libraryLevelFormId" />
+        <div class="form-field">
+          <label class="field-label" for="libraryLevelName">Nome livello</label>
+          <input type="text" id="libraryLevelName" required maxlength="80" placeholder="es. A1" />
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="libraryLevelDesc">Descrizione (opzionale)</label>
+          <textarea id="libraryLevelDesc" class="admin-control" rows="3" maxlength="300" placeholder="es. Libri per principianti"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close-modal>Annulla</button>
+          <button type="submit" class="btn btn-primary" id="libraryLevelFormSubmit">Salva livello</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Library book modal -->
+  <div class="modal" id="bookModal" hidden role="dialog" aria-modal="true" aria-labelledby="bookModalTitle">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card" role="document">
+      <h2 id="bookModalTitle">Nuovo libro PDF</h2>
+      <form id="bookForm" class="admin-form">
+        <input type="hidden" id="bookFormId" />
+        <div class="form-field">
+          <label class="field-label" for="bookName">Nome del libro</label>
+          <input type="text" id="bookName" required maxlength="120" placeholder="es. Nuovo Espresso — Unità 1" />
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="bookFile">File PDF</label>
+          <input type="file" id="bookFile" accept="application/pdf,.pdf" />
+          <p class="field-hint" id="bookFileHint">Solo file .pdf — salvato in assets/pdf/</p>
+        </div>
+        <p class="form-error" id="bookFormError" hidden role="alert"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close-modal>Annulla</button>
+          <button type="submit" class="btn btn-primary" id="bookFormSubmit">Salva libro</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Confirm modal -->
   <div class="modal" id="confirmModal" hidden role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
     <div class="modal-backdrop" data-close-modal></div>
@@ -433,8 +519,10 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="../js/content.js?v=savefix6" defer></script>
+  <script src="../js/library.js?v=1" defer></script>
   <script src="../js/visitors.js?v=visitors2" defer></script>
   <script src="js/auth.js?v=duration3" defer></script>
-  <script src="js/admin.js?v=savefix6" defer></script>
+  <script src="js/library-admin.js?v=1" defer></script>
+  <script src="js/admin.js?v=lib1" defer></script>
 </body>
 </html>

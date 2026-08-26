@@ -234,6 +234,13 @@
       el.hidden = !active;
       el.classList.toggle("screen-active", active);
     });
+    ["screenLibrary", "screenLibraryLevel"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.hidden = true;
+        el.classList.remove("screen-active");
+      }
+    });
     els.timerChip.hidden = name !== "exam";
   }
 
@@ -1069,6 +1076,7 @@
       const { data } = await AscoltoContent.loadContent({ preferLocal: false });
       contentData = data;
       AscoltoContent.setSiteConfig(contentData.site);
+      if (window.AscoltoLibraryUI) AscoltoLibraryUI.setContent(contentData);
 
       if (!contentData.levels || !contentData.levels.length) return false;
 
@@ -1250,6 +1258,10 @@
 
       if (!contentData.levels || !contentData.levels.length) {
         throw new Error("Nessun livello trovato nel file dati.");
+      }
+
+      if (window.AscoltoLibraryUI) {
+        AscoltoLibraryUI.init(contentData);
       }
 
       const levelId = getSelectedLevelId();

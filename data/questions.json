@@ -1691,5 +1691,23 @@
       ],
       "durationMinutes": 20
     }
-  ]
+  ],
+  "library": {
+    "title": "Leggi il libro",
+    "description": "Scegli un livello e apri i libri PDF.",
+    "levels": [
+      {
+        "id": 1,
+        "name": "A1.1",
+        "description": "",
+        "books": [
+          {
+            "id": 1,
+            "name": "readinga1",
+            "file": "assets/pdf/a1-1-new-italian_reading_a1-mtakbegq.pdf"
+          }
+        ]
+      }
+    ]
+  }
 }

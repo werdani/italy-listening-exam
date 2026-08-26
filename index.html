@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css?v=dev-photo-1" />
+  <link rel="stylesheet" href="css/library.css?v=1" />
 </head>
 <body>
   <a class="skip-link" href="#main">Vai al contenuto</a>
@@ -116,10 +117,39 @@
 
         <div class="home-actions">
           <button type="button" class="btn btn-primary btn-lg" id="btnStart">Inizia l’esame</button>
+          <button type="button" class="btn btn-secondary btn-lg" id="btnBooks">Leggi il libro</button>
           <button type="button" class="btn btn-ghost" id="btnResume" hidden>Riprendi l’esame</button>
         </div>
         <p class="hint" id="resumeHint" hidden>È stato trovato un tentativo non concluso. Puoi riprendere o ricominciare.</p>
         <p class="hint admin-entry"><a href="admin/">Area admin</a></p>
+      </div>
+    </section>
+
+    <!-- Book library — levels -->
+    <section id="screenLibrary" class="screen" hidden aria-labelledby="libraryTitle">
+      <div class="card home-card fade-in">
+        <div class="library-head">
+          <button type="button" class="btn-back" id="btnBackFromLibrary">← Torna all’esame</button>
+          <p class="eyebrow">Materiali di lettura</p>
+          <h1 id="libraryTitle">Leggi il libro</h1>
+          <p class="lead" id="libraryDescription">Scegli un livello e apri i libri PDF.</p>
+        </div>
+        <div class="library-levels-grid" id="libraryLevelsGrid"></div>
+        <p class="empty-state" id="libraryEmpty" hidden>Nessun livello biblioteca disponibile.</p>
+      </div>
+    </section>
+
+    <!-- Book library — books in a level -->
+    <section id="screenLibraryLevel" class="screen" hidden aria-labelledby="libraryLevelTitle">
+      <div class="card home-card fade-in">
+        <div class="library-head">
+          <button type="button" class="btn-back" id="btnBackFromLibraryLevel">← Tutti i livelli</button>
+          <p class="eyebrow">Leggi il libro</p>
+          <h1 id="libraryLevelTitle">Livello</h1>
+          <p class="lead" id="libraryLevelDescription"></p>
+        </div>
+        <ul class="books-grid" id="booksGrid"></ul>
+        <p class="empty-state" id="booksEmpty" hidden>Nessun libro in questo livello.</p>
       </div>
     </section>
 
@@ -324,7 +354,9 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="js/content.js" defer></script>
+  <script src="js/library.js?v=1" defer></script>
   <script src="js/visitors.js?v=visitors2" defer></script>
+  <script src="js/library-ui.js?v=1" defer></script>
   <script src="js/app.js" defer></script>
 </body>
 </html>
