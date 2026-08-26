@@ -1609,7 +1609,21 @@
       "id": 5,
       "name": "Livello 5",
       "description": "Esame di ascolto e scegliere",
-      "questions": [],
+      "questions": [
+        {
+          "id": 1,
+          "type": "mcq",
+          "prompt": "La persona con ______ ho parlato lavora in un'azienda ______ è più grande della mia.",
+          "audio": "",
+          "choices": [
+            "cui / che",
+            "che / cui",
+            "quale / dove",
+            "quale / cui"
+          ],
+          "correct": 0
+        }
+      ],
       "durationMinutes": 20
     }
   ]
