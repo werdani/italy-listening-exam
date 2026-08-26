@@ -1588,6 +1588,19 @@
             "Mal di schiena."
           ],
           "correct": 0
+        },
+        {
+          "id": 30,
+          "type": "listening",
+          "prompt": "Perché non l’ha restituito ieri?",
+          "audio": "assets/audio/l4-new-elevenlabs_2026-08-26t14_38_40_adam---engaging-friend.mp3",
+          "choices": [
+            "Aveva dimenticato il libro.",
+            "Non aveva tempo di studiare.",
+            "Era all’università.",
+            "La biblioteca era chiusa."
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
