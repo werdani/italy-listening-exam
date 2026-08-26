@@ -1510,6 +1510,19 @@
             "Ha cambiato binario."
           ],
           "correct": 2
+        },
+        {
+          "id": 24,
+          "type": "listening",
+          "prompt": "A quale nome è la prenotazione?",
+          "audio": "assets/audio/l4-new-elevenlabs_2026-08-24t09_15_46_adam---engaging-friend.mp3",
+          "choices": [
+            "Anna",
+            "Bianchi",
+            "Marco",
+            "Rossi"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
