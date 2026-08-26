@@ -1497,6 +1497,19 @@
             "Un libro"
           ],
           "correct": 3
+        },
+        {
+          "id": 23,
+          "type": "listening",
+          "prompt": "Cosa è successo al treno delle dieci?",
+          "audio": "assets/audio/l4-new-elevenlabs_2026-08-24t09_21_29_adam---engaging-friend.mp3",
+          "choices": [
+            "È partito in anticipo.",
+            "È arrivato tardi.",
+            "È stato cancellato.",
+            "Ha cambiato binario."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
