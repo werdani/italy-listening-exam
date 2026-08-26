@@ -1549,6 +1549,19 @@
             "Non ha trovato un treno comodo."
           ],
           "correct": 3
+        },
+        {
+          "id": 27,
+          "type": "listening",
+          "prompt": "Da cosa dipende l’orario?",
+          "audio": "assets/audio/l4-new-elevenlabs_2026-08-26t14_27_29_adam---engaging-friend.mp3",
+          "choices": [
+            "Dal tempo.",
+            "Dal medico.",
+            "Dal traffico.",
+            "Dal lavoro."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
