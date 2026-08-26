@@ -1648,6 +1648,19 @@
             "darti le"
           ],
           "correct": 0
+        },
+        {
+          "id": 4,
+          "type": "mcq",
+          "prompt": "La macchina ______ ho comprato è molto più economica di quella ______ avevo prima.",
+          "audio": "",
+          "choices": [
+            "cui / cui",
+            "la quale / della quale",
+            "dove / che",
+            "che / che"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
