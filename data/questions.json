@@ -1635,6 +1635,19 @@
             "Le lo"
           ],
           "correct": 2
+        },
+        {
+          "id": 3,
+          "type": "mcq",
+          "prompt": "Se vuoi quelle informazioni, posso ______ domani.",
+          "audio": "",
+          "choices": [
+            "dartele",
+            "darteli",
+            "darleti",
+            "darti le"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 20
