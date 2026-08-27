@@ -2176,6 +2176,19 @@
             "prendiate"
           ],
           "correct": 3
+        },
+        {
+          "id": 14,
+          "type": "mcq",
+          "prompt": "meno che non ___ qualcosa di urgente, non chiamarmi stasera.",
+          "audio": "",
+          "choices": [
+            "succede",
+            "succeda",
+            "succederà",
+            "succedesse"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 25
