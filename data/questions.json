@@ -2007,7 +2007,21 @@
       "id": 6,
       "name": "Livello 6",
       "description": "Esame di ascolto e scegliere",
-      "questions": [],
+      "questions": [
+        {
+          "id": 1,
+          "type": "listening",
+          "prompt": "Secondo Reham, cosa è fondamentale in una relazione?",
+          "audio": "assets/audio/l6-new-elevenlabs_2026-08-27t15_21_39_adam---engaging-friend.mp3",
+          "choices": [
+            "Avere gli stessi hobby",
+            "Viaggiare insieme",
+            "Parlare ogni giorno.",
+            "La fiducia."
+          ],
+          "correct": 3
+        }
+      ],
       "durationMinutes": 25
     }
   ],
