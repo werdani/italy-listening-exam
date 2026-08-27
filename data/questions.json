@@ -2215,6 +2215,19 @@
             "Scrivi"
           ],
           "correct": 2
+        },
+        {
+          "id": 17,
+          "type": "mcq",
+          "prompt": "Quando ___ a Roma, visitò il Colosseo.",
+          "audio": "",
+          "choices": [
+            "Fu",
+            "era",
+            "stato",
+            "sarà"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 25
