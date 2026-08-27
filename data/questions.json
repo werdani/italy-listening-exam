@@ -1895,6 +1895,19 @@
             "Non aveva tempo."
           ],
           "correct": 0
+        },
+        {
+          "id": 23,
+          "type": "listening",
+          "prompt": "Usa ancora la vecchia macchina fotografica?",
+          "audio": "assets/audio/l5-new-elevenlabs_2026-08-27t14_54_42_adam---engaging-friend.mp3",
+          "choices": [
+            "Sì",
+            "Solo nei viaggi.",
+            "No",
+            "La usa raramente."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
