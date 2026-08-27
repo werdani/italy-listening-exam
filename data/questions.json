@@ -2020,6 +2020,19 @@
             "La fiducia."
           ],
           "correct": 3
+        },
+        {
+          "id": 2,
+          "type": "listening",
+          "prompt": "Che rapporto hanno adesso?",
+          "audio": "assets/audio/l6-new-reham-hai-ancora-con-mtboffsu.mp3",
+          "choices": [
+            "Sono fidanzati.",
+            "Non si parlano più.",
+            "Sono amici.",
+            "Lavorano insieme."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 25
