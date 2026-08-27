@@ -2098,6 +2098,19 @@
             "Cambiare città."
           ],
           "correct": 1
+        },
+        {
+          "id": 8,
+          "type": "listening",
+          "prompt": "Qual è la difficoltà principale per Sara?",
+          "audio": "assets/audio/l6-new-giovanni-come-va-con-mtboz9gu.mp3",
+          "choices": [
+            "Non si fidano l’uno dell’altra.",
+            "Non si conoscono bene.",
+            "Litigano ogni sera.",
+            "Vivono in città diverse."
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 25
