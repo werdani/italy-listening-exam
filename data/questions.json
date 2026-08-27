@@ -2072,6 +2072,19 @@
             "Marco non le aveva telefonato."
           ],
           "correct": 2
+        },
+        {
+          "id": 6,
+          "type": "listening",
+          "prompt": "Cosa vuole fare Alessandro?",
+          "audio": "assets/audio/l6-new-alessandro-secondo-t-mtbosskz.mp3",
+          "choices": [
+            "Dichiarare i suoi sentimenti.",
+            "Lasciare Beatrice.",
+            "Chiederle un favore",
+            "Evitare di parlarle."
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 25
