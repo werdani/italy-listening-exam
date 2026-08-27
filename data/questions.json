@@ -1882,6 +1882,19 @@
             "Deve accompagnare sua sorella all’aeroporto."
           ],
           "correct": 3
+        },
+        {
+          "id": 22,
+          "type": "listening",
+          "prompt": "Perché non ha comprato l’acqua?",
+          "audio": "assets/audio/l5-new-elevenlabs_2026-08-27t14_52_32_adam---engaging-friend.mp3",
+          "choices": [
+            "Il bar era chiuso",
+            "Non aveva soldi.",
+            "Il supermercato era chiuso.",
+            "Non aveva tempo."
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 20
