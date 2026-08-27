@@ -2150,6 +2150,19 @@
             "fosse"
           ],
           "correct": 1
+        },
+        {
+          "id": 12,
+          "type": "mcq",
+          "prompt": "Dubito che loro ___ la verità.",
+          "audio": "",
+          "choices": [
+            "Sappia",
+            "sapranno",
+            "sappiano",
+            "sapessero"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 25
