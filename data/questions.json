@@ -1791,6 +1791,19 @@
             "Quale"
           ],
           "correct": 2
+        },
+        {
+          "id": 15,
+          "type": "mcq",
+          "prompt": "Quale facoltà prepara principalmente gli studenti a diventare avvocati o magistrati?",
+          "audio": "",
+          "choices": [
+            "Lettere",
+            "Giurisprudenza",
+            "Scienze politiche",
+            "Sociologia"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 20
