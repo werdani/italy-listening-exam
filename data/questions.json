@@ -1869,6 +1869,19 @@
             "Firenze – Roma – Bologna"
           ],
           "correct": 0
+        },
+        {
+          "id": 21,
+          "type": "listening",
+          "prompt": "Perché ha cambiato programma?",
+          "audio": "assets/audio/l5-new-elevenlabs_2026-08-27t14_47_43_adam---engaging-friend.mp3",
+          "choices": [
+            "Deve lavorare sabato.",
+            "Ha perso il treno.",
+            "Non vuole partire presto.",
+            "Deve accompagnare sua sorella all’aeroporto."
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
