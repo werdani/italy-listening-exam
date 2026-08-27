@@ -1713,6 +1713,19 @@
             "del quale / dove"
           ],
           "correct": 1
+        },
+        {
+          "id": 9,
+          "type": "mcq",
+          "prompt": "Il secondo ristorante è ______ del primo, ma il servizio è ______.",
+          "audio": "",
+          "choices": [
+            "più economico / peggiore",
+            "più economico di / peggio",
+            "più economico / peggio",
+            "economico più / peggiore"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 20
