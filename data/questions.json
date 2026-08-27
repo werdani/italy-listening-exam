@@ -1687,6 +1687,19 @@
             "la ti"
           ],
           "correct": 2
+        },
+        {
+          "id": 7,
+          "type": "mcq",
+          "prompt": "Queste informazioni sono importanti: devi ______ spiegare bene.",
+          "audio": "",
+          "choices": [
+            "spiegarglieli",
+            "spiegaregliele",
+            "gliele spiegare",
+            "spiegargliele"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
