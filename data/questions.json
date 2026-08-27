@@ -1778,6 +1778,19 @@
             "piglia pesci"
           ],
           "correct": 3
+        },
+        {
+          "id": 14,
+          "type": "mcq",
+          "prompt": "______ hai invitato alla festa?",
+          "audio": "",
+          "choices": [
+            "Cha",
+            "Cosa",
+            "Chi",
+            "Quale"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
