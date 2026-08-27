@@ -2046,6 +2046,19 @@
             "Hanno deciso di prendere strade diverse."
           ],
           "correct": 3
+        },
+        {
+          "id": 4,
+          "type": "listening",
+          "prompt": "Come si sentiva Francesca all’inizio?",
+          "audio": "assets/audio/l6-new-sofia-com-andato-i-mtbolsgh.mp3",
+          "choices": [
+            "Era annoiata.",
+            "Era nervosa.",
+            "Era arrabbiata.",
+            "Era delusa."
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 25
