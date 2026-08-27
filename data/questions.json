@@ -2163,6 +2163,19 @@
             "sapessero"
           ],
           "correct": 2
+        },
+        {
+          "id": 13,
+          "type": "mcq",
+          "prompt": "Prima che voi ___ una decisione definitiva, vorrei parlarvi.",
+          "audio": "",
+          "choices": [
+            "siate",
+            "prendete",
+            "prendeste",
+            "prendiate"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 25
