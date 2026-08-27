@@ -2016,12 +2016,6 @@
     "description": "Scegli un livello e apri i libri PDF.",
     "levels": [
       {
-        "id": 2,
-        "name": "A 1&2",
-        "description": "Libro principale",
-        "books": []
-      },
-      {
         "id": 3,
         "name": "A1:1",
         "description": "Spiegazione",
