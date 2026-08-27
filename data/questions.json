@@ -2085,6 +2085,19 @@
             "Evitare di parlarle."
           ],
           "correct": 0
+        },
+        {
+          "id": 7,
+          "type": "listening",
+          "prompt": "Cosa preoccupa Valentina?",
+          "audio": "assets/audio/l6-new-valentina-secondo-te-mtbowxl1.mp3",
+          "choices": [
+            "Non avere abbastanza tempo",
+            "Perdere un’amicizia importante.",
+            "Litigare con la famiglia.",
+            "Cambiare città."
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 25
