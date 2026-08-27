@@ -2059,6 +2059,19 @@
             "Era delusa."
           ],
           "correct": 1
+        },
+        {
+          "id": 5,
+          "type": "listening",
+          "prompt": "Perché Laura era infastidita?",
+          "audio": "assets/audio/l6-new-matteo-perch-sei-co-mtboohuo.mp3",
+          "choices": [
+            "Marco era arrivato tardi.",
+            "Marco aveva litigato con lei.",
+            "Marco parlava con una ragazza.",
+            "Marco non le aveva telefonato."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 25
