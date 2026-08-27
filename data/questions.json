@@ -1908,6 +1908,19 @@
             "La usa raramente."
           ],
           "correct": 2
+        },
+        {
+          "id": 24,
+          "type": "listening",
+          "prompt": "Cosa ha iniziato a fare ultimamente?",
+          "audio": "assets/audio/l5-new-elevenlabs_2026-08-27t14_56_35_adam---engaging-friend.mp3",
+          "choices": [
+            "Viaggiare",
+            "Disegnare",
+            "Fotografare",
+            "Cucinare"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
