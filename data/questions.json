@@ -2254,6 +2254,19 @@
             "ha scritto"
           ],
           "correct": 1
+        },
+        {
+          "id": 20,
+          "type": "mcq",
+          "prompt": "Appena ___ arrivato alla stazione, il treno partì.",
+          "audio": "",
+          "choices": [
+            "Erra",
+            "Ebbe",
+            "fu",
+            "È"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 25
