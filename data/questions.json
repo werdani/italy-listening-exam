@@ -2025,7 +2025,13 @@
         "id": 3,
         "name": "A1:1",
         "description": "Spiegazione",
-        "books": []
+        "books": [
+          {
+            "id": 1,
+            "name": "Il presente",
+            "file": "assets/pdf/a1-1-new-il-presente-indicativo-mtc0dla1.pdf"
+          }
+        ]
       }
     ]
   }
