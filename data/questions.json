@@ -2002,6 +2002,13 @@
         }
       ],
       "durationMinutes": 20
+    },
+    {
+      "id": 6,
+      "name": "Livello 6",
+      "description": "Esame di ascolto e scegliere",
+      "questions": [],
+      "durationMinutes": 25
     }
   ],
   "library": {
