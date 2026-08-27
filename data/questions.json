@@ -1973,6 +1973,19 @@
             "Un Vecino"
           ],
           "correct": 2
+        },
+        {
+          "id": 29,
+          "type": "listening",
+          "prompt": "Quanto tempo impiega circa con l’autobus?",
+          "audio": "assets/audio/l5-new-elevenlabs_2026-08-27t15_11_17_adam---engaging-friend.mp3",
+          "choices": [
+            "Quaranta minuti.",
+            "Venti minuti.",
+            "Cinquanta minuti.",
+            "Trenta minuti."
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 20
