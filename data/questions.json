@@ -2189,6 +2189,19 @@
             "succedesse"
           ],
           "correct": 1
+        },
+        {
+          "id": 15,
+          "type": "mcq",
+          "prompt": "È certo questa situazione ___ molto più complessa di quanto sembri.",
+          "audio": "",
+          "choices": [
+            "sia",
+            "sarà",
+            "Fosse",
+            "È"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 25
