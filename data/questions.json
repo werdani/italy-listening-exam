@@ -1843,6 +1843,19 @@
             "ho cercato"
           ],
           "correct": 1
+        },
+        {
+          "id": 19,
+          "type": "mcq",
+          "prompt": "In questo momento i ragazzi ______ una partita di calcio.",
+          "audio": "",
+          "choices": [
+            "giocando",
+            "giocano",
+            "stanno giocando",
+            "stanno giocati"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
