@@ -2124,6 +2124,19 @@
             "È il compleanno di Federico."
           ],
           "correct": 0
+        },
+        {
+          "id": 10,
+          "type": "listening",
+          "prompt": "Qual è il dubbio di Martina?",
+          "audio": "assets/audio/l6-new-stefano-hai-deciso-c-mtbp60j6.mp3",
+          "choices": [
+            "Claudia non le piace.",
+            "Non hanno interessi in comune.",
+            "Claudia vuole trasferirsi.",
+            "Hanno caratteri molto diversi."
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 25
