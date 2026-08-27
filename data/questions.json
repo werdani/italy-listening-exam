@@ -2137,6 +2137,19 @@
             "Hanno caratteri molto diversi."
           ],
           "correct": 3
+        },
+        {
+          "id": 11,
+          "type": "mcq",
+          "prompt": "Penso che Marco ___ già a casa.",
+          "audio": "",
+          "choices": [
+            "È",
+            "Sia",
+            "Ha",
+            "fosse"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 25
