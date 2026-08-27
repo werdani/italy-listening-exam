@@ -1947,6 +1947,19 @@
             "Più grande ma con una batteria peggiore."
           ],
           "correct": 2
+        },
+        {
+          "id": 27,
+          "type": "listening",
+          "prompt": "Cosa ha fatto il professore?",
+          "audio": "assets/audio/l5-new-elevenlabs_2026-08-27t15_07_42_adam---engaging-friend.mp3",
+          "choices": [
+            "Ha cancellato il progetto.",
+            "Ha cambiato il progetto.",
+            "Ha chiesto di ricominciare.",
+            "Ha dato più tempo."
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
