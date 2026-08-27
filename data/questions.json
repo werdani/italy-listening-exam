@@ -1739,6 +1739,19 @@
             "peggiore di"
           ],
           "correct": 2
+        },
+        {
+          "id": 11,
+          "type": "mcq",
+          "prompt": "Questo computer costa ______ quello, ma funziona ______.",
+          "audio": "",
+          "choices": [
+            "meno che / migliore",
+            "più che / meglio",
+            "tanto di / peggio",
+            "meno di / meglio"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
