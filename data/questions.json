@@ -1830,6 +1830,19 @@
             "dispiace"
           ],
           "correct": 3
+        },
+        {
+          "id": 18,
+          "type": "mcq",
+          "prompt": "Da un'ora ______ di capire questo esercizio.",
+          "audio": "",
+          "choices": [
+            "cerco",
+            "sto cercando",
+            "sono cercando",
+            "ho cercato"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 20
