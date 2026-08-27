@@ -1986,6 +1986,19 @@
             "Trenta minuti."
           ],
           "correct": 0
+        },
+        {
+          "id": 30,
+          "type": "listening",
+          "prompt": "Di dove è il vicino?",
+          "audio": "assets/audio/l5-new-elevenlabs_2026-08-27t15_13_21_adam---engaging-friend.mp3",
+          "choices": [
+            "Italiano",
+            "Francese",
+            "Portoghese",
+            "Spagnolo"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
