@@ -1765,6 +1765,19 @@
             "piglia pesci"
           ],
           "correct": 0
+        },
+        {
+          "id": 13,
+          "type": "mcq",
+          "prompt": "Chi dorme non ______.",
+          "audio": "",
+          "choices": [
+            "corre",
+            "sbaglia",
+            "perde tempo",
+            "piglia pesci"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
