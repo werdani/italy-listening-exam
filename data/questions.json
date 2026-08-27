@@ -2241,6 +2241,19 @@
             "comporrà"
           ],
           "correct": 0
+        },
+        {
+          "id": 19,
+          "type": "mcq",
+          "prompt": "Dopo che Marco ___ la lettera, uscì di casa.",
+          "audio": "",
+          "choices": [
+            "scrisse",
+            "ebbe scritto",
+            "aveva scritto",
+            "ha scritto"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 25
