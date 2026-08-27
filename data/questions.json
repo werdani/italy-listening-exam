@@ -1700,6 +1700,19 @@
             "spiegargliele"
           ],
           "correct": 3
+        },
+        {
+          "id": 8,
+          "type": "mcq",
+          "prompt": "Questo è il problema ______ ti parlavo e ______ non riesco ancora a trovare una soluzione.",
+          "audio": "",
+          "choices": [
+            "che / cui",
+            "di cui / al quale",
+            "cui / che",
+            "del quale / dove"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 20
