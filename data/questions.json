@@ -1934,6 +1934,19 @@
             "Perché è più facile."
           ],
           "correct": 2
+        },
+        {
+          "id": 26,
+          "type": "listening",
+          "prompt": "Com’è il nuovo telefono?",
+          "audio": "assets/audio/l5-new-elevenlabs_2026-08-27t14_58_38_adam---engaging-friend.mp3",
+          "choices": [
+            "Più vecchio e più lento.",
+            "Più costoso e più pesante.",
+            "Più economico e con una batteria migliore.",
+            "Più grande ma con una batteria peggiore."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
