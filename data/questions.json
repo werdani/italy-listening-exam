@@ -1921,6 +1921,19 @@
             "Cucinare"
           ],
           "correct": 3
+        },
+        {
+          "id": 25,
+          "type": "listening",
+          "prompt": "Perché Elena lo ha scelto?",
+          "audio": "assets/audio/l5-new-elevenlabs_2026-08-27t15_00_32_adam---engaging-friend.mp3",
+          "choices": [
+            "Perché è più vicino.",
+            "Perché dura meno.",
+            "Perché può frequentarlo.",
+            "Perché è più facile."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
