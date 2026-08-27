@@ -1817,6 +1817,19 @@
             "Ingegneria"
           ],
           "correct": 3
+        },
+        {
+          "id": 17,
+          "type": "mcq",
+          "prompt": "Mi ______ di non aver accettato quell'offerta di lavoro.",
+          "audio": "",
+          "choices": [
+            "dispiaccio",
+            "pento",
+            "rimpiango",
+            "dispiace"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
