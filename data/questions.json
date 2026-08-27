@@ -1726,6 +1726,19 @@
             "economico più / peggiore"
           ],
           "correct": 0
+        },
+        {
+          "id": 10,
+          "type": "mcq",
+          "prompt": "Non conosco nessuno che corra ______ Marco.",
+          "audio": "",
+          "choices": [
+            "migliore di",
+            "più bene che",
+            "meglio di",
+            "peggiore di"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
