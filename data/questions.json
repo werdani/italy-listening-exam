@@ -1752,6 +1752,19 @@
             "meno di / meglio"
           ],
           "correct": 3
+        },
+        {
+          "id": 12,
+          "type": "mcq",
+          "prompt": "Chi va piano, ______.",
+          "audio": "",
+          "choices": [
+            "Va sano e va lontano",
+            "arriva tardi",
+            "che mai",
+            "piglia pesci"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 20
