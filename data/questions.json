@@ -1960,6 +1960,19 @@
             "Ha dato più tempo."
           ],
           "correct": 3
+        },
+        {
+          "id": 28,
+          "type": "listening",
+          "prompt": "Chi ha risolto il problema?",
+          "audio": "assets/audio/l5-new-elevenlabs_2026-08-27t15_09_30_adam---engaging-friend.mp3",
+          "choices": [
+            "Marta",
+            "Anna",
+            "Un tecnico.",
+            "Un Vecino"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 20
