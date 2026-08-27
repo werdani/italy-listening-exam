@@ -2228,6 +2228,19 @@
             "sarà"
           ],
           "correct": 0
+        },
+        {
+          "id": 18,
+          "type": "mcq",
+          "prompt": "Il poeta ___ molte opere famose durante la sua vita",
+          "audio": "",
+          "choices": [
+            "compose",
+            "componeva",
+            "ha composto",
+            "comporrà"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 25
