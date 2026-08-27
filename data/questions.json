@@ -1804,6 +1804,19 @@
             "Sociologia"
           ],
           "correct": 1
+        },
+        {
+          "id": 16,
+          "type": "mcq",
+          "prompt": "Quale tra queste NON appartiene normalmente all'ambito delle scienze umanistiche?",
+          "audio": "",
+          "choices": [
+            "Filosofia",
+            "Lettere",
+            "Storia",
+            "Ingegneria"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 20
