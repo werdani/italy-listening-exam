@@ -2066,7 +2066,13 @@
         "id": 4,
         "name": "A1:2",
         "description": "Spiegazione",
-        "books": []
+        "books": [
+          {
+            "id": 1,
+            "name": "Preposizione articolate",
+            "file": "assets/pdf/a1-2-new-preposizioni-articolate-mtddb2bl.pdf"
+          }
+        ]
       }
     ]
   }
