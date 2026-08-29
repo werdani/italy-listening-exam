@@ -2096,8 +2096,19 @@
             "id": 6,
             "name": "Futuro anteriore",
             "file": "assets/pdf/a1-2-new-il-futuro-anteriore-mtehnabs.pdf"
+          },
+          {
+            "id": 7,
+            "name": "Esercizi con il futuro anteriore",
+            "file": "assets/pdf/a1-2-new-esercizi-con-il-futuro-anteriore-mtehuiez.pdf"
           }
         ]
+      },
+      {
+        "id": 5,
+        "name": "A2:1",
+        "description": "Spiegazione",
+        "books": []
       }
     ]
   }
