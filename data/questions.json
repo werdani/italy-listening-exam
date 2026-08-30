@@ -2254,6 +2254,19 @@
             "La"
           ],
           "correct": 2
+        },
+        {
+          "id": 20,
+          "type": "mcq",
+          "prompt": "I bambini chiedono qualcosa alla maestra. I bambini ___ chiedono qualcosa.",
+          "audio": "",
+          "choices": [
+            "Lo",
+            "Le",
+            "La",
+            "Gli"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 25
