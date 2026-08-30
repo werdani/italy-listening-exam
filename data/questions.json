@@ -2384,6 +2384,19 @@
             "Perché"
           ],
           "correct": 3
+        },
+        {
+          "id": 30,
+          "type": "mcq",
+          "prompt": "______ hai invitato alla festa?",
+          "audio": "",
+          "choices": [
+            "Chi",
+            "Quale",
+            "Dove",
+            "Che"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 25
