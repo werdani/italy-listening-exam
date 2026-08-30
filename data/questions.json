@@ -2228,6 +2228,19 @@
             "avrai"
           ],
           "correct": 1
+        },
+        {
+          "id": 18,
+          "type": "mcq",
+          "prompt": "Dubito che questa notizia ___ vera.",
+          "audio": "",
+          "choices": [
+            "Ha",
+            "Abbia",
+            "È",
+            "Sia"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 25
