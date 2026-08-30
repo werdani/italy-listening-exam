@@ -2202,6 +2202,19 @@
             "capisse"
           ],
           "correct": 0
+        },
+        {
+          "id": 16,
+          "type": "mcq",
+          "prompt": ". È evidente che questa situazione ___ molto più complessa di quanto sembri.",
+          "audio": "",
+          "choices": [
+            "È",
+            "sia",
+            "Fosse",
+            "Sarò"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 25
