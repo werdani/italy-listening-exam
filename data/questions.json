@@ -2163,6 +2163,19 @@
             "scoprirà"
           ],
           "correct": 0
+        },
+        {
+          "id": 13,
+          "type": "mcq",
+          "prompt": "Dopo che ___ partiti, ci accorgemmo di aver dimenticato le chiavi",
+          "audio": "",
+          "choices": [
+            "erano",
+            "furono",
+            "ebbero",
+            "sono"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 25
