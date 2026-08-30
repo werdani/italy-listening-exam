@@ -2176,6 +2176,19 @@
             "sono"
           ],
           "correct": 1
+        },
+        {
+          "id": 14,
+          "type": "mcq",
+          "prompt": "Prima che voi ___ una decisione definitiva, vorrei parlarvi.",
+          "audio": "",
+          "choices": [
+            "prendete",
+            "prenderete",
+            "prendeste",
+            "prendiate"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 25
