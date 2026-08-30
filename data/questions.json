@@ -2072,6 +2072,19 @@
             "Dichiarare i suoi sentimenti."
           ],
           "correct": 3
+        },
+        {
+          "id": 6,
+          "type": "listening",
+          "prompt": "Perché Laura era infastidita?",
+          "audio": "assets/audio/l6-new-matteo-perch-sei-co-mtfw7d12.mp3",
+          "choices": [
+            "Marco parlava con una ragazza",
+            "Marco era arrivato tardi.",
+            "Marco non le aveva telefonato.",
+            "Marco aveva litigato con lei."
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 25
