@@ -2332,6 +2332,19 @@
             "Architettura → avvocato"
           ],
           "correct": 2
+        },
+        {
+          "id": 26,
+          "type": "mcq",
+          "prompt": "Chi insegna principalmente all'università?",
+          "audio": "",
+          "choices": [
+            "Il preside",
+            "Il professore",
+            "Il bidello",
+            "Il maestro"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 25
