@@ -1,0 +1,259 @@
+/* Video courses — public + admin playlist UI */
+
+.course-detail-card {
+  max-width: 1100px;
+}
+
+.course-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.9fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.course-player-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.course-player-frame-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--text) 6%, var(--surface));
+  overflow: hidden;
+}
+
+.course-player-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #000;
+}
+
+.course-player-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* Author `display` must not override the hidden attribute */
+.course-player-empty[hidden],
+.course-player-frame[hidden] {
+  display: none !important;
+}
+
+.course-playlist-heading {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+}
+
+.playlist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: min(60vh, 520px);
+  overflow: auto;
+  padding-right: 0.15rem;
+}
+
+.playlist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  text-align: left;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  padding: 0.75rem 0.85rem;
+  cursor: pointer;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+}
+
+.playlist-item:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.playlist-item.is-active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+}
+
+.playlist-item-index {
+  flex: 0 0 auto;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.playlist-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.playlist-item-title {
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.playlist-item-provider {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 800px) {
+  .course-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .playlist-list {
+    max-height: none;
+  }
+}
+
+/* Student login + user bar */
+.course-login-card {
+  max-width: 440px;
+}
+
+.course-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.course-login-form .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.course-login-form input[type="text"],
+.course-login-form input[type="password"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.7rem 0.85rem;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.course-login-form input:focus {
+  outline: 2px solid color-mix(in srgb, var(--primary) 45%, transparent);
+  outline-offset: 1px;
+  border-color: var(--primary);
+}
+
+.course-login-form .form-error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.course-login-form .form-error[hidden] {
+  display: none !important;
+}
+
+.course-login-form .btn-block {
+  width: 100%;
+}
+
+.courses-user-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+}
+
+.courses-user-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Admin — course access checkboxes */
+.course-access-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  max-height: 240px;
+  overflow: auto;
+  padding: 0.15rem;
+}
+
+.course-access-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.course-access-check input {
+  margin-top: 0.2rem;
+}
+
+.course-access-check span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.course-access-check .muted {
+  font-size: 0.85rem;
+}
+
+.course-access-card {
+  margin-bottom: 1.25rem;
+}
+
+.course-access-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.course-access-card .course-access-list {
+  max-height: 220px;
+}

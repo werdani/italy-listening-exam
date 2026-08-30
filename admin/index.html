@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="../css/style.css?v=duration2" />
   <link rel="stylesheet" href="css/admin.css?v=savefix6" />
   <link rel="stylesheet" href="../css/library.css?v=1" />
+  <link rel="stylesheet" href="../css/courses.css?v=4" />
 </head>
 <body class="admin-body">
   <a class="skip-link" href="#main">Vai al contenuto</a>
@@ -83,6 +84,8 @@
       <nav class="admin-nav" aria-label="Sezioni admin">
         <button type="button" class="admin-nav-btn is-active" data-admin-nav="levels">Livelli esame</button>
         <button type="button" class="admin-nav-btn" data-admin-nav="library">Biblioteca libri</button>
+        <button type="button" class="admin-nav-btn" data-admin-nav="courses">Corsi video</button>
+        <button type="button" class="admin-nav-btn" data-admin-nav="courseUsers">Utenti corsi</button>
       </nav>
 
       <!-- Levels list -->
@@ -292,6 +295,73 @@
         </div>
         <div class="questions-list" id="booksList"></div>
         <p class="empty-state" id="booksEmpty" hidden>Nessun libro. Carica un file .pdf.</p>
+      </section>
+
+      <!-- Video courses -->
+      <section id="viewCourses" class="admin-view" hidden>
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Lezioni video</p>
+            <h1>Corsi video</h1>
+            <p class="lead">Crea corsi e aggiungi link YouTube o Google Drive alla playlist.</p>
+          </div>
+          <div class="page-actions">
+            <button type="button" class="btn btn-primary" id="btnAddCourse">+ Nuovo corso</button>
+          </div>
+        </div>
+        <div class="levels-grid" id="coursesAdminGrid"></div>
+        <p class="empty-state" id="coursesAdminEmpty" hidden>Nessun corso. Crea il primo corso.</p>
+      </section>
+
+      <section id="viewCourse" class="admin-view" hidden>
+        <div class="page-head">
+          <div>
+            <button type="button" class="btn-back" id="btnBackCourses">← Tutti i corsi</button>
+            <h1 id="adminCourseTitle">Corso</h1>
+            <p class="lead" id="adminCourseLead"></p>
+          </div>
+          <div class="page-actions">
+            <button type="button" class="btn btn-secondary" id="btnEditCourse">Modifica corso</button>
+            <button type="button" class="btn btn-primary" id="btnAddVideo">+ Aggiungi video</button>
+          </div>
+        </div>
+
+        <section class="card course-access-card" aria-labelledby="courseAccessTitle">
+          <div class="course-access-card-head">
+            <div>
+              <p class="eyebrow">Permessi</p>
+              <h2 id="courseAccessTitle">Chi può vedere questo corso</h2>
+              <p class="lead branding-lead">
+                Seleziona gli utenti creati in <strong>Utenti corsi</strong>. Solo loro vedranno questo corso dopo il login.
+              </p>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="btnSaveCourseAccess">Salva accesso</button>
+          </div>
+          <div class="course-access-list" id="courseAccessUsers"></div>
+          <p class="empty-state" id="courseAccessEmpty" hidden>
+            Nessun utente. Vai su <strong>Utenti corsi</strong> e crea uno studente, poi torna qui.
+          </p>
+          <p class="field-hint" id="courseAccessHint"></p>
+        </section>
+
+        <div class="questions-list" id="videosList"></div>
+        <p class="empty-state" id="videosEmpty" hidden>Nessun video. Aggiungi un link YouTube o Drive.</p>
+      </section>
+
+      <!-- Course users -->
+      <section id="viewCourseUsers" class="admin-view" hidden>
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Accesso corsi</p>
+            <h1>Utenti corsi</h1>
+            <p class="lead">Crea utenti e scegli quali corsi possono vedere sul sito.</p>
+          </div>
+          <div class="page-actions">
+            <button type="button" class="btn btn-primary" id="btnAddCourseUser">+ Nuovo utente</button>
+          </div>
+        </div>
+        <div class="levels-grid" id="courseUsersGrid"></div>
+        <p class="empty-state" id="courseUsersEmpty" hidden>Nessun utente. Crea il primo studente.</p>
       </section>
     </main>
   </div>
@@ -503,6 +573,100 @@
     </div>
   </div>
 
+  <!-- Course modal -->
+  <div class="modal" id="courseModal" hidden role="dialog" aria-modal="true" aria-labelledby="courseModalTitle">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card" role="document">
+      <h2 id="courseModalTitle">Nuovo corso</h2>
+      <form id="courseForm" class="admin-form">
+        <input type="hidden" id="courseFormId" />
+        <div class="form-field">
+          <label class="field-label" for="courseName">Nome del corso</label>
+          <input type="text" id="courseName" required maxlength="80" placeholder="es. Corso A1 — Grammatica" />
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="courseDesc">Descrizione (opzionale)</label>
+          <textarea id="courseDesc" class="admin-control" rows="3" maxlength="300" placeholder="Breve descrizione del corso"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close-modal>Annulla</button>
+          <button type="submit" class="btn btn-primary" id="courseFormSubmit">Salva corso</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Video modal -->
+  <div class="modal" id="videoModal" hidden role="dialog" aria-modal="true" aria-labelledby="videoModalTitle">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card modal-card-wide" role="document">
+      <h2 id="videoModalTitle">Nuovo video</h2>
+      <form id="videoForm" class="admin-form">
+        <input type="hidden" id="videoFormId" />
+        <div class="form-field">
+          <label class="field-label" for="videoTitle">Titolo</label>
+          <input type="text" id="videoTitle" required maxlength="160" placeholder="es. Lezione 1 — Il presente" />
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="videoUrl">Link YouTube o Google Drive</label>
+          <input
+            type="url"
+            id="videoUrl"
+            required
+            maxlength="500"
+            placeholder="https://www.youtube.com/watch?v=… oppure https://drive.google.com/file/d/…/view"
+          />
+          <p class="field-hint">
+            Incolla il link di condivisione. Per Drive: condividi come <em>Chiunque abbia il link</em>.
+          </p>
+        </div>
+        <p class="form-error" id="videoFormError" hidden role="alert"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close-modal>Annulla</button>
+          <button type="submit" class="btn btn-primary" id="videoFormSubmit">Salva video</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Course user modal -->
+  <div class="modal" id="courseUserModal" hidden role="dialog" aria-modal="true" aria-labelledby="courseUserModalTitle">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card modal-card-wide" role="document">
+      <h2 id="courseUserModalTitle">Nuovo utente</h2>
+      <form id="courseUserForm" class="admin-form">
+        <input type="hidden" id="courseUserFormId" />
+        <div class="form-field">
+          <label class="field-label" for="courseUserUsername">Username</label>
+          <input type="text" id="courseUserUsername" required maxlength="40" autocomplete="off" placeholder="es. studente_a1" />
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="courseUserDisplayName">Nome (opzionale)</label>
+          <input type="text" id="courseUserDisplayName" maxlength="80" placeholder="es. Ahmed" />
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="courseUserPassword">Password</label>
+          <input type="password" id="courseUserPassword" maxlength="80" autocomplete="new-password" placeholder="••••••••" />
+          <p class="field-hint" id="courseUserPasswordHint">Minimo 4 caratteri.</p>
+        </div>
+        <label class="toggle-label" for="courseUserAccessAll">
+          <input type="checkbox" id="courseUserAccessAll" />
+          <span>Accesso a <strong>tutti</strong> i corsi (anche quelli nuovi)</span>
+        </label>
+        <fieldset class="form-fieldset">
+          <legend class="field-label">Corsi accessibili</legend>
+          <div class="course-access-list" id="courseUserCourses"></div>
+          <p class="field-hint">Seleziona i corsi, oppure attiva «Accesso a tutti i corsi» sopra.</p>
+        </fieldset>
+        <p class="form-error" id="courseUserFormError" hidden role="alert"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close-modal>Annulla</button>
+          <button type="submit" class="btn btn-primary" id="courseUserFormSubmit">Salva utente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Confirm modal -->
   <div class="modal" id="confirmModal" hidden role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
     <div class="modal-backdrop" data-close-modal></div>
@@ -520,9 +684,13 @@
 
   <script src="../js/content.js?v=savefix6" defer></script>
   <script src="../js/library.js?v=1" defer></script>
+  <script src="../js/courses.js?v=2" defer></script>
+  <script src="../js/course-users.js?v=5" defer></script>
   <script src="../js/visitors.js?v=visitors2" defer></script>
   <script src="js/auth.js?v=duration3" defer></script>
   <script src="js/library-admin.js?v=1" defer></script>
-  <script src="js/admin.js?v=lib1" defer></script>
+  <script src="js/courses-admin.js?v=4" defer></script>
+  <script src="js/course-users-admin.js?v=3" defer></script>
+  <script src="js/admin.js?v=courseUsers5" defer></script>
 </body>
 </html>

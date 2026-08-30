@@ -234,7 +234,7 @@
       el.hidden = !active;
       el.classList.toggle("screen-active", active);
     });
-    ["screenLibrary", "screenLibraryLevel"].forEach((id) => {
+    ["screenLibrary", "screenLibraryLevel", "screenCourseLogin", "screenCourses", "screenCourse"].forEach((id) => {
       const el = document.getElementById(id);
       if (el) {
         el.hidden = true;
@@ -1077,6 +1077,7 @@
       contentData = data;
       AscoltoContent.setSiteConfig(contentData.site);
       if (window.AscoltoLibraryUI) AscoltoLibraryUI.setContent(contentData);
+      if (window.AscoltoCoursesUI) AscoltoCoursesUI.setContent(contentData);
 
       if (!contentData.levels || !contentData.levels.length) return false;
 
@@ -1262,6 +1263,9 @@
 
       if (window.AscoltoLibraryUI) {
         AscoltoLibraryUI.init(contentData);
+      }
+      if (window.AscoltoCoursesUI) {
+        AscoltoCoursesUI.init(contentData);
       }
 
       const levelId = getSelectedLevelId();

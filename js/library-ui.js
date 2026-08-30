@@ -52,6 +52,13 @@
       el.hidden = !active;
       el.classList.toggle("screen-active", active);
     });
+    ["screenCourses", "screenCourse", "screenCourseLogin"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.hidden = true;
+        el.classList.remove("screen-active");
+      }
+    });
     const timerChip = $("#timerChip");
     if (timerChip) timerChip.hidden = name !== "exam";
   }

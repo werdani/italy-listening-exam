@@ -2631,5 +2631,59 @@
         "books": []
       }
     ]
+  },
+  "courses": {
+    "title": "Corsi video",
+    "description": "Scegli un corso e guarda i video della playlist.",
+    "items": [
+      {
+        "id": 1,
+        "name": "Corso A1",
+        "description": "Corso A1",
+        "videos": [
+          {
+            "id": 1,
+            "title": "Mystic Arabic Deep Techno House Remix 2025 | Epic Oriental Vibes",
+            "url": "https://www.youtube.com/watch?v=B9Zwop3ZFyY&list=RDiztl0nMznGc&index=24",
+            "provider": "youtube"
+          },
+          {
+            "id": 2,
+            "title": "Mishwar",
+            "url": "https://www.youtube.com/watch?v=ODvzDlghmZI&list=RDiztl0nMznGc&index=25",
+            "provider": "youtube"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Corso A2",
+        "description": "Corso A2",
+        "videos": [
+          {
+            "id": 1,
+            "title": "لا تَحسَبوني في الهَوى مُتَصَنِّعًا",
+            "url": "https://www.youtube.com/watch?v=hUxHuvxy7Sw&list=RDiztl0nMznGc&index=26",
+            "provider": "youtube"
+          }
+        ]
+      }
+    ]
+  },
+  "courseUsers": {
+    "users": [
+      {
+        "id": 1,
+        "username": "ammar",
+        "name": "ammar",
+        "passHash": "5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5",
+        "courseIds": [
+          1,
+          2
+        ],
+        "accessAll": false,
+        "isStatic": false
+      }
+    ]
   }
 }

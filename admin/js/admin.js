@@ -179,7 +179,15 @@
     const libLevelView = document.getElementById("viewLibraryLevel");
     if (libView) libView.hidden = name !== "library";
     if (libLevelView) libLevelView.hidden = name !== "libraryLevel";
+    const coursesView = document.getElementById("viewCourses");
+    const courseView = document.getElementById("viewCourse");
+    if (coursesView) coursesView.hidden = name !== "courses";
+    if (courseView) courseView.hidden = name !== "course";
+    const courseUsersView = document.getElementById("viewCourseUsers");
+    if (courseUsersView) courseUsersView.hidden = name !== "courseUsers";
     if (window.LibraryAdmin) LibraryAdmin.setContent(content);
+    if (window.CoursesAdmin) CoursesAdmin.setContent(content);
+    if (window.CourseUsersAdmin) CourseUsersAdmin.setContent(content);
   }
 
   function closeAllModals() {
@@ -189,6 +197,9 @@
       els.confirmModal,
       document.getElementById("libraryLevelModal"),
       document.getElementById("bookModal"),
+      document.getElementById("courseModal"),
+      document.getElementById("videoModal"),
+      document.getElementById("courseUserModal"),
     ].forEach((m) => {
       if (m) m.hidden = true;
     });
@@ -253,6 +264,8 @@
       const result = await AscoltoContent.saveContentRemote(content);
       content = result.data;
       if (window.LibraryAdmin) LibraryAdmin.setContent(content);
+      if (window.CoursesAdmin) CoursesAdmin.setContent(content);
+      if (window.CourseUsersAdmin) CourseUsersAdmin.setContent(content);
       contentSource = result.source === "api" ? "file" : "local";
       updateSourceBanner();
 
@@ -1298,6 +1311,38 @@
     });
   }
 
+  function initCoursesAdmin() {
+    if (!window.CoursesAdmin) return;
+    CoursesAdmin.init({
+      persist,
+      showToast,
+      openConfirm,
+      closeModal: (el) => {
+        if (el) el.hidden = true;
+      },
+      friendlySaveError,
+      getEffectiveGithubSettings,
+      githubTokenRequiredMessage,
+      showView,
+    });
+  }
+
+  function initCourseUsersAdmin() {
+    if (!window.CourseUsersAdmin) return;
+    CourseUsersAdmin.init({
+      persist,
+      showToast,
+      openConfirm,
+      closeModal: (el) => {
+        if (el) el.hidden = true;
+      },
+      friendlySaveError,
+      getEffectiveGithubSettings,
+      githubTokenRequiredMessage,
+      showView,
+    });
+  }
+
   function switchAdminNav(target) {
     $$("[data-admin-nav]").forEach((b) => {
       b.classList.toggle("is-active", b.getAttribute("data-admin-nav") === target);
@@ -1305,6 +1350,12 @@
     if (target === "library" && window.LibraryAdmin) {
       LibraryAdmin.setContent(content);
       LibraryAdmin.renderList();
+    } else if (target === "courses" && window.CoursesAdmin) {
+      CoursesAdmin.setContent(content);
+      CoursesAdmin.renderList();
+    } else if (target === "courseUsers" && window.CourseUsersAdmin) {
+      CourseUsersAdmin.setContent(content);
+      CourseUsersAdmin.renderList();
     } else {
       renderLevels();
     }
@@ -1314,9 +1365,13 @@
     showApp();
     showView("levels");
     initLibraryAdmin();
+    initCoursesAdmin();
+    initCourseUsersAdmin();
     try {
       await loadData();
       if (window.LibraryAdmin) LibraryAdmin.setContent(content);
+      if (window.CoursesAdmin) CoursesAdmin.setContent(content);
+      if (window.CourseUsersAdmin) CourseUsersAdmin.setContent(content);
       renderLevels();
     } catch (err) {
       console.error(err);
