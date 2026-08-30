@@ -2046,6 +2046,19 @@
             "Litigano ogni sera."
           ],
           "correct": 1
+        },
+        {
+          "id": 4,
+          "type": "listening",
+          "prompt": "Cosa preoccupa Valentina?",
+          "audio": "assets/audio/l6-new-valentina-secondo-te-mtfw1l5d.mp3",
+          "choices": [
+            "Non avere abbastanza tempo.",
+            "Litigare con la famiglia",
+            "Cambiare città.",
+            "Perdere un’amicizia importante."
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 25
