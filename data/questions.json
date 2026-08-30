@@ -2267,6 +2267,19 @@
             "Gli"
           ],
           "correct": 1
+        },
+        {
+          "id": 21,
+          "type": "mcq",
+          "prompt": "Ho visto ___ persone che conoscevo, ma non tutte.",
+          "audio": "",
+          "choices": [
+            "ogni",
+            "Ciascuna",
+            "qualche",
+            "parecchie"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 25
