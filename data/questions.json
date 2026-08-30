@@ -2098,6 +2098,19 @@
             "Era delusa."
           ],
           "correct": 2
+        },
+        {
+          "id": 8,
+          "type": "listening",
+          "prompt": "Perché Elena e Matteo non stanno più insieme?",
+          "audio": "assets/audio/l6-new-chiara-hai-ancora-no-mtfwcsgg.mp3",
+          "choices": [
+            "Hanno litigato",
+            "Matteo si è trasferito.",
+            "Hanno deciso di prendere strade diverse.",
+            "Elena non gli parla più."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 25
