@@ -2189,6 +2189,19 @@
             "prendiate"
           ],
           "correct": 3
+        },
+        {
+          "id": 15,
+          "type": "mcq",
+          "prompt": "Non penso che lui ___ quello che sta dicendo.",
+          "audio": "",
+          "choices": [
+            "capisca",
+            "capisce",
+            "capirà",
+            "capisse"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 25
