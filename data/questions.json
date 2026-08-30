@@ -2293,6 +2293,19 @@
             "Ogni"
           ],
           "correct": 2
+        },
+        {
+          "id": 23,
+          "type": "mcq",
+          "prompt": "In quale città si trova il Colosseo?",
+          "audio": "",
+          "choices": [
+            "Milano",
+            "Venezia",
+            "Firenze",
+            "Roma"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 25
