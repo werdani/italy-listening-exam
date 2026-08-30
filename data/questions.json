@@ -2371,6 +2371,19 @@
             "perde tempo"
           ],
           "correct": 2
+        },
+        {
+          "id": 29,
+          "type": "mcq",
+          "prompt": "______ hai deciso di studiare l'italiano?",
+          "audio": "",
+          "choices": [
+            "Chi",
+            "Che",
+            "Cosa",
+            "Perché"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 25
