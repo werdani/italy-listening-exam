@@ -2546,7 +2546,13 @@
         "id": 6,
         "name": "A2:2",
         "description": "Spiegazione",
-        "books": []
+        "books": [
+          {
+            "id": 1,
+            "name": "Verbi riflessivi",
+            "file": "assets/pdf/a2-2-new-i-verbi-riflessivi-mtg4zpm4.pdf"
+          }
+        ]
       }
     ]
   }
