@@ -2241,6 +2241,19 @@
             "Sia"
           ],
           "correct": 3
+        },
+        {
+          "id": 19,
+          "type": "mcq",
+          "prompt": "Non voglio dire niente a lui. Non voglio ___ dire niente",
+          "audio": "",
+          "choices": [
+            "Lo",
+            "Le",
+            "gli",
+            "La"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 25
