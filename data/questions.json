@@ -2137,6 +2137,19 @@
             "La fiducia."
           ],
           "correct": 3
+        },
+        {
+          "id": 11,
+          "type": "mcq",
+          "prompt": "Dante _______ la Divina Commedia nel Medioevo",
+          "audio": "",
+          "choices": [
+            "scriveva",
+            "ha scritto",
+            "scrisse",
+            "scriverà"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 25
