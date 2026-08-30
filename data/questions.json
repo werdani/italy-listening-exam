@@ -2059,6 +2059,19 @@
             "Perdere un’amicizia importante."
           ],
           "correct": 3
+        },
+        {
+          "id": 5,
+          "type": "listening",
+          "prompt": "Cosa vuole fare Alessandro?",
+          "audio": "assets/audio/l6-new-alessandro-secondo-t-mtfw4gdh.mp3",
+          "choices": [
+            "Lasciare Beatrice",
+            "Chiederle un favore.",
+            "Evitare di parlarle.",
+            "Dichiarare i suoi sentimenti."
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 25
