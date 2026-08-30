@@ -2085,6 +2085,19 @@
             "Marco aveva litigato con lei."
           ],
           "correct": 0
+        },
+        {
+          "id": 7,
+          "type": "listening",
+          "prompt": "Come si sentiva Francesca all’inizio?",
+          "audio": "assets/audio/l6-new-sofia-com-andato-i-mtfwa296.mp3",
+          "choices": [
+            "Era annoiata",
+            "Era arrabbiata.",
+            "Era nervosa.",
+            "Era delusa."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 25
