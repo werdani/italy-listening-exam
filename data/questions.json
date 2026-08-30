@@ -2215,6 +2215,19 @@
             "Sarò"
           ],
           "correct": 0
+        },
+        {
+          "id": 17,
+          "type": "mcq",
+          "prompt": "Credo che tu ___ ragione.",
+          "audio": "",
+          "choices": [
+            "Hai",
+            "Abbia",
+            "avessi",
+            "avrai"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 25
