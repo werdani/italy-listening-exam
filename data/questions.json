@@ -2111,6 +2111,19 @@
             "Elena non gli parla più."
           ],
           "correct": 2
+        },
+        {
+          "id": 9,
+          "type": "listening",
+          "prompt": "Che rapporto hanno adesso?",
+          "audio": "assets/audio/l6-new-reham-hai-ancora-con-mtfwgc8d.mp3",
+          "choices": [
+            "Sono fidanzati",
+            "Sono amici.",
+            "Non si parlano più.",
+            "Lavorano insieme."
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 25
