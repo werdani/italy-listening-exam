@@ -2358,6 +2358,19 @@
             "trova un tesoro"
           ],
           "correct": 3
+        },
+        {
+          "id": 28,
+          "type": "mcq",
+          "prompt": "«Chi dorme non ______.»",
+          "audio": "",
+          "choices": [
+            "corre",
+            "sbaglia",
+            "piglia pesci",
+            "perde tempo"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 25
