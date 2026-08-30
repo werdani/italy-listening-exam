@@ -2033,6 +2033,19 @@
             "Federico le ha regalato qualcosa."
           ],
           "correct": 2
+        },
+        {
+          "id": 3,
+          "type": "listening",
+          "prompt": "Qual è la difficoltà principale per Sara?",
+          "audio": "assets/audio/l6-new-giovanni-come-va-con-mtfvyfbv.mp3",
+          "choices": [
+            "Non si fidano l’uno dell’altra.",
+            "Vivono in città diverse.",
+            "Non si conoscono bene.",
+            "Litigano ogni sera."
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 25
