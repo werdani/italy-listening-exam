@@ -2020,6 +2020,19 @@
             "Claudia vuole trasferirsi."
           ],
           "correct": 0
+        },
+        {
+          "id": 2,
+          "type": "listening",
+          "prompt": "Perché Elisa ha comprato i fiori?",
+          "audio": "assets/audio/l6-new-federico-perch-hai-mtfvvnia.mp3",
+          "choices": [
+            "È il loro anniversario.",
+            "il compleanno di Federico.",
+            "È il giorno in cui si sono conosciuti.",
+            "Federico le ha regalato qualcosa."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 25
