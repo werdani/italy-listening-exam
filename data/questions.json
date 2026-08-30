@@ -2306,6 +2306,19 @@
             "Roma"
           ],
           "correct": 3
+        },
+        {
+          "id": 24,
+          "type": "mcq",
+          "prompt": "Mi ______ di non aver accettato quell'offerta di lavoro",
+          "audio": "",
+          "choices": [
+            "Dispiace",
+            "Dispiaciuto",
+            "Manchi",
+            "Voglio"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 25
