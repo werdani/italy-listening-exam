@@ -2345,6 +2345,19 @@
             "Il maestro"
           ],
           "correct": 1
+        },
+        {
+          "id": 27,
+          "type": "mcq",
+          "prompt": "«Chi trova un amico ______.»",
+          "audio": "",
+          "choices": [
+            "trova fortuna",
+            "non è mai solo",
+            "ha tutto",
+            "trova un tesoro"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 25
