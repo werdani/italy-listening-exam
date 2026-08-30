@@ -2280,6 +2280,19 @@
             "parecchie"
           ],
           "correct": 3
+        },
+        {
+          "id": 22,
+          "type": "mcq",
+          "prompt": "Se hai ___ problema, chiamami immediatamente.",
+          "audio": "",
+          "choices": [
+            "nessun",
+            "Alcuno",
+            "qualche",
+            "Ogni"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 25
