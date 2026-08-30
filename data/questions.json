@@ -2007,7 +2007,21 @@
       "id": 6,
       "name": "Livello 6",
       "description": "Esame di ascolto e scegliere",
-      "questions": [],
+      "questions": [
+        {
+          "id": 1,
+          "type": "listening",
+          "prompt": "Qual è il dubbio di Martina?",
+          "audio": "assets/audio/l6-new-stefano-hai-deciso-c-mtfvsl3c.mp3",
+          "choices": [
+            "Hanno caratteri molto diversi.",
+            "Claudia non le piace.",
+            "Non hanno interessi in comune.",
+            "Claudia vuole trasferirsi."
+          ],
+          "correct": 0
+        }
+      ],
       "durationMinutes": 25
     }
   ],
