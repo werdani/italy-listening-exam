@@ -2319,6 +2319,19 @@
             "Voglio"
           ],
           "correct": 0
+        },
+        {
+          "id": 25,
+          "type": "mcq",
+          "prompt": "Quale abbinamento è corretto?",
+          "audio": "",
+          "choices": [
+            "Giurisprudenza → ingegnere",
+            "Economia → architetto",
+            "Medicina → medico",
+            "Architettura → avvocato"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 25
