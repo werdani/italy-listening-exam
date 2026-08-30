@@ -2150,6 +2150,19 @@
             "scriverà"
           ],
           "correct": 2
+        },
+        {
+          "id": 12,
+          "type": "mcq",
+          "prompt": "Nel 1492 Cristoforo Colombo _______ l’America.",
+          "audio": "",
+          "choices": [
+            "scoprì",
+            "scopriva",
+            "ha scoperto",
+            "scoprirà"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 25
