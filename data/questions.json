@@ -2108,7 +2108,13 @@
         "id": 5,
         "name": "A2:1",
         "description": "Spiegazione",
-        "books": []
+        "books": [
+          {
+            "id": 1,
+            "name": "Gli aggettivi possessivi",
+            "file": "assets/pdf/a2-1-new-gli-aggettivi-possessivi-mtfumt8m.pdf"
+          }
+        ]
       }
     ]
   }
