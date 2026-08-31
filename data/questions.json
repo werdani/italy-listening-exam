@@ -2680,6 +2680,12 @@
             "file": "assets/pdf/b1-1-new-esercizi-gerundio-mthgkloo.pdf"
           }
         ]
+      },
+      {
+        "id": 8,
+        "name": "B1:2",
+        "description": "Spiegazione",
+        "books": []
       }
     ]
   },
