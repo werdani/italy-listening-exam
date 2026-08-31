@@ -2628,7 +2628,13 @@
         "id": 7,
         "name": "B1:1",
         "description": "",
-        "books": []
+        "books": [
+          {
+            "id": 1,
+            "name": "Pronomi combinati",
+            "file": "assets/pdf/b1-1-new-pronomi-combinati-mthes1c8.pdf"
+          }
+        ]
       }
     ]
   },
