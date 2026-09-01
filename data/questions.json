@@ -2709,6 +2709,12 @@
             "title": "Mishwar",
             "url": "https://www.youtube.com/watch?v=ODvzDlghmZI&list=RDiztl0nMznGc&index=25",
             "provider": "youtube"
+          },
+          {
+            "id": 3,
+            "title": "رابعة العدوية – عَرَفْتُ الهَوى",
+            "url": "https://www.youtube.com/watch?v=Ule3C-7eoqU&list=RDUle3C-7eoqU&start_radio=1",
+            "provider": "youtube"
           }
         ]
       },
