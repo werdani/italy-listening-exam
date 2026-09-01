@@ -2722,6 +2722,12 @@
             "title": "لا تَحسَبوني في الهَوى مُتَصَنِّعًا",
             "url": "https://www.youtube.com/watch?v=hUxHuvxy7Sw&list=RDiztl0nMznGc&index=26",
             "provider": "youtube"
+          },
+          {
+            "id": 2,
+            "title": "رعد الكردي",
+            "url": "https://www.youtube.com/watch?v=nazGh_27PJs",
+            "provider": "youtube"
           }
         ]
       }
