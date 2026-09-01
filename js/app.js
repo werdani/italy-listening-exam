@@ -234,7 +234,7 @@
       el.hidden = !active;
       el.classList.toggle("screen-active", active);
     });
-    ["screenLibrary", "screenLibraryLevel", "screenCourseLogin", "screenCourses", "screenCourse"].forEach((id) => {
+    ["screenLibrary", "screenLibraryLevel", "screenCourses", "screenCourse"].forEach((id) => {
       const el = document.getElementById(id);
       if (el) {
         el.hidden = true;

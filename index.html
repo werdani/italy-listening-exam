@@ -155,39 +155,11 @@
       </div>
     </section>
 
-    <!-- Video courses — student login -->
-    <section id="screenCourseLogin" class="screen" hidden aria-labelledby="courseLoginTitle">
-      <div class="card home-card fade-in course-login-card">
-        <div class="library-head">
-          <button type="button" class="btn-back" id="btnBackFromCourseLogin">← Torna all’esame</button>
-          <p class="eyebrow">Area corsi</p>
-          <h1 id="courseLoginTitle">Accedi ai corsi</h1>
-          <p class="lead">Inserisci username e password per accedere ai tuoi corsi.</p>
-        </div>
-        <form id="courseLoginForm" class="course-login-form" novalidate>
-          <div class="form-field">
-            <label class="field-label" for="courseLoginUser">Username</label>
-            <input type="text" id="courseLoginUser" name="username" autocomplete="username" required placeholder="es. corsoa1" />
-          </div>
-          <div class="form-field">
-            <label class="field-label" for="courseLoginPass">Password</label>
-            <input type="password" id="courseLoginPass" name="password" autocomplete="current-password" required placeholder="••••••••" />
-          </div>
-          <p class="form-error" id="courseLoginError" hidden role="alert"></p>
-          <button type="submit" class="btn btn-primary btn-lg btn-block">Accedi</button>
-        </form>
-      </div>
-    </section>
-
     <!-- Video courses — list -->
     <section id="screenCourses" class="screen" hidden aria-labelledby="coursesTitle">
       <div class="card home-card fade-in">
         <div class="library-head">
           <button type="button" class="btn-back" id="btnBackFromCourses">← Torna all’esame</button>
-          <div class="courses-user-bar" id="coursesUserBar" hidden>
-            <span class="courses-user-label" id="coursesUserLabel"></span>
-            <button type="button" class="btn btn-ghost btn-sm" id="btnCourseLogout">Esci</button>
-          </div>
           <p class="eyebrow">Lezioni video</p>
           <h1 id="coursesTitle">Corsi video</h1>
           <p class="lead" id="coursesDescription">Scegli un corso e guarda i video della playlist.</p>
@@ -432,10 +404,9 @@
   <script src="js/content.js" defer></script>
   <script src="js/library.js?v=1" defer></script>
   <script src="js/courses.js?v=2" defer></script>
-  <script src="js/course-users.js?v=5" defer></script>
   <script src="js/visitors.js?v=visitors2" defer></script>
   <script src="js/library-ui.js?v=1" defer></script>
-  <script src="js/courses-ui.js?v=4" defer></script>
+  <script src="js/courses-ui.js?v=5" defer></script>
   <script src="js/app.js" defer></script>
 </body>
 </html>

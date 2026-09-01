@@ -22,10 +22,6 @@
     courseLead: $("#adminCourseLead"),
     videosList: $("#videosList"),
     videosEmpty: $("#videosEmpty"),
-    courseAccessUsers: $("#courseAccessUsers"),
-    courseAccessEmpty: $("#courseAccessEmpty"),
-    courseAccessHint: $("#courseAccessHint"),
-    btnSaveCourseAccess: $("#btnSaveCourseAccess"),
     btnBackCourses: $("#btnBackCourses"),
     btnAddCourse: $("#btnAddCourse"),
     btnEditCourse: $("#btnEditCourse"),
@@ -103,87 +99,6 @@
     });
   }
 
-  function renderCourseAccess(courseId) {
-    if (!els.courseAccessUsers) return;
-    const users =
-      global.AscoltoCourseUsers && global.AscoltoCourseUsers.listUsers
-        ? global.AscoltoCourseUsers.listUsers(content)
-        : [];
-    const staticUser =
-      global.AscoltoCourseUsers && global.AscoltoCourseUsers.getStaticUser
-        ? global.AscoltoCourseUsers.getStaticUser()
-        : null;
-
-    els.courseAccessUsers.innerHTML = "";
-    if (els.courseAccessEmpty) els.courseAccessEmpty.hidden = users.length > 0 || !!staticUser;
-    if (els.courseAccessHint) {
-      els.courseAccessHint.textContent = users.length
-        ? "Spunta gli utenti e clicca «Salva accesso». L’utente statico «tutti» ha sempre accesso."
-        : "L’utente statico «tutti» ha sempre accesso a questo corso.";
-    }
-
-    if (staticUser) {
-      const label = document.createElement("label");
-      label.className = "course-access-check";
-      label.innerHTML = `
-        <input type="checkbox" checked disabled />
-        <span>
-          <strong>${escapeHtml(staticUser.name)}</strong>
-          <span class="muted">@${escapeHtml(staticUser.username)} · sempre tutti i corsi</span>
-        </span>
-      `;
-      els.courseAccessUsers.appendChild(label);
-    }
-
-    if (!users.length) return;
-
-    users.forEach((user) => {
-      const always = !!user.accessAll;
-      const checked =
-        always || global.AscoltoCourseUsers.canAccessCourse(user, courseId) ? "checked" : "";
-      const disabled = always ? "disabled" : "";
-      const label = document.createElement("label");
-      label.className = "course-access-check";
-      label.innerHTML = `
-        <input type="checkbox" name="courseMember" value="${user.id}" ${checked} ${disabled} />
-        <span>
-          <strong>${escapeHtml(user.name || user.username)}</strong>
-          <span class="muted">@${escapeHtml(user.username)}${
-            always ? " · tutti i corsi" : ""
-          }</span>
-        </span>
-      `;
-      els.courseAccessUsers.appendChild(label);
-    });
-  }
-
-  async function onSaveCourseAccess() {
-    if (!activeCourseId || !global.AscoltoCourseUsers) return;
-    // Include checked members only (disabled accessAll boxes are excluded by name filter)
-    const selected = els.courseAccessUsers
-      ? [...els.courseAccessUsers.querySelectorAll('input[name="courseMember"]:checked:not(:disabled)')].map(
-          (el) => Number(el.value)
-        )
-      : [];
-    const btn = els.btnSaveCourseAccess;
-    setButtonLoading(btn, true);
-    try {
-      global.AscoltoCourseUsers.setCourseMembers(content, activeCourseId, selected);
-      await api.persist({ silent: true });
-      // Persist replaces content with a fresh clone — re-read after setContent from admin
-      api.showToast(
-        selected.length
-          ? `Accesso salvato: ${selected.length} utenti.`
-          : "Accesso salvato: nessuno può vedere questo corso."
-      );
-      renderCourseAccess(activeCourseId);
-    } catch (err) {
-      api.showToast(api.friendlySaveError(err), 5000);
-    } finally {
-      setButtonLoading(btn, false);
-    }
-  }
-
   function renderCourse(courseId) {
     const course = global.AscoltoCourses.getCourse(content, courseId);
     if (!course) {
@@ -196,8 +111,6 @@
     els.courseLead.textContent =
       (course.description ? `${course.description} · ` : "") +
       `${(course.videos || []).length} video nella playlist.`;
-
-    renderCourseAccess(activeCourseId);
 
     const videos = course.videos || [];
     els.videosList.innerHTML = "";
@@ -425,9 +338,6 @@
       });
     }
     if (els.btnAddVideo) els.btnAddVideo.addEventListener("click", () => openVideoModal(null));
-    if (els.btnSaveCourseAccess) {
-      els.btnSaveCourseAccess.addEventListener("click", onSaveCourseAccess);
-    }
     if (els.btnBackCourses) els.btnBackCourses.addEventListener("click", renderList);
     if (els.courseForm) els.courseForm.addEventListener("submit", onCourseFormSubmit);
     if (els.videoForm) els.videoForm.addEventListener("submit", onVideoFormSubmit);

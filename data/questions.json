@@ -2726,21 +2726,5 @@
         ]
       }
     ]
-  },
-  "courseUsers": {
-    "users": [
-      {
-        "id": 1,
-        "username": "ammar",
-        "name": "ammar",
-        "passHash": "5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5",
-        "courseIds": [
-          1,
-          2
-        ],
-        "accessAll": false,
-        "isStatic": false
-      }
-    ]
   }
 }
