@@ -17,6 +17,8 @@ GET      /api/visitors    → unique visitor stats
 
 from __future__ import annotations
 
+import gzip
+import hashlib
 import json
 import os
 import re
@@ -47,6 +49,10 @@ AUDIO_NAME_RE = re.compile(r"^[a-zA-Z0-9_.-]{1,80}\.(mp3|wav|ogg|m4a|aac|webm|fl
 AUDIO_DIR = ROOT / "assets" / "audio"
 PDF_DIR = ROOT / "assets" / "pdf"
 _visitors_lock = threading.Lock()
+_content_lock = threading.Lock()
+# In-memory cache for the large questions.json (avoids re-reading ~5MB from disk)
+_content_cache: dict = {"mtime_ns": None, "raw": None, "gzip": None, "etag": None}
+_visitors_mem: dict | None = None
 
 
 def sanitize_audio_filename(name: str) -> str:
@@ -93,6 +99,9 @@ def utc_now_iso() -> str:
 
 
 def load_visitors() -> dict:
+    global _visitors_mem
+    if _visitors_mem is not None:
+        return _visitors_mem
     if VISITORS_FILE.is_file():
         try:
             data = json.loads(VISITORS_FILE.read_text(encoding="utf-8"))
@@ -100,27 +109,63 @@ def load_visitors() -> dict:
                 devices = data.get("devices")
                 if not isinstance(devices, dict):
                     devices = {}
-                return {
+                _visitors_mem = {
                     "count": int(data.get("count") or len(devices)),
                     "updatedAt": data.get("updatedAt"),
                     "devices": devices,
                 }
+                return _visitors_mem
         except (OSError, json.JSONDecodeError, TypeError, ValueError):
             pass
-    return {"count": 0, "updatedAt": None, "devices": {}}
+    _visitors_mem = {"count": 0, "updatedAt": None, "devices": {}}
+    return _visitors_mem
 
 
 def save_visitors(data: dict) -> None:
+    global _visitors_mem
     VISITORS_FILE.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "count": int(data.get("count") or 0),
         "updatedAt": data.get("updatedAt"),
         "devices": data.get("devices") or {},
     }
+    _visitors_mem = payload
     text = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
     tmp = VISITORS_FILE.with_suffix(".json.tmp")
     tmp.write_text(text, encoding="utf-8")
     tmp.replace(VISITORS_FILE)
+
+
+def invalidate_content_cache() -> None:
+    with _content_lock:
+        _content_cache["mtime_ns"] = None
+        _content_cache["raw"] = None
+        _content_cache["gzip"] = None
+        _content_cache["etag"] = None
+
+
+def get_content_payload() -> tuple[bytes, bytes, str]:
+    """Return (raw, gzipped, etag) for questions.json, cached by mtime."""
+    if not DATA_FILE.is_file():
+        raise FileNotFoundError(str(DATA_FILE))
+    mtime_ns = DATA_FILE.stat().st_mtime_ns
+    with _content_lock:
+        if (
+            _content_cache["mtime_ns"] == mtime_ns
+            and _content_cache["raw"] is not None
+            and _content_cache["gzip"] is not None
+            and _content_cache["etag"]
+        ):
+            return _content_cache["raw"], _content_cache["gzip"], _content_cache["etag"]
+
+        raw = DATA_FILE.read_bytes()
+        gz = gzip.compress(raw, compresslevel=5)
+        etag = '"' + hashlib.sha1(raw).hexdigest()[:16] + '"'
+        _content_cache["mtime_ns"] = mtime_ns
+        _content_cache["raw"] = raw
+        _content_cache["gzip"] = gz
+        _content_cache["etag"] = etag
+        return raw, gz, etag
 
 
 def fetch_google_drive_file(file_id: str) -> tuple[bytes, str]:
@@ -203,11 +248,46 @@ class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
-    def _cors(self) -> None:
+    def _cors(self, cache_control: str = "no-store") -> None:
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Range")
-        self.send_header("Cache-Control", "no-store")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Range, If-None-Match, Accept-Encoding")
+        self.send_header("Cache-Control", cache_control)
+        self.send_header("Vary", "Accept-Encoding")
+
+    def _accepts_gzip(self) -> bool:
+        accept = (self.headers.get("Accept-Encoding") or "").lower()
+        return "gzip" in accept
+
+    def _send_bytes(
+        self,
+        raw: bytes,
+        content_type: str,
+        *,
+        etag: str | None = None,
+        cache_control: str = "no-cache",
+        gzipped: bytes | None = None,
+    ) -> None:
+        if etag and (self.headers.get("If-None-Match") or "").strip() == etag:
+            self.send_response(HTTPStatus.NOT_MODIFIED)
+            if etag:
+                self.send_header("ETag", etag)
+            self._cors(cache_control)
+            self.end_headers()
+            return
+
+        use_gzip = gzipped is not None and self._accepts_gzip()
+        body = gzipped if use_gzip else raw
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(body)))
+        if use_gzip:
+            self.send_header("Content-Encoding", "gzip")
+        if etag:
+            self.send_header("ETag", etag)
+        self._cors(cache_control)
+        self.end_headers()
+        self.wfile.write(body)
 
     def end_headers(self) -> None:
         # Avoid stale HTML/CSS while editing admin UI locally
@@ -226,12 +306,20 @@ class Handler(SimpleHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path.rstrip("/") or "/"
 
+        if path == "/api/health":
+            self._json_response(HTTPStatus.OK, {"ok": True})
+            return
+
         if path == "/api/content":
             self._send_content_file()
             return
 
         if path == "/api/visitors":
             self._send_visitors()
+            return
+
+        if path == "/data/questions.json":
+            self._send_content_file()
             return
 
         if path.startswith("/api/drive/"):
@@ -263,10 +351,14 @@ class Handler(SimpleHTTPRequestHandler):
         self._handle_save()
 
     def _json_response(self, status: int, payload: dict) -> None:
-        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        raw = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        use_gzip = self._accepts_gzip() and len(raw) > 512
+        body = gzip.compress(raw, compresslevel=5) if use_gzip else raw
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
+        if use_gzip:
+            self.send_header("Content-Encoding", "gzip")
         self._cors()
         self.end_headers()
         self.wfile.write(body)
@@ -345,16 +437,18 @@ class Handler(SimpleHTTPRequestHandler):
         )
 
     def _send_content_file(self) -> None:
-        if not DATA_FILE.is_file():
+        try:
+            raw, gz, etag = get_content_payload()
+        except FileNotFoundError:
             self.send_error(HTTPStatus.NOT_FOUND, "questions.json not found")
             return
-        raw = DATA_FILE.read_bytes()
-        self.send_response(HTTPStatus.OK)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(raw)))
-        self._cors()
-        self.end_headers()
-        self.wfile.write(raw)
+        self._send_bytes(
+            raw,
+            "application/json; charset=utf-8",
+            etag=etag,
+            cache_control="no-cache",
+            gzipped=gz,
+        )
 
     def _proxy_drive(self, file_id: str) -> None:
         file_id = (file_id or "").strip()
@@ -503,6 +597,7 @@ class Handler(SimpleHTTPRequestHandler):
         tmp = DATA_FILE.with_suffix(".json.tmp")
         tmp.write_text(text, encoding="utf-8")
         tmp.replace(DATA_FILE)
+        invalidate_content_cache()
 
         reply = json.dumps({"ok": True, "levels": len(data.get("levels") or [])}).encode("utf-8")
         self.send_response(HTTPStatus.OK)
@@ -527,6 +622,7 @@ def main() -> None:
     print("POST /api/audio saves assets/audio/*.mp3")
     print("POST /api/pdf saves assets/pdf/*.pdf")
     print("GET  /api/drive/<fileId> proxies Google Drive media")
+    print("GET  /api/health lightweight ping")
     print("POST /api/visit registers unique devices")
     print("GET  /api/visitors returns unique visitor count")
     try:

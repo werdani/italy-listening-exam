@@ -9,6 +9,7 @@
   <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" href="data/questions.json" as="fetch" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css?v=dev-photo-1" />
   <link rel="stylesheet" href="css/library.css?v=1" />
@@ -27,6 +28,8 @@
           width="40"
           height="40"
           class="brand-logo brand-logo-circle"
+          decoding="async"
+          fetchpriority="high"
         />
         <div class="brand-text">
           <span class="brand-name" id="brandName">Signora Reham Ramadan</span>
@@ -74,6 +77,7 @@
             width="88"
             height="88"
             class="home-logo brand-logo-circle"
+            decoding="async"
           />
           <p class="eyebrow">Valutazione di ascolto</p>
           <h1 id="examTitle">Esame di Ascolto — Italiano</h1>
@@ -401,12 +405,12 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-  <script src="js/content.js" defer></script>
+  <script src="js/content.js?v=perf1" defer></script>
   <script src="js/library.js?v=1" defer></script>
   <script src="js/courses.js?v=2" defer></script>
-  <script src="js/visitors.js?v=visitors2" defer></script>
+  <script src="js/visitors.js?v=perf1" defer></script>
   <script src="js/library-ui.js?v=1" defer></script>
   <script src="js/courses-ui.js?v=5" defer></script>
-  <script src="js/app.js" defer></script>
+  <script src="js/app.js?v=perf1" defer></script>
 </body>
 </html>

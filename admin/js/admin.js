@@ -533,7 +533,18 @@
 
   async function refreshVisitorStats() {
     if (!els.visitorCount) return;
-    if (els.visitorStatsHint) els.visitorStatsHint.textContent = "Aggiornamento…";
+
+    const cached =
+      window.AscoltoVisitors && AscoltoVisitors.getCachedVisitorStats
+        ? AscoltoVisitors.getCachedVisitorStats()
+        : null;
+    if (cached && typeof cached.count === "number") {
+      els.visitorCount.textContent = String(cached.count);
+      if (els.visitorStatsHint) els.visitorStatsHint.textContent = "Aggiornamento…";
+    } else if (els.visitorStatsHint) {
+      els.visitorStatsHint.textContent = "Aggiornamento…";
+    }
+
     try {
       if (!window.AscoltoVisitors || !AscoltoVisitors.getVisitorStats) {
         throw new Error("Modulo visitatori non disponibile.");
@@ -541,7 +552,9 @@
       const stats = await AscoltoVisitors.getVisitorStats();
       els.visitorCount.textContent = String(stats.count ?? 0);
       if (els.visitorStatsHint) {
-        if (stats.source === "api") {
+        if (stats.fromCache) {
+          els.visitorStatsHint.textContent = "Ultimo valore in cache (rete lenta).";
+        } else if (stats.source === "api") {
           els.visitorStatsHint.textContent = stats.updatedAt
             ? `Aggiornato: ${stats.updatedAt}`
             : "Dati dal server locale.";
@@ -556,7 +569,7 @@
       }
     } catch (err) {
       console.error(err);
-      els.visitorCount.textContent = "—";
+      if (!cached) els.visitorCount.textContent = "—";
       if (els.visitorStatsHint) {
         els.visitorStatsHint.textContent = err.message || "Errore nel caricamento.";
       }
@@ -1285,8 +1298,9 @@
     content = data;
     contentSource = source === "local" ? "local" : "file";
     AscoltoContent.setSiteConfig(content.site);
+    // Health check is tiny; keep it but never block UI longer than needed.
     if (AscoltoContent.detectDriveProxy) {
-      await AscoltoContent.detectDriveProxy();
+      AscoltoContent.detectDriveProxy().catch(() => {});
     }
   }
 

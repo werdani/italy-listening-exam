@@ -1253,9 +1253,6 @@
       const { data } = await AscoltoContent.loadContent({ preferLocal: false });
       contentData = data;
       AscoltoContent.setSiteConfig(contentData.site);
-      if (AscoltoContent.detectDriveProxy) {
-        await AscoltoContent.detectDriveProxy();
-      }
 
       if (!contentData.levels || !contentData.levels.length) {
         throw new Error("Nessun livello trovato nel file dati.");
@@ -1279,6 +1276,11 @@
 
       renderHome();
       showScreen("home");
+
+      // Probe Drive proxy in the background — must not delay the home screen.
+      if (AscoltoContent.detectDriveProxy) {
+        AscoltoContent.detectDriveProxy().catch(() => {});
+      }
 
       if (window.AscoltoVisitors && AscoltoVisitors.registerVisit) {
         AscoltoVisitors.registerVisit().catch(() => {});

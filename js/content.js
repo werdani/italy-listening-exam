@@ -463,6 +463,7 @@
     // Default: data/questions.json (or /api/content) is the source of truth.
     // localStorage is a draft/fallback only — avoids stale browser edits after git pull.
     const preferLocal = options.preferLocal === true && !forceFile;
+    const bustCache = forceFile || options.bustCache === true;
 
     if (preferLocal) {
       const local = readLocal();
@@ -475,9 +476,13 @@
 
     try {
       const base = options.url || resolveDataUrl(options.basePath);
-      const sep = base.includes("?") ? "&" : "?";
-      const url = `${base}${sep}t=${Date.now()}`;
-      const res = await fetch(url, { cache: "no-store" });
+      // Avoid cache-busting query on every load so ETag / gzip revalidation can work.
+      const url = bustCache
+        ? `${base}${base.includes("?") ? "&" : "?"}t=${Date.now()}`
+        : base;
+      const res = await fetch(url, {
+        cache: bustCache ? "no-store" : "no-cache",
+      });
       if (!res.ok) throw new Error(`Impossibile caricare i contenuti (${res.status})`);
       const json = await res.json();
       const data = normalizeContent(json);
@@ -1075,10 +1080,15 @@
       return false;
     }
     try {
-      const res = await fetch(`${resolveApiRoot()}/api/content`, {
+      // Lightweight ping — never download the full questions.json (~5MB) just to probe.
+      const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timer = controller ? setTimeout(() => controller.abort(), 2500) : null;
+      const res = await fetch(`${resolveApiRoot()}/api/health`, {
         method: "GET",
         cache: "no-store",
+        signal: controller ? controller.signal : undefined,
       });
+      if (timer) clearTimeout(timer);
       driveProxyAvailable = res.ok;
     } catch {
       driveProxyAvailable = false;

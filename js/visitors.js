@@ -8,10 +8,12 @@
 
   const DEVICE_KEY = "ascolto-device-id";
   const COUNTED_KEY = "ascolto-visit-counted";
+  const STATS_CACHE_KEY = "ascolto-visitor-stats";
   const COUNTER_NS = "werdani-italy-listening";
   const COUNTER_NAME = "unique-devices";
   // countapi.xyz successor — no API key required (CounterAPI v1 was retired Aug 2026)
   const ABACUS_BASE = "https://abacus.jasoncameron.dev";
+  const FETCH_TIMEOUT_MS = 3500;
 
   function uuid() {
     if (crypto && typeof crypto.randomUUID === "function") {
@@ -49,6 +51,45 @@
     }
   }
 
+  function readCachedStats() {
+    try {
+      const raw = sessionStorage.getItem(STATS_CACHE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed.count !== "number") return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeCachedStats(stats) {
+    try {
+      sessionStorage.setItem(
+        STATS_CACHE_KEY,
+        JSON.stringify({
+          count: Number(stats.count) || 0,
+          source: stats.source || "none",
+          updatedAt: stats.updatedAt || null,
+          cachedAt: Date.now(),
+        })
+      );
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function fetchWithTimeout(url, options = {}, timeoutMs = FETCH_TIMEOUT_MS) {
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+    return fetch(url, {
+      ...options,
+      signal: controller ? controller.signal : options.signal,
+    }).finally(() => {
+      if (timer) clearTimeout(timer);
+    });
+  }
+
   function parseCountPayload(data) {
     const raw =
       typeof data?.count === "number"
@@ -60,7 +101,7 @@
   }
 
   async function registerWithLocalApi(deviceId) {
-    const res = await fetch("/api/visit", {
+    const res = await fetchWithTimeout("/api/visit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ deviceId }),
@@ -72,21 +113,21 @@
 
   async function registerWithPublicCounter() {
     const url = `${ABACUS_BASE}/hit/${encodeURIComponent(COUNTER_NS)}/${encodeURIComponent(COUNTER_NAME)}`;
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetchWithTimeout(url, { cache: "no-store" });
     if (!res.ok) throw new Error(`public counter ${res.status}`);
     const data = await res.json();
     return { ok: true, count: parseCountPayload(data), source: "counterapi", isNew: true };
   }
 
   async function fetchLocalStats() {
-    const res = await fetch("/api/visitors", { cache: "no-store" });
+    const res = await fetchWithTimeout("/api/visitors", { cache: "no-store" }, 2500);
     if (!res.ok) throw new Error(`visitors api ${res.status}`);
     return res.json();
   }
 
   async function fetchPublicCounterStats() {
     const url = `${ABACUS_BASE}/get/${encodeURIComponent(COUNTER_NS)}/${encodeURIComponent(COUNTER_NAME)}`;
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetchWithTimeout(url, { cache: "no-store" });
     if (!res.ok) throw new Error(`public counter get ${res.status}`);
     const data = await res.json();
     return {
@@ -109,6 +150,9 @@
     try {
       const result = await registerWithLocalApi(deviceId);
       markCountedLocally();
+      if (typeof result.count === "number") {
+        writeCachedStats({ count: result.count, source: "api", updatedAt: null });
+      }
       return { ...result, deviceId, counted: !!result.isNew };
     } catch {
       /* GitHub Pages or API unavailable — try public counter once */
@@ -117,6 +161,7 @@
     try {
       const result = await registerWithPublicCounter();
       markCountedLocally();
+      writeCachedStats({ count: result.count, source: "counterapi", updatedAt: null });
       return { ...result, deviceId, counted: true };
     } catch (err) {
       console.warn("[visitors] register failed", err);
@@ -130,18 +175,31 @@
   async function getVisitorStats() {
     try {
       const local = await fetchLocalStats();
-      return {
+      const stats = {
         count: Number(local.count) || 0,
         source: "api",
         updatedAt: local.updatedAt || null,
       };
+      writeCachedStats(stats);
+      return stats;
     } catch {
       /* fall through */
     }
 
     try {
-      return await fetchPublicCounterStats();
+      const remote = await fetchPublicCounterStats();
+      writeCachedStats(remote);
+      return remote;
     } catch (err) {
+      const cached = readCachedStats();
+      if (cached) {
+        return {
+          count: cached.count,
+          source: cached.source || "cache",
+          updatedAt: cached.updatedAt || null,
+          fromCache: true,
+        };
+      }
       return {
         count: 0,
         source: "none",
@@ -155,5 +213,6 @@
     getDeviceId,
     registerVisit,
     getVisitorStats,
+    getCachedVisitorStats: readCachedStats,
   };
 })();
