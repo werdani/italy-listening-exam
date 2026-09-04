@@ -611,8 +611,18 @@
   function sanitizeGithubToken(token) {
     return String(token || "")
       .trim()
+      .replace(/[\u200B-\u200D\uFEFF]/g, "")
       .replace(/^["'`]+|["'`]+$/g, "")
+      .replace(/^(Bearer|token)\s+/i, "")
       .replace(/\s+/g, "");
+  }
+
+  /** True for GitHub PATs (classic ghp_… or fine-grained github_pat_…). Not a login password. */
+  function looksLikeGithubToken(token) {
+    const t = sanitizeGithubToken(token);
+    if (/^github_pat_[A-Za-z0-9_]{20,}$/.test(t)) return t.length >= 40;
+    if (/^gh[pousr]_[A-Za-z0-9_]{20,}$/.test(t)) return t.length >= 30;
+    return false;
   }
 
   function explainGithubError(status, message, context = "") {
@@ -620,9 +630,9 @@
     if (status === 401 || m.includes("bad credentials")) {
       return (
         "Token GitHub non valido (Bad credentials). Verifica: " +
-        "copia tutto il token senza spazi; token non scaduto; account con accesso al repo. " +
-        "Fine-grained: seleziona werdani/italy-listening-exam + Contents Read and write. " +
-        "Classic: spunta il permesso repo."
+        "incolla il token (ghp_… o github_pat_…), non la password; copia tutto senza spazi; " +
+        "token non scaduto; Fine-grained: repo werdani/italy-listening-exam + Contents Read and write. " +
+        "Classic: permesso repo."
       );
     }
     if (status === 403) {
@@ -652,32 +662,33 @@
   }
 
   async function githubApiFetch(url, token, options = {}) {
+    const clean = sanitizeGithubToken(token);
+    const { headers: extraHeaders, ...rest } = options;
     return fetch(url, {
-      ...options,
+      ...rest,
       headers: {
-        Authorization: `Bearer ${sanitizeGithubToken(token)}`,
+        Authorization: `Bearer ${clean}`,
         Accept: "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
-        ...(options.headers || {}),
+        ...(extraHeaders || {}),
       },
       cache: "no-store",
     });
   }
 
-  /** Quick check before save/publish — throws with a helpful message. */
+  /**
+   * Check the token against the repo we actually publish to.
+   * Do not require GET /user: fine-grained PATs without Profile permission
+   * return 401 Bad credentials there even when Contents access is valid.
+   */
   async function validateGithubToken(token, repoFull) {
     const clean = sanitizeGithubToken(token);
     if (!clean) throw new Error("Inserisci un GitHub Token.");
-    if (clean.length < 20) {
-      throw new Error("Token troppo corto. Copia l'intero token da GitHub (ghp_… o github_pat_…).");
+    if (!looksLikeGithubToken(clean)) {
+      throw new Error(
+        "Questo non sembra un GitHub Token. Incolla ghp_… (classic) o github_pat_… (fine-grained), non la password dell’account."
+      );
     }
-
-    const userRes = await githubApiFetch("https://api.github.com/user", clean);
-    if (!userRes.ok) {
-      const err = await userRes.json().catch(() => ({}));
-      throw new Error(explainGithubError(userRes.status, err.message, "user"));
-    }
-    const user = await userRes.json();
 
     const parts = String(repoFull || "").trim().split("/").filter(Boolean);
     if (parts.length !== 2) throw new Error("Repo non valido. Usa il formato owner/repo");
@@ -695,7 +706,14 @@
       );
     }
 
-    return { ok: true, login: user.login, repo: `${owner}/${repo}` };
+    let login = owner;
+    const userRes = await githubApiFetch("https://api.github.com/user", clean);
+    if (userRes.ok) {
+      const user = await userRes.json().catch(() => ({}));
+      if (user && user.login) login = user.login;
+    }
+
+    return { ok: true, login, repo: `${owner}/${repo}` };
   }
 
   async function githubJson(res, context) {
@@ -1284,6 +1302,8 @@
     exportContent,
     getGithubSettings,
     saveGithubSettings,
+    sanitizeGithubToken,
+    looksLikeGithubToken,
     validateGithubToken,
     publishToGitHub,
     publishBinaryToGitHub,

@@ -232,19 +232,41 @@
     return msg || "Salvataggio non riuscito.";
   }
 
-  /** Token from localStorage, or from Pubblicazione form if user typed but did not save yet. */
+  function typedGithubToken() {
+    if (!els.ghToken) return "";
+    const raw = els.ghToken.value;
+    const looks = AscoltoContent.looksLikeGithubToken
+      ? AscoltoContent.looksLikeGithubToken(raw)
+      : /^(ghp_|github_pat_)/.test(String(raw || "").trim());
+    if (!looks) return "";
+    return AscoltoContent.sanitizeGithubToken
+      ? AscoltoContent.sanitizeGithubToken(raw)
+      : String(raw || "").trim();
+  }
+
+  /** Token from localStorage, or a PAT typed in the form (never a browser-autofilled password). */
   function getEffectiveGithubSettings() {
     if (!AscoltoContent.getGithubSettings) return { token: "", repo: "", branch: "main", autoPublish: false };
     const stored = AscoltoContent.getGithubSettings();
-    const typed = els.ghToken ? els.ghToken.value.trim() : "";
-    if (stored.token || !typed) return stored;
-    AscoltoContent.saveGithubSettings({
-      token: typed,
-      repo: els.ghRepo ? els.ghRepo.value.trim() : stored.repo,
-      branch: els.ghBranch ? els.ghBranch.value.trim() : stored.branch,
-      autoPublish: !!(els.ghAutoPublish && els.ghAutoPublish.checked),
-    });
-    return AscoltoContent.getGithubSettings();
+    const typed = typedGithubToken();
+    let token = typed || stored.token || "";
+    if (
+      token &&
+      AscoltoContent.looksLikeGithubToken &&
+      !AscoltoContent.looksLikeGithubToken(token)
+    ) {
+      token = "";
+    }
+    if (token && token !== stored.token) {
+      AscoltoContent.saveGithubSettings({
+        token,
+        repo: els.ghRepo ? els.ghRepo.value.trim() : stored.repo,
+        branch: els.ghBranch ? els.ghBranch.value.trim() : stored.branch,
+        autoPublish: !!(els.ghAutoPublish && els.ghAutoPublish.checked),
+      });
+      return AscoltoContent.getGithubSettings();
+    }
+    return { ...stored, token };
   }
 
   function githubTokenRequiredMessage() {
@@ -333,7 +355,22 @@
   function fillGithubForm() {
     if (!AscoltoContent.getGithubSettings || !els.githubForm) return;
     const gh = AscoltoContent.getGithubSettings();
-    if (els.ghToken) els.ghToken.value = gh.token || "";
+    const tokenLooksValid =
+      !gh.token ||
+      !AscoltoContent.looksLikeGithubToken ||
+      AscoltoContent.looksLikeGithubToken(gh.token);
+    if (gh.token && !tokenLooksValid) {
+      AscoltoContent.saveGithubSettings({ token: "" });
+      gh.token = "";
+    }
+    // Keep the password field empty so the browser cannot overwrite a saved PAT
+    // with the GitHub account password on "Pubblica online".
+    if (els.ghToken) {
+      els.ghToken.value = "";
+      els.ghToken.placeholder = gh.token
+        ? "Token salvato in questo browser — incolla uno nuovo per sostituirlo"
+        : "ghp_… oppure github_pat_…";
+    }
     if (els.ghRepo) els.ghRepo.value = gh.repo || "werdani/italy-listening-exam";
     if (els.ghBranch) els.ghBranch.value = gh.branch || "main";
     if (els.ghAutoPublish) els.ghAutoPublish.checked = !!gh.autoPublish;
@@ -346,10 +383,23 @@
 
   async function onGithubFormSubmit(e) {
     e.preventDefault();
-    const token = els.ghToken.value.trim();
+    const typed = typedGithubToken();
+    const stored = AscoltoContent.getGithubSettings ? AscoltoContent.getGithubSettings() : { token: "" };
+    const rawField = els.ghToken ? els.ghToken.value.trim() : "";
     const repo = els.ghRepo.value.trim();
     const branch = els.ghBranch.value.trim();
     const autoPublish = !!(els.ghAutoPublish && els.ghAutoPublish.checked);
+
+    if (rawField && !typed) {
+      setGithubStatus(
+        "Incolla un GitHub Token (ghp_… o github_pat_…), non la password dell’account.",
+        "warn"
+      );
+      showToast("Serve il Personal Access Token, non la password GitHub.");
+      return;
+    }
+
+    const token = typed || stored.token || "";
 
     if (token) {
       setGithubStatus("Verifica token GitHub…", "");
@@ -368,7 +418,7 @@
       }
     }
 
-    AscoltoContent.saveGithubSettings({ token, repo, branch, autoPublish });
+    AscoltoContent.saveGithubSettings({ token: "", repo, branch, autoPublish });
     fillGithubForm();
     updateSourceBanner();
     showToast("Impostazioni GitHub salvate.");
@@ -1379,15 +1429,13 @@
     els.btnResetLocal.addEventListener("click", requestReset);
     const publishHandler = async () => {
       try {
-        // Save github form fields first if present
-        if (els.ghToken) {
-          AscoltoContent.saveGithubSettings({
-            token: els.ghToken.value.trim(),
-            repo: els.ghRepo.value.trim(),
-            branch: els.ghBranch.value.trim(),
-            autoPublish: !!(els.ghAutoPublish && els.ghAutoPublish.checked),
-          });
-        }
+        const gh = getEffectiveGithubSettings();
+        AscoltoContent.saveGithubSettings({
+          token: gh.token || "",
+          repo: els.ghRepo ? els.ghRepo.value.trim() : gh.repo,
+          branch: els.ghBranch ? els.ghBranch.value.trim() : gh.branch,
+          autoPublish: !!(els.ghAutoPublish && els.ghAutoPublish.checked),
+        });
         await publishOnline();
       } catch (err) {
         console.error(err);
