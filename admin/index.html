@@ -145,13 +145,14 @@
                 placeholder="ghp_… oppure github_pat_…"
               />
               <p class="field-hint">
-                Crea il token su GitHub → Settings → Developer settings → Personal access tokens
-                (non usare la password dell’account).
-                <strong>Fine-grained:</strong> seleziona il repo <code>werdani/italy-listening-exam</code> e
-                permesso <strong>Contents: Read and write</strong> (non serve il permesso Profile).
-                <strong>Classic:</strong> spunta <strong>repo</strong>.
-                Copia tutto il token (ghp_… o github_pat_…) senza spazi, poi
-                <strong>Salva impostazioni GitHub</strong>.
+                <strong>Consigliato — Classic token:</strong>
+                apri
+                <a href="https://github.com/settings/tokens/new?scopes=repo&amp;description=italy-admin" target="_blank" rel="noopener">
+                  github.com/settings/tokens/new
+                </a>,
+                spunta solo <strong>repo</strong>, Generate token, copia tutto (inizia con <code>ghp_</code>).
+                Non usare la password dell’account.
+                Poi premi <strong>Salva impostazioni GitHub</strong>.
               </p>
             </div>
             <div class="form-row-2">
@@ -619,13 +620,13 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-  <script src="../js/content.js?v=gh-token2" defer></script>
+  <script src="../js/content.js?v=gh-token3" defer></script>
   <script src="../js/library.js?v=1" defer></script>
   <script src="../js/courses.js?v=2" defer></script>
   <script src="../js/visitors.js?v=perf1" defer></script>
   <script src="js/auth.js?v=duration3" defer></script>
   <script src="js/library-admin.js?v=1" defer></script>
   <script src="js/courses-admin.js?v=5" defer></script>
-  <script src="js/admin.js?v=gh-token2" defer></script>
+  <script src="js/admin.js?v=gh-token3" defer></script>
 </body>
 </html>

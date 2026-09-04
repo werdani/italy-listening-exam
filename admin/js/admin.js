@@ -408,10 +408,15 @@
         AscoltoContent.saveGithubSettings({ token, repo, branch, autoPublish });
         fillGithubForm();
         updateSourceBanner();
-        setGithubStatus(`Token OK (${check.login}) — puoi pubblicare online.`, "ok");
+        setGithubStatus(`Token OK (${check.login}${check.tokenInfo ? ", " + check.tokenInfo : ""}) — puoi pubblicare online.`, "ok");
         showToast("Token GitHub valido e salvato.");
         return;
       } catch (err) {
+        // Drop a previously saved bad token so the next paste is used cleanly.
+        if (AscoltoContent.saveGithubSettings) {
+          AscoltoContent.saveGithubSettings({ token: "" });
+        }
+        if (els.ghToken) els.ghToken.value = "";
         setGithubStatus(err.message || "Token non valido", "warn");
         showToast(err.message || "Token GitHub non valido.");
         return;

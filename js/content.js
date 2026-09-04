@@ -344,11 +344,8 @@
     }
     const [owner, repo] = parts;
 
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-    };
+    const check = await validateGithubToken(token, repoFull);
+    const headers = githubAuthHeaders(token, check.authScheme);
 
     const metaUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(
       repoPath
@@ -360,7 +357,7 @@
       sha = meta.sha;
     } else if (metaRes.status !== 404) {
       const err = await metaRes.json().catch(() => ({}));
-      throw new Error(explainGithubError(metaRes.status, err.message, "GET contents"));
+      throw new Error(explainGithubError(metaRes.status, err.message, check.tokenInfo || "GET contents"));
     }
 
     const putRes = await fetch(
@@ -620,19 +617,37 @@
   /** True for GitHub PATs (classic ghp_… or fine-grained github_pat_…). Not a login password. */
   function looksLikeGithubToken(token) {
     const t = sanitizeGithubToken(token);
-    if (/^github_pat_[A-Za-z0-9_]{20,}$/.test(t)) return t.length >= 40;
-    if (/^gh[pousr]_[A-Za-z0-9_]{20,}$/.test(t)) return t.length >= 30;
+    // Fine-grained tokens are long (usually ~80–100+). Reject short pastes.
+    if (/^github_pat_[A-Za-z0-9_]{20,}$/.test(t)) return t.length >= 70;
+    // Classic PATs are typically 40 chars (ghp_ + 36).
+    if (/^gh[pousr]_[A-Za-z0-9_]{20,}$/.test(t)) return t.length >= 40;
     return false;
+  }
+
+  function describeTokenForDebug(token) {
+    const t = sanitizeGithubToken(token);
+    if (!t) return "vuoto";
+    const prefix = t.startsWith("github_pat_")
+      ? "github_pat_…"
+      : t.startsWith("ghp_")
+        ? "ghp_…"
+        : t.startsWith("gho_")
+          ? "gho_…"
+          : t.slice(0, 8) + "…";
+    return `${prefix} (${t.length} caratteri)`;
   }
 
   function explainGithubError(status, message, context = "") {
     const m = String(message || "").toLowerCase();
     if (status === 401 || m.includes("bad credentials")) {
+      const hint = context ? ` [token: ${context}]` : "";
       return (
-        "Token GitHub non valido (Bad credentials). Verifica: " +
-        "incolla il token (ghp_… o github_pat_…), non la password; copia tutto senza spazi; " +
-        "token non scaduto; Fine-grained: repo werdani/italy-listening-exam + Contents Read and write. " +
-        "Classic: permesso repo."
+        "Token GitHub rifiutato da GitHub (Bad credentials)." +
+        hint +
+        " Crea un token NUOVO (consigliato Classic): " +
+        "https://github.com/settings/tokens/new?scopes=repo&description=italy-admin " +
+        "→ spunta solo «repo» → Generate → copia TUTTO (inizia con ghp_). " +
+        "Non usare la password. Se usi Fine-grained: repo werdani/italy-listening-exam + Contents Read and write."
       );
     }
     if (status === 403) {
@@ -663,11 +678,12 @@
 
   async function githubApiFetch(url, token, options = {}) {
     const clean = sanitizeGithubToken(token);
-    const { headers: extraHeaders, ...rest } = options;
+    const authScheme = options.authScheme === "token" ? "token" : "Bearer";
+    const { headers: extraHeaders, authScheme: _scheme, ...rest } = options;
     return fetch(url, {
       ...rest,
       headers: {
-        Authorization: `Bearer ${clean}`,
+        Authorization: `${authScheme} ${clean}`,
         Accept: "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
         ...(extraHeaders || {}),
@@ -683,8 +699,15 @@
    */
   async function validateGithubToken(token, repoFull) {
     const clean = sanitizeGithubToken(token);
+    const tokenInfo = describeTokenForDebug(clean);
     if (!clean) throw new Error("Inserisci un GitHub Token.");
     if (!looksLikeGithubToken(clean)) {
+      if (/^github_pat_/i.test(clean) && clean.length < 70) {
+        throw new Error(
+          `Token Fine-grained troppo corto (${clean.length} caratteri). ` +
+            "Copia TUTTO il token da GitHub (di solito 80+ caratteri), non solo l’inizio."
+        );
+      }
       throw new Error(
         "Questo non sembra un GitHub Token. Incolla ghp_… (classic) o github_pat_… (fine-grained), non la password dell’account."
       );
@@ -693,27 +716,43 @@
     const parts = String(repoFull || "").trim().split("/").filter(Boolean);
     if (parts.length !== 2) throw new Error("Repo non valido. Usa il formato owner/repo");
     const [owner, repo] = parts;
+    const repoUrl = `https://api.github.com/repos/${owner}/${repo}`;
 
-    const repoRes = await githubApiFetch(`https://api.github.com/repos/${owner}/${repo}`, clean);
+    let repoRes = await githubApiFetch(repoUrl, clean, { authScheme: "Bearer" });
+    let authScheme = "Bearer";
+    if (repoRes.status === 401) {
+      // Some environments accept classic PATs better with the older "token" scheme.
+      repoRes = await githubApiFetch(repoUrl, clean, { authScheme: "token" });
+      if (repoRes.ok) authScheme = "token";
+    }
     if (!repoRes.ok) {
       const err = await repoRes.json().catch(() => ({}));
-      throw new Error(explainGithubError(repoRes.status, err.message, `${owner}/${repo}`));
+      throw new Error(explainGithubError(repoRes.status, err.message, tokenInfo));
     }
     const repoData = await repoRes.json();
     if (repoData.permissions && repoData.permissions.push === false) {
       throw new Error(
-        "Token accettato ma senza scrittura sul repo. Imposta Contents: Read and write."
+        "Token accettato ma senza scrittura sul repo. Imposta Contents: Read and write (Fine-grained) oppure scope repo (Classic)."
       );
     }
 
     let login = owner;
-    const userRes = await githubApiFetch("https://api.github.com/user", clean);
+    const userRes = await githubApiFetch("https://api.github.com/user", clean, { authScheme });
     if (userRes.ok) {
       const user = await userRes.json().catch(() => ({}));
       if (user && user.login) login = user.login;
     }
 
-    return { ok: true, login, repo: `${owner}/${repo}` };
+    return { ok: true, login, repo: `${owner}/${repo}`, tokenInfo, authScheme };
+  }
+
+  function githubAuthHeaders(token, authScheme = "Bearer") {
+    const scheme = authScheme === "token" ? "token" : "Bearer";
+    return {
+      Authorization: `${scheme} ${sanitizeGithubToken(token)}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    };
   }
 
   async function githubJson(res, context) {
@@ -810,16 +849,12 @@
     }
     const [owner, repo] = parts;
 
-    await validateGithubToken(token, repoFull);
+    const check = await validateGithubToken(token, repoFull);
 
     const payload = stripSecretsForExport(normalizeContent(data));
     const raw = JSON.stringify(payload, null, 2) + "\n";
 
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-    };
+    const headers = githubAuthHeaders(token, check.authScheme);
 
     // Contents API is unreliable above ~1 MB; this repo already embeds audio.
     if (raw.length > 900 * 1024) {
