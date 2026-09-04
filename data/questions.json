@@ -2747,25 +2747,6 @@
             "provider": "youtube"
           }
         ]
-      },
-      {
-        "id": 2,
-        "name": "Corso A2",
-        "description": "Corso A2",
-        "videos": [
-          {
-            "id": 1,
-            "title": "لا تَحسَبوني في الهَوى مُتَصَنِّعًا",
-            "url": "https://www.youtube.com/watch?v=hUxHuvxy7Sw&list=RDiztl0nMznGc&index=26",
-            "provider": "youtube"
-          },
-          {
-            "id": 2,
-            "title": "Ta3bt - (Vox Nagham Deep House & Techno Remix)",
-            "url": "https://www.youtube.com/watch?v=7o1HquoxOuk&list=RDiztl0nMznGc&index=28",
-            "provider": "youtube"
-          }
-        ]
       }
     ]
   }
