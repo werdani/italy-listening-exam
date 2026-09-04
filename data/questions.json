@@ -2731,8 +2731,8 @@
     "items": [
       {
         "id": 1,
-        "name": "Corso A1",
-        "description": "Corso A1",
+        "name": "Corso A1.1",
+        "description": "Corso A1.1",
         "videos": [
           {
             "id": 1,
