@@ -639,25 +639,25 @@
 
   function explainGithubError(status, message, context = "") {
     const m = String(message || "").toLowerCase();
+    const where = context ? ` (${context})` : "";
     if (status === 401 || m.includes("bad credentials")) {
-      const hint = context ? ` [token: ${context}]` : "";
       return (
-        "Token GitHub rifiutato da GitHub (Bad credentials)." +
-        hint +
-        " Crea un token NUOVO (consigliato Classic): " +
+        `GitHub ha rifiutato l’autenticazione${where}. ` +
+        "Il token legge il repo ma non riesce a scrivere (o la richiesta è troppo grande dal browser). " +
+        "Soluzione consigliata: token Classic ghp_ con permesso repo — " +
         "https://github.com/settings/tokens/new?scopes=repo&description=italy-admin " +
-        "→ spunta solo «repo» → Generate → copia TUTTO (inizia con ghp_). " +
-        "Non usare la password. Se usi Fine-grained: repo werdani/italy-listening-exam + Contents Read and write."
+        "— oppure pubblica da http://127.0.0.1:8080/admin/ con python3 server.py."
       );
     }
-    if (status === 403) {
+    if (status === 403 || m.includes("resource not accessible")) {
       return (
         (message || "Accesso negato") +
-        ". Serve Contents Read and write sul repo (o approvazione SSO org)."
+        where +
+        ". Fine-grained: Contents Read and write sul repo werdani/italy-listening-exam. Classic: scope repo."
       );
     }
     if (status === 404) {
-      return `Repository/branch non trovato, oppure token senza accesso (${context}).`;
+      return `Repository/branch non trovato, oppure token senza accesso${where}.`;
     }
     if (status === 409 || m.includes("does not match") || m.includes("sha mismatch")) {
       return "Conflitto di versione su GitHub. Riprova tra un attimo.";
@@ -670,10 +670,11 @@
     ) {
       return (
         (message || "File troppo grande per GitHub") +
+        where +
         ". Per i nuovi ascolti usa un link Google Drive, non il caricamento del file."
       );
     }
-    return message || `Errore GitHub (${status})`;
+    return (message || `Errore GitHub (${status})`) + where;
   }
 
   async function githubApiFetch(url, token, options = {}) {
@@ -736,6 +737,27 @@
       );
     }
 
+    // Prove write access. Public GET on refs/files can succeed without write.
+    const probeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/blobs`, {
+      method: "POST",
+      headers: {
+        ...githubAuthHeaders(clean, authScheme),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ content: "dGVzdA==", encoding: "base64" }),
+      cache: "no-store",
+    });
+    if (!probeRes.ok) {
+      const err = await probeRes.json().catch(() => ({}));
+      throw new Error(
+        explainGithubError(
+          probeRes.status,
+          err.message || "Scrittura sul repo non consentita",
+          "verifica scrittura"
+        )
+      );
+    }
+
     let login = owner;
     const userRes = await githubApiFetch("https://api.github.com/user", clean, { authScheme });
     if (userRes.ok) {
@@ -761,8 +783,9 @@
   }
 
   /**
-   * Git Database API — reliable for questions.json larger than ~1 MB
-   * (embedded audio). Contents API often fails on those files.
+   * Git Database API — reliable for questions.json larger than ~1 MB.
+   * Puts file text directly on the tree entry (avoids a huge base64 blob POST
+   * that browsers often fail on with misleading 401s).
    */
   async function publishViaGitDataApi(owner, repo, branch, path, raw, message, headers) {
     const refRes = await fetch(
@@ -783,22 +806,34 @@
     const baseTree = commit.tree && commit.tree.sha;
     if (!baseTree) throw new Error("Commit GitHub senza tree.");
 
-    const blobRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/blobs`, {
+    // Prefer tree+content (raw text). Fall back to blob+sha if needed.
+    let treePayload = {
+      base_tree: baseTree,
+      tree: [{ path, mode: "100644", type: "blob", content: raw }],
+    };
+    let treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees`, {
       method: "POST",
       headers: { ...headers, "Content-Type": "application/json" },
-      body: JSON.stringify({ content: utf8ToBase64(raw), encoding: "base64" }),
+      body: JSON.stringify(treePayload),
     });
-    if (!blobRes.ok) await githubJson(blobRes, "POST blob");
-    const blob = await blobRes.json();
-
-    const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees`, {
-      method: "POST",
-      headers: { ...headers, "Content-Type": "application/json" },
-      body: JSON.stringify({
+    if (!treeRes.ok) {
+      const blobRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/blobs`, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ content: raw, encoding: "utf-8" }),
+      });
+      if (!blobRes.ok) await githubJson(blobRes, "POST blob");
+      const blob = await blobRes.json();
+      treePayload = {
         base_tree: baseTree,
         tree: [{ path, mode: "100644", type: "blob", sha: blob.sha }],
-      }),
-    });
+      };
+      treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees`, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify(treePayload),
+      });
+    }
     if (!treeRes.ok) await githubJson(treeRes, "POST tree");
     const tree = await treeRes.json();
 
@@ -827,6 +862,33 @@
     return { commit: newCommit.sha };
   }
 
+  function resolvePublishApiUrl() {
+    const path = global.location.pathname || "";
+    if (path.includes("/admin")) return "../api/github/publish";
+    return "/api/github/publish";
+  }
+
+  async function publishViaLocalServer({ token, repo, branch, path, message, content }) {
+    const res = await fetch(resolvePublishApiUrl(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        token: sanitizeGithubToken(token),
+        repo,
+        branch,
+        path,
+        message,
+        content,
+      }),
+      cache: "no-store",
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || `Pubblicazione server fallita (${res.status})`);
+    }
+    return data;
+  }
+
   /**
    * Publish questions.json to GitHub.
    * Requires a Personal Access Token with Contents: Read and write.
@@ -853,6 +915,39 @@
 
     const payload = stripSecretsForExport(normalizeContent(data));
     const raw = JSON.stringify(payload, null, 2) + "\n";
+
+    // Prefer local server publish for large files (browser often fails ~5MB GitHub POSTs).
+    if (!isGitHubPagesHost()) {
+      try {
+        const local = await publishViaLocalServer({
+          token,
+          repo: repoFull,
+          branch,
+          path,
+          message,
+          content: raw,
+        });
+        if (local && local.ok) {
+          return {
+            ok: true,
+            commit: local.commit,
+            htmlUrl: `https://github.com/${owner}/${repo}/blob/${encodeURIComponent(branch)}/${path}`,
+            repo: repoFull,
+            branch,
+            path,
+            via: "server",
+          };
+        }
+      } catch (err) {
+        const msg = String((err && err.message) || err || "");
+        // Only fall back when the local API is missing/unreachable.
+        const serverMissing =
+          /failed to fetch|networkerror|load failed|pubblicazione server fallita \(404\)/i.test(
+            msg
+          );
+        if (!serverMissing) throw err;
+      }
+    }
 
     const headers = githubAuthHeaders(token, check.authScheme);
 

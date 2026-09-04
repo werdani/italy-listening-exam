@@ -244,6 +244,140 @@ def fetch_google_drive_file(file_id: str) -> tuple[bytes, str]:
     return data, ctype
 
 
+def github_api_json(
+    method: str,
+    url: str,
+    token: str,
+    payload: dict | None = None,
+) -> tuple[int, dict]:
+    """Call GitHub REST API. Returns (status_code, json_body)."""
+    data = None
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "italy-listening-exam-admin",
+    }
+    if payload is not None:
+        data = json.dumps(payload).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+    req = Request(url, data=data, headers=headers, method=method)
+    try:
+        with build_opener().open(req, timeout=180) as resp:
+            raw = resp.read()
+            body = json.loads(raw.decode("utf-8")) if raw else {}
+            return int(resp.status), body if isinstance(body, dict) else {"data": body}
+    except HTTPError as exc:
+        raw = exc.read() if hasattr(exc, "read") else b""
+        try:
+            body = json.loads(raw.decode("utf-8")) if raw else {}
+        except json.JSONDecodeError:
+            body = {"message": raw.decode("utf-8", errors="replace")[:300]}
+        if not isinstance(body, dict):
+            body = {"message": str(body)}
+        return int(exc.code), body
+    except URLError as exc:
+        return 0, {"message": f"Network error: {exc.reason}"}
+
+
+def publish_file_to_github(
+    token: str,
+    owner: str,
+    repo: str,
+    branch: str,
+    path: str,
+    content: str,
+    message: str,
+) -> dict:
+    """Commit a text file via Git Data API (supports large questions.json)."""
+    token = str(token or "").strip()
+    if not token.startswith(("ghp_", "github_pat_", "gho_", "ghu_", "ghs_", "ghr_")):
+        raise ValueError("Token GitHub non valido")
+
+    base = f"https://api.github.com/repos/{owner}/{repo}"
+
+    status, ref = github_api_json(
+        "GET", f"{base}/git/refs/heads/{branch}", token
+    )
+    if status != 200:
+        raise RuntimeError(ref.get("message") or f"GET ref failed ({status})")
+    parent_sha = (ref.get("object") or {}).get("sha")
+    if not parent_sha:
+        raise RuntimeError("Branch senza commit")
+
+    status, commit = github_api_json("GET", f"{base}/git/commits/{parent_sha}", token)
+    if status != 200:
+        raise RuntimeError(commit.get("message") or f"GET commit failed ({status})")
+    base_tree = (commit.get("tree") or {}).get("sha")
+    if not base_tree:
+        raise RuntimeError("Commit senza tree")
+
+    status, tree = github_api_json(
+        "POST",
+        f"{base}/git/trees",
+        token,
+        {
+            "base_tree": base_tree,
+            "tree": [{"path": path, "mode": "100644", "type": "blob", "content": content}],
+        },
+    )
+    if status != 201 and status != 200:
+        # Fallback: create blob then tree
+        status, blob = github_api_json(
+            "POST",
+            f"{base}/git/blobs",
+            token,
+            {"content": content, "encoding": "utf-8"},
+        )
+        if status not in (200, 201):
+            raise RuntimeError(blob.get("message") or f"POST blob failed ({status})")
+        status, tree = github_api_json(
+            "POST",
+            f"{base}/git/trees",
+            token,
+            {
+                "base_tree": base_tree,
+                "tree": [
+                    {
+                        "path": path,
+                        "mode": "100644",
+                        "type": "blob",
+                        "sha": blob.get("sha"),
+                    }
+                ],
+            },
+        )
+        if status not in (200, 201):
+            raise RuntimeError(tree.get("message") or f"POST tree failed ({status})")
+
+    tree_sha = tree.get("sha")
+    if not tree_sha:
+        raise RuntimeError("Tree senza sha")
+
+    status, new_commit = github_api_json(
+        "POST",
+        f"{base}/git/commits",
+        token,
+        {"message": message, "tree": tree_sha, "parents": [parent_sha]},
+    )
+    if status not in (200, 201):
+        raise RuntimeError(new_commit.get("message") or f"POST commit failed ({status})")
+    commit_sha = new_commit.get("sha")
+    if not commit_sha:
+        raise RuntimeError("Commit senza sha")
+
+    status, patched = github_api_json(
+        "PATCH",
+        f"{base}/git/refs/heads/{branch}",
+        token,
+        {"sha": commit_sha},
+    )
+    if status not in (200, 201):
+        raise RuntimeError(patched.get("message") or f"PATCH ref failed ({status})")
+
+    return {"ok": True, "commit": commit_sha, "repo": f"{owner}/{repo}", "branch": branch, "path": path}
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
@@ -344,6 +478,9 @@ class Handler(SimpleHTTPRequestHandler):
             return
         if path == "/api/pdf":
             self._handle_pdf_save()
+            return
+        if path == "/api/github/publish":
+            self._handle_github_publish()
             return
         self._handle_save()
 
@@ -567,6 +704,77 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(reply)
         print(f"[pdf] Wrote {dest} ({len(raw)} bytes)", flush=True)
 
+    def _handle_github_publish(self) -> None:
+        length = int(self.headers.get("Content-Length", "0") or 0)
+        if length <= 0:
+            self.send_error(HTTPStatus.BAD_REQUEST, "Empty body")
+            return
+        if length > 30 * 1024 * 1024:
+            self.send_error(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, "Payload too large")
+            return
+
+        try:
+            body = self.rfile.read(length)
+            payload = json.loads(body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid JSON")
+            return
+
+        token = str((payload or {}).get("token") or "").strip()
+        repo_full = str((payload or {}).get("repo") or "werdani/italy-listening-exam").strip()
+        branch = str((payload or {}).get("branch") or "main").strip() or "main"
+        path = str((payload or {}).get("path") or "data/questions.json").strip()
+        message = str((payload or {}).get("message") or "").strip() or (
+            f"Admin dashboard: update {path} ({utc_now_iso()})"
+        )
+        content = (payload or {}).get("content")
+        if content is None:
+            try:
+                content = DATA_FILE.read_text(encoding="utf-8")
+            except OSError as exc:
+                self._json_response(
+                    HTTPStatus.BAD_REQUEST,
+                    {"ok": False, "error": f"Cannot read {DATA_FILE.name}: {exc}"},
+                )
+                return
+        content = str(content)
+        if not token:
+            self._json_response(
+                HTTPStatus.BAD_REQUEST, {"ok": False, "error": "Manca il GitHub Token"}
+            )
+            return
+
+        parts = [p for p in repo_full.split("/") if p]
+        if len(parts) != 2:
+            self._json_response(
+                HTTPStatus.BAD_REQUEST,
+                {"ok": False, "error": "Repo non valido. Usa owner/repo"},
+            )
+            return
+        owner, repo = parts
+
+        try:
+            result = publish_file_to_github(
+                token=token,
+                owner=owner,
+                repo=repo,
+                branch=branch,
+                path=path,
+                content=content,
+                message=message,
+            )
+        except Exception as exc:  # noqa: BLE001
+            msg = str(exc)
+            print(f"[github-publish] fail: {msg}", flush=True)
+            self._json_response(HTTPStatus.BAD_GATEWAY, {"ok": False, "error": msg})
+            return
+
+        print(
+            f"[github-publish] ok {owner}/{repo}@{branch} {path} commit={result.get('commit')}",
+            flush=True,
+        )
+        self._json_response(HTTPStatus.OK, result)
+
     def _handle_save(self) -> None:
         parsed = urlparse(self.path)
         if parsed.path.rstrip("/") != "/api/content":
@@ -621,6 +829,7 @@ def main() -> None:
     print("POST /api/content saves data/questions.json")
     print("POST /api/audio saves assets/audio/*.mp3")
     print("POST /api/pdf saves assets/pdf/*.pdf")
+    print("POST /api/github/publish pushes questions.json to GitHub")
     print("GET  /api/drive/<fileId> proxies Google Drive media")
     print("GET  /api/health lightweight ping")
     print("POST /api/visit registers unique devices")
