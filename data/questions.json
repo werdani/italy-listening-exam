@@ -2771,6 +2771,12 @@
             "provider": "youtube"
           }
         ]
+      },
+      {
+        "id": 2,
+        "name": "Corso A1.2",
+        "description": "Corso A1.2",
+        "videos": []
       }
     ]
   }
