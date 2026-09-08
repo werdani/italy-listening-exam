@@ -2797,7 +2797,14 @@
         "id": 2,
         "name": "Corso A1.2",
         "description": "Corso A1.2",
-        "videos": []
+        "videos": [
+          {
+            "id": 1,
+            "title": "1. Preposizione articolate",
+            "url": "https://youtu.be/aTmVWRrFqjw",
+            "provider": "youtube"
+          }
+        ]
       }
     ]
   }
