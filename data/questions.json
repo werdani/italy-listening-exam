@@ -2470,6 +2470,19 @@
             "Con"
           ],
           "correct": 0
+        },
+        {
+          "id": 6,
+          "type": "mcq",
+          "prompt": "___ zaino è molto pesante.",
+          "audio": "",
+          "choices": [
+            "Il",
+            "La",
+            "L'",
+            "Lo"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 45
