@@ -2535,6 +2535,19 @@
             "Parliamo"
           ],
           "correct": 2
+        },
+        {
+          "id": 11,
+          "type": "mcq",
+          "prompt": "Cosa fai nel tempo libero?",
+          "audio": "",
+          "choices": [
+            "Sono italiano",
+            "Leggo il libro",
+            "Vado al mattino",
+            "Sono fidanzato"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
