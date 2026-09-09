@@ -2400,209 +2400,6 @@
         }
       ],
       "durationMinutes": 25
-    },
-    {
-      "id": 7,
-      "name": "Esame finale",
-      "description": "A1 : B1",
-      "questions": [
-        {
-          "id": 1,
-          "type": "mcq",
-          "prompt": "Mi chiamo Luca e ___ italiano.",
-          "audio": "",
-          "choices": [
-            "Ho",
-            "Sono",
-            "Sei",
-            "Hai"
-          ],
-          "correct": 1
-        },
-        {
-          "id": 2,
-          "type": "mcq",
-          "prompt": "Marta ___ a Roma da tre anni.",
-          "audio": "",
-          "choices": [
-            "Abita",
-            "Abito",
-            "Abitiamo",
-            "Abiti"
-          ],
-          "correct": 0
-        },
-        {
-          "id": 3,
-          "type": "mcq",
-          "prompt": "___ una macchina nuova.",
-          "audio": "",
-          "choices": [
-            "Sono",
-            "Sei",
-            "Hai",
-            "Ho"
-          ],
-          "correct": 3
-        },
-        {
-          "id": 4,
-          "type": "mcq",
-          "prompt": "Il libro è ___ tavolo.",
-          "audio": "",
-          "choices": [
-            "Sulla",
-            "Sullo",
-            "Sul",
-            "Sui"
-          ],
-          "correct": 2
-        },
-        {
-          "id": 5,
-          "type": "mcq",
-          "prompt": "Vado ___ scuola ogni mattina.",
-          "audio": "",
-          "choices": [
-            "A",
-            "In",
-            "Del",
-            "Con"
-          ],
-          "correct": 0
-        },
-        {
-          "id": 6,
-          "type": "mcq",
-          "prompt": "___ zaino è molto pesante.",
-          "audio": "",
-          "choices": [
-            "Il",
-            "La",
-            "L'",
-            "Lo"
-          ],
-          "correct": 3
-        },
-        {
-          "id": 7,
-          "type": "mcq",
-          "prompt": "Vorrei ___ caffè, per favore.",
-          "audio": "",
-          "choices": [
-            "Uno",
-            "Una",
-            "Un'",
-            "Un"
-          ],
-          "correct": 3
-        },
-        {
-          "id": 8,
-          "type": "mcq",
-          "prompt": "Che ore sono? – Sono ___ tre.",
-          "audio": "",
-          "choices": [
-            "Le",
-            "La",
-            "Gli",
-            "Il"
-          ],
-          "correct": 0
-        },
-        {
-          "id": 9,
-          "type": "mcq",
-          "prompt": "Ho comprato ___ arance al supermercato.",
-          "audio": "",
-          "choices": [
-            "Dalle",
-            "Delle",
-            "Dai",
-            "Dei"
-          ],
-          "correct": 1
-        },
-        {
-          "id": 10,
-          "type": "mcq",
-          "prompt": "Marco ___ italiano molto bene.",
-          "audio": "",
-          "choices": [
-            "Parli",
-            "Parlo",
-            "Parla",
-            "Parliamo"
-          ],
-          "correct": 2
-        },
-        {
-          "id": 11,
-          "type": "mcq",
-          "prompt": "Cosa fai nel tempo libero?",
-          "audio": "",
-          "choices": [
-            "Sono italiano",
-            "Leggo il libro",
-            "Vado al mattino",
-            "Sono fidanzato"
-          ],
-          "correct": 1
-        },
-        {
-          "id": 12,
-          "type": "mcq",
-          "prompt": "Di solito Marco ___ alle sette, ma oggi è ancora a letto.",
-          "audio": "",
-          "choices": [
-            "Mi sveglio",
-            "Si alza",
-            "Mi alzo",
-            "Ci svegliamo"
-          ],
-          "correct": 1
-        },
-        {
-          "id": 13,
-          "type": "mcq",
-          "prompt": "Mia sorella ___ molto bene il pianoforte.",
-          "audio": "",
-          "choices": [
-            "Parla",
-            "Viene",
-            "Beve",
-            "Suona"
-          ],
-          "correct": 3
-        },
-        {
-          "id": 14,
-          "type": "mcq",
-          "prompt": "Ieri sera ___ a casa perché ero stanca.",
-          "audio": "",
-          "choices": [
-            "Ho rimasto",
-            "Sei andata",
-            "Sono rimasto",
-            "Ho andato"
-          ],
-          "correct": 2
-        },
-        {
-          "id": 15,
-          "type": "mcq",
-          "prompt": "Quando ero piccola, ___ spesso con mia nonna.",
-          "audio": "",
-          "choices": [
-            "Giocavo",
-            "Gioco",
-            "Ho giocato",
-            "Giocherà"
-          ],
-          "correct": 0
-        }
-      ],
-      "durationMinutes": 60
     }
   ],
   "library": {
@@ -2945,13 +2742,7 @@
         "id": 9,
         "name": "Conversazione",
         "description": "Spiegazione",
-        "books": [
-          {
-            "id": 1,
-            "name": "Espressioni",
-            "file": "assets/pdf/conversazione-new-espressioni-quotidiane-mtufh7el.pdf"
-          }
-        ]
+        "books": []
       }
     ]
   },
@@ -3029,6 +2820,12 @@
             "id": 4,
             "title": "4. Il caffè",
             "url": "https://youtu.be/oO90ZYX0xkw",
+            "provider": "youtube"
+          },
+          {
+            "id": 5,
+            "title": "5. il futuro semplice",
+            "url": "https://youtu.be/4wqWklnoakI",
             "provider": "youtube"
           }
         ]
