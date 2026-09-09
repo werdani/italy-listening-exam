@@ -2483,6 +2483,19 @@
             "Lo"
           ],
           "correct": 3
+        },
+        {
+          "id": 7,
+          "type": "mcq",
+          "prompt": "Vorrei ___ caffè, per favore.",
+          "audio": "",
+          "choices": [
+            "Uno",
+            "Una",
+            "Un'",
+            "Un"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 45
