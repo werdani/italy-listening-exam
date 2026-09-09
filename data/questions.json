@@ -2400,6 +2400,13 @@
         }
       ],
       "durationMinutes": 25
+    },
+    {
+      "id": 7,
+      "name": "Esame finale",
+      "description": "A1 : B1",
+      "questions": [],
+      "durationMinutes": 45
     }
   ],
   "library": {
