@@ -2574,6 +2574,19 @@
             "Suona"
           ],
           "correct": 3
+        },
+        {
+          "id": 14,
+          "type": "mcq",
+          "prompt": "Ieri sera ___ a casa perché ero stanca.",
+          "audio": "",
+          "choices": [
+            "Ho rimasto",
+            "Sei andata",
+            "Sono rimasto",
+            "Ho andato"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
