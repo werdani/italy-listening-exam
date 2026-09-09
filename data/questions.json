@@ -2548,6 +2548,19 @@
             "Sono fidanzato"
           ],
           "correct": 1
+        },
+        {
+          "id": 12,
+          "type": "mcq",
+          "prompt": "Di solito Marco ___ alle sette, ma oggi è ancora a letto.",
+          "audio": "",
+          "choices": [
+            "Mi sveglio",
+            "Si alza",
+            "Mi alzo",
+            "Ci svegliamo"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
