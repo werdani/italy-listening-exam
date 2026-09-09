@@ -2509,6 +2509,19 @@
             "Il"
           ],
           "correct": 0
+        },
+        {
+          "id": 9,
+          "type": "mcq",
+          "prompt": "Ho comprato ___ arance al supermercato.",
+          "audio": "",
+          "choices": [
+            "Dalle",
+            "Delle",
+            "Dai",
+            "Dei"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
