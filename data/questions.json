@@ -2561,6 +2561,19 @@
             "Ci svegliamo"
           ],
           "correct": 1
+        },
+        {
+          "id": 13,
+          "type": "mcq",
+          "prompt": "Mia sorella ___ molto bene il pianoforte.",
+          "audio": "",
+          "choices": [
+            "Parla",
+            "Viene",
+            "Beve",
+            "Suona"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
