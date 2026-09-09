@@ -2418,6 +2418,19 @@
             "Hai"
           ],
           "correct": 1
+        },
+        {
+          "id": 2,
+          "type": "mcq",
+          "prompt": "Marta ___ a Roma da tre anni.",
+          "audio": "",
+          "choices": [
+            "Abita",
+            "Abito",
+            "Abitiamo",
+            "Abiti"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 45
