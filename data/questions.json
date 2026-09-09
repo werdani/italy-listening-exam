@@ -2742,7 +2742,13 @@
         "id": 9,
         "name": "Conversazione",
         "description": "Spiegazione",
-        "books": []
+        "books": [
+          {
+            "id": 1,
+            "name": "Espressioni",
+            "file": "assets/pdf/conversazione-new-espressioni-quotidiane-mtufh7el.pdf"
+          }
+        ]
       }
     ]
   },
