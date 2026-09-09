@@ -2587,6 +2587,19 @@
             "Ho andato"
           ],
           "correct": 2
+        },
+        {
+          "id": 15,
+          "type": "mcq",
+          "prompt": "Quando ero piccola, ___ spesso con mia nonna.",
+          "audio": "",
+          "choices": [
+            "Giocavo",
+            "Gioco",
+            "Ho giocato",
+            "Giocherà"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
