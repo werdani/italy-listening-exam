@@ -2405,7 +2405,21 @@
       "id": 7,
       "name": "Esame finale",
       "description": "A1 : B1",
-      "questions": [],
+      "questions": [
+        {
+          "id": 1,
+          "type": "mcq",
+          "prompt": "Mi chiamo Luca e ___ italiano.",
+          "audio": "",
+          "choices": [
+            "Ho",
+            "Sono",
+            "Sei",
+            "Hai"
+          ],
+          "correct": 1
+        }
+      ],
       "durationMinutes": 45
     }
   ],
