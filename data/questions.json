@@ -2522,6 +2522,19 @@
             "Dei"
           ],
           "correct": 1
+        },
+        {
+          "id": 10,
+          "type": "mcq",
+          "prompt": "Marco ___ italiano molto bene.",
+          "audio": "",
+          "choices": [
+            "Parli",
+            "Parlo",
+            "Parla",
+            "Parliamo"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
