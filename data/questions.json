@@ -2431,6 +2431,19 @@
             "Abiti"
           ],
           "correct": 0
+        },
+        {
+          "id": 3,
+          "type": "mcq",
+          "prompt": "___ una macchina nuova.",
+          "audio": "",
+          "choices": [
+            "Sono",
+            "Sei",
+            "Hai",
+            "Ho"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 45
