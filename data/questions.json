@@ -2444,6 +2444,19 @@
             "Ho"
           ],
           "correct": 3
+        },
+        {
+          "id": 4,
+          "type": "mcq",
+          "prompt": "Il libro è ___ tavolo.",
+          "audio": "",
+          "choices": [
+            "Sulla",
+            "Sullo",
+            "Sul",
+            "Sui"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 45
