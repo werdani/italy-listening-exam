@@ -2457,6 +2457,19 @@
             "Sui"
           ],
           "correct": 2
+        },
+        {
+          "id": 5,
+          "type": "mcq",
+          "prompt": "Vado ___ scuola ogni mattina.",
+          "audio": "",
+          "choices": [
+            "A",
+            "In",
+            "Del",
+            "Con"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 45
