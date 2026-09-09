@@ -2496,6 +2496,19 @@
             "Un"
           ],
           "correct": 3
+        },
+        {
+          "id": 8,
+          "type": "mcq",
+          "prompt": "Che ore sono? – Sono ___ tre.",
+          "audio": "",
+          "choices": [
+            "Le",
+            "La",
+            "Gli",
+            "Il"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 45
