@@ -592,6 +592,7 @@
     } catch {
       /* ignore */
     }
+    clearTokenCheckCache();
     return getGithubSettings();
   }
 
@@ -693,12 +694,45 @@
     });
   }
 
+  // Skip the expensive GitHub probe (3 API calls) on every auto-publish.
+  const TOKEN_CHECK_TTL_MS = 15 * 60 * 1000;
+  let tokenCheckCache = null; // { key, at, result }
+
+  function tokenCheckCacheKey(token, repoFull) {
+    return `${sanitizeGithubToken(token)}|${String(repoFull || "").trim()}`;
+  }
+
+  function getCachedTokenCheck(token, repoFull) {
+    if (!tokenCheckCache) return null;
+    if (tokenCheckCache.key !== tokenCheckCacheKey(token, repoFull)) return null;
+    if (Date.now() - tokenCheckCache.at > TOKEN_CHECK_TTL_MS) return null;
+    return tokenCheckCache.result;
+  }
+
+  function setCachedTokenCheck(token, repoFull, result) {
+    tokenCheckCache = {
+      key: tokenCheckCacheKey(token, repoFull),
+      at: Date.now(),
+      result,
+    };
+  }
+
+  function clearTokenCheckCache() {
+    tokenCheckCache = null;
+  }
+
   /**
    * Check the token against the repo we actually publish to.
    * Do not require GET /user: fine-grained PATs without Profile permission
    * return 401 Bad credentials there even when Contents access is valid.
    */
-  async function validateGithubToken(token, repoFull) {
+  async function validateGithubToken(token, repoFull, options = {}) {
+    const force = options.force === true;
+    if (!force) {
+      const cached = getCachedTokenCheck(token, repoFull);
+      if (cached) return cached;
+    }
+
     const clean = sanitizeGithubToken(token);
     const tokenInfo = describeTokenForDebug(clean);
     if (!clean) throw new Error("Inserisci un GitHub Token.");
@@ -728,10 +762,12 @@
     }
     if (!repoRes.ok) {
       const err = await repoRes.json().catch(() => ({}));
+      clearTokenCheckCache();
       throw new Error(explainGithubError(repoRes.status, err.message, tokenInfo));
     }
     const repoData = await repoRes.json();
     if (repoData.permissions && repoData.permissions.push === false) {
+      clearTokenCheckCache();
       throw new Error(
         "Token accettato ma senza scrittura sul repo. Imposta Contents: Read and write (Fine-grained) oppure scope repo (Classic)."
       );
@@ -749,6 +785,7 @@
     });
     if (!probeRes.ok) {
       const err = await probeRes.json().catch(() => ({}));
+      clearTokenCheckCache();
       throw new Error(
         explainGithubError(
           probeRes.status,
@@ -765,7 +802,9 @@
       if (user && user.login) login = user.login;
     }
 
-    return { ok: true, login, repo: `${owner}/${repo}`, tokenInfo, authScheme };
+    const result = { ok: true, login, repo: `${owner}/${repo}`, tokenInfo, authScheme };
+    setCachedTokenCheck(clean, `${owner}/${repo}`, result);
+    return result;
   }
 
   function githubAuthHeaders(token, authScheme = "Bearer") {
@@ -911,12 +950,16 @@
     }
     const [owner, repo] = parts;
 
-    const check = await validateGithubToken(token, repoFull);
+    if (!looksLikeGithubToken(token)) {
+      throw new Error(
+        "Questo non sembra un GitHub Token. Incolla ghp_… (classic) o github_pat_… (fine-grained)."
+      );
+    }
 
     const payload = stripSecretsForExport(normalizeContent(data));
     const raw = JSON.stringify(payload, null, 2) + "\n";
 
-    // Prefer local server publish for large files (browser often fails ~5MB GitHub POSTs).
+    // Prefer local server publish — skip the slow pre-flight token probe (3 GitHub calls).
     if (!isGitHubPagesHost()) {
       try {
         const local = await publishViaLocalServer({
@@ -949,6 +992,7 @@
       }
     }
 
+    const check = await validateGithubToken(token, repoFull);
     const headers = githubAuthHeaders(token, check.authScheme);
 
     // Contents API is unreliable above ~1 MB; this repo already embeds audio.
