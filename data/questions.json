@@ -2652,6 +2652,19 @@
             "10:10"
           ],
           "correct": 1
+        },
+        {
+          "id": 20,
+          "type": "mcq",
+          "prompt": "Mentre ___ la cena, mio fratello mi ha telefonato.",
+          "audio": "",
+          "choices": [
+            "preparavo",
+            "ho preparato",
+            "preparai",
+            "prepareremo"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
