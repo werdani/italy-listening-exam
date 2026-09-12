@@ -2691,6 +2691,19 @@
             "Gli"
           ],
           "correct": 1
+        },
+        {
+          "id": 23,
+          "type": "mcq",
+          "prompt": "Quante mele hai comprato? — ___ ho comprate cinque.",
+          "audio": "",
+          "choices": [
+            "Le",
+            "La",
+            "Ne",
+            "L'"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
