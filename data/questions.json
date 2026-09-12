@@ -2912,6 +2912,19 @@
             "Chiedere il menù."
           ],
           "correct": 1
+        },
+        {
+          "id": 40,
+          "type": "mcq",
+          "prompt": "Un amico ti dice: “Sono completamente distrutto”. Che cosa significa probabilmente?",
+          "audio": "",
+          "choices": [
+            "È molto stanco.",
+            "È molto felice.",
+            "Ha perso il telefono.",
+            "È molto affamato."
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
