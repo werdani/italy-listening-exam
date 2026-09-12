@@ -2782,6 +2782,19 @@
             "tanto / che"
           ],
           "correct": 0
+        },
+        {
+          "id": 30,
+          "type": "mcq",
+          "prompt": "Se avessi più tempo, ___ di più.",
+          "audio": "",
+          "choices": [
+            "viaggerò",
+            "viaggerei",
+            "viaggiavo",
+            "ho viaggiato"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
