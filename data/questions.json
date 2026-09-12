@@ -2873,6 +2873,19 @@
             "Quindi"
           ],
           "correct": 1
+        },
+        {
+          "id": 37,
+          "type": "mcq",
+          "prompt": "Se una persona è “puntuale”:",
+          "audio": "",
+          "choices": [
+            "Arriva sempre tardi",
+            "Non viene mai",
+            "Parte senza avvisare",
+            "Arriva all'orario stabilito"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
