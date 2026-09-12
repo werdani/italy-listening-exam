@@ -2834,6 +2834,19 @@
             "Fai"
           ],
           "correct": 0
+        },
+        {
+          "id": 34,
+          "type": "mcq",
+          "prompt": "Non ___ così velocemente!",
+          "audio": "",
+          "choices": [
+            "Parla",
+            "Parli",
+            "Parlo",
+            "Parlare"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
