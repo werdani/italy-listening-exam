@@ -2769,6 +2769,19 @@
             "Migliore"
           ],
           "correct": 2
+        },
+        {
+          "id": 29,
+          "type": "mcq",
+          "prompt": "Luca è ___ alto ___ suo fratello.",
+          "audio": "",
+          "choices": [
+            "tanto / quanto",
+            "così / di",
+            "più / che",
+            "tanto / che"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
