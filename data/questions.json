@@ -2600,6 +2600,19 @@
             "Giocherà"
           ],
           "correct": 0
+        },
+        {
+          "id": 16,
+          "type": "mcq",
+          "prompt": "Ti ringrazio molto.",
+          "audio": "",
+          "choices": [
+            "Non c'è di che",
+            "Grazie",
+            "Scusa",
+            "A presto"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
