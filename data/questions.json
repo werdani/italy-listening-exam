@@ -3029,6 +3029,19 @@
             "la risposta cambia in base alle circostanze"
           ],
           "correct": 3
+        },
+        {
+          "id": 49,
+          "type": "mcq",
+          "prompt": "Questa felpa è in saldo, ma l'offerta vale solo fino a esaurimento scorte.” significa che:",
+          "audio": "",
+          "choices": [
+            "lo sconto durerà per sempre",
+            "il prezzo aumenterà domani sicuramente",
+            "l'offerta termina quando finiscono i prodotti disponibili",
+            "la felpa non è più disponibile."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
