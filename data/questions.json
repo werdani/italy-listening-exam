@@ -2808,6 +2808,19 @@
             "Voglio che"
           ],
           "correct": 1
+        },
+        {
+          "id": 32,
+          "type": "mcq",
+          "prompt": "___ la porta, per favore!",
+          "audio": "",
+          "choices": [
+            "Chiudere",
+            "Chiusa",
+            "Chiudi",
+            "Chiudi la"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
