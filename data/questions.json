@@ -3042,6 +3042,19 @@
             "la felpa non è più disponibile."
           ],
           "correct": 2
+        },
+        {
+          "id": 50,
+          "type": "mcq",
+          "prompt": "“Vorrei cambiare questo paio di scarpe perché mi stringono",
+          "audio": "",
+          "choices": [
+            "Le scarpe sono troppo strette.",
+            "Le scarpe sono troppo larghe.",
+            "Le scarpe sono troppo bello.",
+            "Le scarpe sono rovinate."
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
