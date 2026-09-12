@@ -2756,6 +2756,19 @@
             "Partire"
           ],
           "correct": 3
+        },
+        {
+          "id": 28,
+          "type": "mcq",
+          "prompt": "Questo esercizio è ___ difficile di quello precedente",
+          "audio": "",
+          "choices": [
+            "Tanto",
+            "Molto",
+            "Più",
+            "Migliore"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
