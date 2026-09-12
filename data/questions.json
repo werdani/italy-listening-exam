@@ -2847,6 +2847,19 @@
             "Parlare"
           ],
           "correct": 3
+        },
+        {
+          "id": 35,
+          "type": "mcq",
+          "prompt": "Non sono uscita ___ pioveva molto.",
+          "audio": "",
+          "choices": [
+            "Mentre",
+            "Però",
+            "Perché",
+            "Ma"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
