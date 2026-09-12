@@ -2860,6 +2860,19 @@
             "Ma"
           ],
           "correct": 2
+        },
+        {
+          "id": 36,
+          "type": "mcq",
+          "prompt": "___ pioveva, siamo andati al mare.",
+          "audio": "",
+          "choices": [
+            "Mentre",
+            "Anche se",
+            "Perché",
+            "Quindi"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
