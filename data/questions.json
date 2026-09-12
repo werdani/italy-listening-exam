@@ -2899,6 +2899,19 @@
             "Chiamo il ristorante."
           ],
           "correct": 1
+        },
+        {
+          "id": 39,
+          "type": "mcq",
+          "prompt": "Hai comprato delle scarpe, ma dopo un giorno ti accorgi che ti fanno male. Cosa puoi fare?",
+          "audio": "",
+          "choices": [
+            "Prenotare una camera.",
+            "Chiedere se è possibile cambiarle.",
+            "Comprare un biglietto.",
+            "Chiedere il menù."
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
