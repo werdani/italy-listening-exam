@@ -3003,6 +3003,19 @@
             "farai"
           ],
           "correct": 3
+        },
+        {
+          "id": 47,
+          "type": "mcq",
+          "prompt": "Dopo che ___ il lavoro, andremo a cena insieme.",
+          "audio": "",
+          "choices": [
+            "finiremo",
+            "avremo finito",
+            "abbiamo finito",
+            "finivamo"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
