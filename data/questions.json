@@ -2925,6 +2925,19 @@
             "È molto affamato."
           ],
           "correct": 0
+        },
+        {
+          "id": 41,
+          "type": "mcq",
+          "prompt": "“Non vedo l'ora di partire!” significa:",
+          "audio": "",
+          "choices": [
+            "Non voglio partire.",
+            "Sono già partito.",
+            "Sono molto impaziente di partire.",
+            "Non so quando partirò."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
