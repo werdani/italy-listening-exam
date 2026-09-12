@@ -2964,6 +2964,19 @@
             "② → ① → ③ → ④"
           ],
           "correct": 1
+        },
+        {
+          "id": 44,
+          "type": "mcq",
+          "prompt": "Marco è andato al supermercato con ___ madre",
+          "audio": "",
+          "choices": [
+            "Sua",
+            "Mia",
+            "Tua",
+            "Nostra"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
