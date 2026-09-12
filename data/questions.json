@@ -2717,6 +2717,19 @@
             "Te la"
           ],
           "correct": 3
+        },
+        {
+          "id": 25,
+          "type": "mcq",
+          "prompt": "Ieri sera Marta ___ molto tardi.",
+          "audio": "",
+          "choices": [
+            "si è addormentato",
+            "si è addormentata",
+            "è addormentata",
+            "si ha addormentata"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
