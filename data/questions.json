@@ -2977,6 +2977,19 @@
             "Nostra"
           ],
           "correct": 0
+        },
+        {
+          "id": 45,
+          "type": "mcq",
+          "prompt": "Maria e Giulia hanno dimenticato ___ documenti a casa.",
+          "audio": "",
+          "choices": [
+            "Suoi",
+            "Loro",
+            "Miei",
+            "Sue"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
