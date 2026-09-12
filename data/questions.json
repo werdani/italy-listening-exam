@@ -2704,6 +2704,19 @@
             "L'"
           ],
           "correct": 2
+        },
+        {
+          "id": 24,
+          "type": "mcq",
+          "prompt": "Mi presti la tua penna? — Sì, ___ presto volentieri.",
+          "audio": "",
+          "choices": [
+            "Ti la",
+            "Ti le",
+            "Te le",
+            "Te la"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
