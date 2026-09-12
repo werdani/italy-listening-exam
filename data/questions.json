@@ -2938,6 +2938,19 @@
             "Non so quando partirò."
           ],
           "correct": 2
+        },
+        {
+          "id": 42,
+          "type": "mcq",
+          "prompt": "Quale parola può essere collegata a tutte queste? biglietto – stazione – treno – binario",
+          "audio": "",
+          "choices": [
+            "cucina",
+            "Malattia",
+            "Viaggiare",
+            "Vestiti"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
