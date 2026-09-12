@@ -2743,6 +2743,19 @@
             "preparato"
           ],
           "correct": 0
+        },
+        {
+          "id": 27,
+          "type": "mcq",
+          "prompt": "Dobbiamo ___ prima delle otto.",
+          "audio": "",
+          "choices": [
+            "Partiamo",
+            "Parta",
+            "Parti",
+            "Partire"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
