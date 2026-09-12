@@ -2821,6 +2821,19 @@
             "Chiudi la"
           ],
           "correct": 2
+        },
+        {
+          "id": 33,
+          "type": "mcq",
+          "prompt": "Ragazzi, ___ attenzione!",
+          "audio": "",
+          "choices": [
+            "Fate",
+            "Fare",
+            "Facevo",
+            "Fai"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
