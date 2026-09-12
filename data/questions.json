@@ -2990,6 +2990,19 @@
             "Sue"
           ],
           "correct": 1
+        },
+        {
+          "id": 46,
+          "type": "mcq",
+          "prompt": "Quando avrai finito gli studi, che cosa ___?",
+          "audio": "",
+          "choices": [
+            "avresti fatto",
+            "hai fatto",
+            "facevi",
+            "farai"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
