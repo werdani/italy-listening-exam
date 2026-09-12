@@ -2613,6 +2613,19 @@
             "A presto"
           ],
           "correct": 0
+        },
+        {
+          "id": 17,
+          "type": "mcq",
+          "prompt": "Dove mettiamo normalmente il frigorifero?",
+          "audio": "",
+          "choices": [
+            "In bagno",
+            "In camera",
+            "In cucina",
+            "In ripostiglio"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
