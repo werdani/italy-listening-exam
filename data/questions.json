@@ -2626,6 +2626,19 @@
             "In ripostiglio"
           ],
           "correct": 2
+        },
+        {
+          "id": 18,
+          "type": "mcq",
+          "prompt": "Quando il cielo è senza nuvole, ___ il sole.",
+          "audio": "",
+          "choices": [
+            "Nuvoloso",
+            "Tira vento",
+            "Piove",
+            "Splendida"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
