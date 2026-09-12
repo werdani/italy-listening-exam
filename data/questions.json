@@ -2951,6 +2951,19 @@
             "Vestiti"
           ],
           "correct": 2
+        },
+        {
+          "id": 43,
+          "type": "mcq",
+          "prompt": "Metti gli eventi nell’ordine corretto: ① Faccio colazione. ② Mi sveglio. ③ Vado al lavoro. ④ Mi lavo.",
+          "audio": "",
+          "choices": [
+            "④ → ② → ① → ③",
+            "② → ④ → ① → ③",
+            "① → ② → ④ → ③",
+            "② → ① → ③ → ④"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
