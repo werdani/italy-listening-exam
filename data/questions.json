@@ -2665,6 +2665,19 @@
             "prepareremo"
           ],
           "correct": 0
+        },
+        {
+          "id": 21,
+          "type": "mcq",
+          "prompt": "Prima di uscire, ___ già tutti i compiti.",
+          "audio": "",
+          "choices": [
+            "Ho fatto",
+            "Facevo",
+            "Faccio",
+            "Fare"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
