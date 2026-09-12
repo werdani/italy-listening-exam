@@ -2795,6 +2795,19 @@
             "ho viaggiato"
           ],
           "correct": 1
+        },
+        {
+          "id": 31,
+          "type": "mcq",
+          "prompt": "___ un caffè, per favore.",
+          "audio": "",
+          "choices": [
+            "Voglio di",
+            "Vorrei",
+            "Vorrei di",
+            "Voglio che"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
