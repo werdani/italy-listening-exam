@@ -2639,6 +2639,19 @@
             "Splendida"
           ],
           "correct": 3
+        },
+        {
+          "id": 19,
+          "type": "mcq",
+          "prompt": "Sono le dieci meno un quarto.",
+          "audio": "",
+          "choices": [
+            "10:00",
+            "9:45",
+            "10:15",
+            "10:10"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
