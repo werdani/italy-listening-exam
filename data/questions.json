@@ -2886,6 +2886,19 @@
             "Arriva all'orario stabilito"
           ],
           "correct": 3
+        },
+        {
+          "id": 38,
+          "type": "mcq",
+          "prompt": "Hai un appuntamento dal medico alle 10:00, ma alle 9:30 ti senti molto meglio. Cosa fai?",
+          "audio": "",
+          "choices": [
+            "Cancello l'appuntamento senza avvisare.",
+            "Chiamo lo studio per chiedere se posso annullarlo",
+            "Vado in farmacia per comprare un biglietto",
+            "Chiamo il ristorante."
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
