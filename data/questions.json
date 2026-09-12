@@ -2730,6 +2730,19 @@
             "si ha addormentata"
           ],
           "correct": 1
+        },
+        {
+          "id": 26,
+          "type": "mcq",
+          "prompt": "Non posso uscire perché devo ___.",
+          "audio": "",
+          "choices": [
+            "prepararmi",
+            "mi preparare",
+            "mi preparo",
+            "preparato"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
