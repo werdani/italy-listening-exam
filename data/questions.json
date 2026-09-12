@@ -3016,6 +3016,19 @@
             "finivamo"
           ],
           "correct": 1
+        },
+        {
+          "id": 48,
+          "type": "mcq",
+          "prompt": "Se qualcuno dice “Dipende dalla situazione”, significa che:",
+          "audio": "",
+          "choices": [
+            "la risposta è sempre la stessa",
+            "non conosce la risposta",
+            "non vuole parlare.",
+            "la risposta cambia in base alle circostanze"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
