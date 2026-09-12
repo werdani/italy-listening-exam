@@ -2678,6 +2678,19 @@
             "Fare"
           ],
           "correct": 0
+        },
+        {
+          "id": 22,
+          "type": "mcq",
+          "prompt": "Hai visto Maria? — Sì, ___ ho vista ieri.",
+          "audio": "",
+          "choices": [
+            "La",
+            "L'",
+            "Le",
+            "Gli"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
