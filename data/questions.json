@@ -3120,6 +3120,19 @@
             "mi prenderei"
           ],
           "correct": 3
+        },
+        {
+          "id": 56,
+          "type": "mcq",
+          "prompt": "Ragazzi, ______ in fretta! Il taxi ci sta aspettando.",
+          "audio": "",
+          "choices": [
+            "preparatevi",
+            "vi preparate",
+            "preparateli",
+            "vi prepari"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
