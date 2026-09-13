@@ -3224,6 +3224,19 @@
             "non parlarete"
           ],
           "correct": 0
+        },
+        {
+          "id": 64,
+          "type": "mcq",
+          "prompt": "Se vuoi invitare un amico a una festa, quale frase è più naturale?",
+          "audio": "",
+          "choices": [
+            "Ti ordino di venire alla festa.",
+            "Ti va di venire alla festa con me?",
+            "Tu vieni festa necessariamente.",
+            "Hai obbligo della festa."
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
