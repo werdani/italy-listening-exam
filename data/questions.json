@@ -3211,6 +3211,19 @@
             "farle"
           ],
           "correct": 3
+        },
+        {
+          "id": 63,
+          "type": "mcq",
+          "prompt": "«Non parlare durante l'esame!» → Il professore dice agli studenti di _______.",
+          "audio": "",
+          "choices": [
+            "non parlate",
+            "non parlino",
+            "non parlare",
+            "non parlarete"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
