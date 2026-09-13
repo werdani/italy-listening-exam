@@ -3159,6 +3159,19 @@
             "vestivano"
           ],
           "correct": 1
+        },
+        {
+          "id": 59,
+          "type": "mcq",
+          "prompt": "In Italia ______ spesso la pasta a pranzo.",
+          "audio": "",
+          "choices": [
+            "mangiano",
+            "si mangia",
+            "si mangiano la",
+            "mangiano si"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
