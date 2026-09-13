@@ -3068,6 +3068,19 @@
             "Drammatico"
           ],
           "correct": 2
+        },
+        {
+          "id": 52,
+          "type": "mcq",
+          "prompt": "— Ti va di provare questo nuovo ristorante? — ______, ne ho sentito parlare molto bene.",
+          "audio": "",
+          "choices": [
+            "Perché no?",
+            "Non credo",
+            "Preferirei di no",
+            "Non se ne parla"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
