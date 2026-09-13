@@ -3172,6 +3172,19 @@
             "mangiano si"
           ],
           "correct": 1
+        },
+        {
+          "id": 60,
+          "type": "mcq",
+          "prompt": "Penso che Maria _______ molto intelligente.",
+          "audio": "",
+          "choices": [
+            "È",
+            "Sia",
+            "Hai",
+            "Sono"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
