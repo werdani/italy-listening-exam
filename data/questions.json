@@ -3055,6 +3055,19 @@
             "Le scarpe sono rovinate."
           ],
           "correct": 0
+        },
+        {
+          "id": 51,
+          "type": "mcq",
+          "prompt": "Se un film fa ridere molto, probabilmente appartiene al genere:",
+          "audio": "",
+          "choices": [
+            "Horror",
+            "Thriller",
+            "Comico",
+            "Drammatico"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
