@@ -3198,6 +3198,19 @@
             "hai potuto"
           ],
           "correct": 2
+        },
+        {
+          "id": 62,
+          "type": "mcq",
+          "prompt": "Fammi vedere il documento.» → Lei chiede a Marco di _______ vedere il documento.",
+          "audio": "",
+          "choices": [
+            "le fare",
+            "fallo",
+            "faccia",
+            "farle"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
