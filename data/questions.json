@@ -3094,6 +3094,19 @@
             "l' / gli"
           ],
           "correct": 2
+        },
+        {
+          "id": 54,
+          "type": "mcq",
+          "prompt": "Giulia ha bisogno di un favore. Vuole ______ chiedere a sua sorella.",
+          "audio": "",
+          "choices": [
+            "La",
+            "Lo",
+            "Le",
+            "Li"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
