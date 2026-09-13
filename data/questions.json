@@ -3081,6 +3081,19 @@
             "Non se ne parla"
           ],
           "correct": 0
+        },
+        {
+          "id": 53,
+          "type": "mcq",
+          "prompt": "Hai già letto le email che ti ho mandato? — Sì, ______ ho lette tutte, ma non ______ ho ancora risposto.",
+          "audio": "",
+          "choices": [
+            "li / gli",
+            "le / gli",
+            "le / le",
+            "l' / gli"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
