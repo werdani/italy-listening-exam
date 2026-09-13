@@ -3146,6 +3146,19 @@
             "si è abbracciati"
           ],
           "correct": 2
+        },
+        {
+          "id": 58,
+          "type": "mcq",
+          "prompt": "Posso cambiare questo maglione? — Certo, ma deve avere ancora ______ e lo scontrino.",
+          "audio": "",
+          "choices": [
+            "la manica",
+            "il cartellino",
+            "la tasca",
+            "vestivano"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
