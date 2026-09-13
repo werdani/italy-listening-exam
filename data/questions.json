@@ -3185,6 +3185,19 @@
             "Sono"
           ],
           "correct": 1
+        },
+        {
+          "id": 61,
+          "type": "mcq",
+          "prompt": "Speravo che tu _______ venire alla festa, ma alla fine non sei venuto",
+          "audio": "",
+          "choices": [
+            "possa",
+            "puoi",
+            "potessi",
+            "hai potuto"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
