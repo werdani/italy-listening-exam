@@ -3107,6 +3107,19 @@
             "Li"
           ],
           "correct": 1
+        },
+        {
+          "id": 55,
+          "type": "mcq",
+          "prompt": "Se fossi in te, ______ un po’ di tempo per pensare prima di rispondere.",
+          "audio": "",
+          "choices": [
+            "prenderei",
+            "prenderei mi",
+            "mi avrei preso",
+            "mi prenderei"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
