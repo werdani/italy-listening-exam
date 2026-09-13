@@ -3237,6 +3237,19 @@
             "Hai obbligo della festa."
           ],
           "correct": 1
+        },
+        {
+          "id": 65,
+          "type": "mcq",
+          "prompt": "Ieri _______ voluto uscire, ma ero troppo stanca.",
+          "audio": "",
+          "choices": [
+            "avrei",
+            "avessi",
+            "sarei",
+            "Ero"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
