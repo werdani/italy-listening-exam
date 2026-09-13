@@ -3133,6 +3133,19 @@
             "vi prepari"
           ],
           "correct": 0
+        },
+        {
+          "id": 57,
+          "type": "mcq",
+          "prompt": "Quando si sono visti dopo tanti anni, ______ con grande emozione.",
+          "audio": "",
+          "choices": [
+            "hanno abbracciato",
+            "si hanno abbracciato",
+            "si sono abbracciati",
+            "si è abbracciati"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
