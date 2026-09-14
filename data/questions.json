@@ -3510,6 +3510,19 @@
             "Preferisce aspettare piuttosto che scegliere un modello inadatto."
           ],
           "correct": 3
+        },
+        {
+          "id": 86,
+          "type": "listening",
+          "prompt": "Cosa si può capire dalla conversazione?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-14t19_09_42_adam---engaging-friend.mp3",
+          "choices": [
+            "Martina si è trasferita.",
+            "Non si parlano più.",
+            "Il conflitto non è stato completamente risolto.",
+            "Anna e Martina hanno risolto completamente il problema"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
