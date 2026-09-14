@@ -3393,6 +3393,19 @@
             "Un’azione anteriore a un’altra espressa al passato remoto"
           ],
           "correct": 3
+        },
+        {
+          "id": 77,
+          "type": "mcq",
+          "prompt": "Quale parola è un avverbio di modo?",
+          "audio": "",
+          "choices": [
+            "Lentamente",
+            "Ieri",
+            "Oggi",
+            "Domani"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
