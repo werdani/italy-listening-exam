@@ -3302,6 +3302,19 @@
             "Bisogna essere attivi e cogliere le opportunità."
           ],
           "correct": 3
+        },
+        {
+          "id": 70,
+          "type": "mcq",
+          "prompt": "“Chi trova un amico trova un tesoro” sottolinea:",
+          "audio": "",
+          "choices": [
+            "Il valore dell’amicizia sincera.",
+            "Le cose belle sono sempre preziose.",
+            "L’importanza della ricchezza.",
+            "La necessità di avere molti amici."
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
