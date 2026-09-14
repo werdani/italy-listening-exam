@@ -3367,6 +3367,19 @@
             "Milano"
           ],
           "correct": 3
+        },
+        {
+          "id": 75,
+          "type": "mcq",
+          "prompt": "Garibaldi ______ un ruolo fondamentale nell’Unità d’Italia.",
+          "audio": "",
+          "choices": [
+            "Aveva",
+            "Ebbe",
+            "Hai avuto",
+            "Sia"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
