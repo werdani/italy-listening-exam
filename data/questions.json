@@ -3263,6 +3263,19 @@
             "Gliela"
           ],
           "correct": 2
+        },
+        {
+          "id": 67,
+          "type": "mcq",
+          "prompt": "______ hai incontrato ieri davanti all’università?",
+          "audio": "",
+          "choices": [
+            "Quale",
+            "Chi",
+            "Perché",
+            "Dove"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
