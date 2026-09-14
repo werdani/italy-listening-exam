@@ -3458,6 +3458,19 @@
             "Perché non le piaceva l'azienda."
           ],
           "correct": 1
+        },
+        {
+          "id": 82,
+          "type": "listening",
+          "prompt": "Qual è la principale critica di Luca?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-14t18_58_24_adam---engaging-friend.mp3",
+          "choices": [
+            "La storia era noiosa.",
+            "Gli attori recitavano male.",
+            "Il finale non era abbastanza sviluppato.",
+            "Il film era troppo lungo."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
