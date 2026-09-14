@@ -3315,6 +3315,19 @@
             "La necessità di avere molti amici."
           ],
           "correct": 0
+        },
+        {
+          "id": 71,
+          "type": "mcq",
+          "prompt": "Quale apertura è più appropriata in un’e-mail formale indirizzata a un professore?",
+          "audio": "",
+          "choices": [
+            "Ciao prof!",
+            "Gentile Professore,",
+            "Salve amico,",
+            "Ehi, come va?"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
