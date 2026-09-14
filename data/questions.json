@@ -3406,6 +3406,19 @@
             "Domani"
           ],
           "correct": 0
+        },
+        {
+          "id": 78,
+          "type": "mcq",
+          "prompt": "Quale verbo si usa normalmente con “una partita”?",
+          "audio": "",
+          "choices": [
+            "Fare",
+            "Correre",
+            "Prendere",
+            "Giocare"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
