@@ -3289,6 +3289,19 @@
             "tanto che"
           ],
           "correct": 2
+        },
+        {
+          "id": 69,
+          "type": "mcq",
+          "prompt": "“Chi dorme non piglia pesci” significa che: A) Dormire aiuta a lavorare meglio.",
+          "audio": "",
+          "choices": [
+            "Dormire aiuta a lavorare meglio.",
+            "La pesca è un lavoro difficile.",
+            "È meglio aspettare prima di agire.",
+            "Bisogna essere attivi e cogliere le opportunità."
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
