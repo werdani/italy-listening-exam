@@ -3419,6 +3419,19 @@
             "Giocare"
           ],
           "correct": 3
+        },
+        {
+          "id": 79,
+          "type": "mcq",
+          "prompt": "Quale frase è corretta?",
+          "audio": "",
+          "choices": [
+            "Penso che lui ha ragione.",
+            "Penso che lui abbia ragione.",
+            "Penso che lui ebbe ragione.",
+            "Penso che lui avrà ragione ieri."
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
