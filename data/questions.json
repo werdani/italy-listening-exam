@@ -3536,6 +3536,19 @@
             "La cancellazione di alcune lezioni."
           ],
           "correct": 0
+        },
+        {
+          "id": 88,
+          "type": "listening",
+          "prompt": "Qual è l'atteggiamento di Simone?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-14t19_15_37_adam---engaging-friend.mp3",
+          "choices": [
+            "Critica Marco apertamente.",
+            "Invita a considerare le circostanze prima di giudicare",
+            "Pensa che Marco sia irresponsabile.",
+            "Vuole licenziare Marco."
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
