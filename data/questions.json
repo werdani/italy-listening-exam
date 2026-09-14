@@ -3328,6 +3328,19 @@
             "Ehi, come va?"
           ],
           "correct": 1
+        },
+        {
+          "id": 72,
+          "type": "mcq",
+          "prompt": "Chi cura e assiste i pazienti collaborando con i medici è:",
+          "audio": "",
+          "choices": [
+            "Notaio",
+            "Architetto",
+            "Economista",
+            "Infermiere"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
