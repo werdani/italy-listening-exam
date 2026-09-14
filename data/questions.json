@@ -3432,6 +3432,19 @@
             "Penso che lui avrà ragione ieri."
           ],
           "correct": 1
+        },
+        {
+          "id": 80,
+          "type": "mcq",
+          "prompt": "Un cantante lirico con una voce maschile generalmente acuta è:",
+          "audio": "",
+          "choices": [
+            "Soprano",
+            "Tenore",
+            "Contralto",
+            "Basso"
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
