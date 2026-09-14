@@ -3484,6 +3484,19 @@
             "Gli hanno cambiato il turno."
           ],
           "correct": 3
+        },
+        {
+          "id": 84,
+          "type": "listening",
+          "prompt": "Cosa sta valutando Matteo?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-14t19_03_45_adam---engaging-friend.mp3",
+          "choices": [
+            "Se scegliere un albergo più economico ma meno centrale",
+            "Se cambiare destinazione.",
+            "Se annullare il viaggio.",
+            "Se partire da solo."
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
