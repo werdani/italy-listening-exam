@@ -3497,6 +3497,19 @@
             "Se partire da solo."
           ],
           "correct": 0
+        },
+        {
+          "id": 85,
+          "type": "listening",
+          "prompt": "Perché Francesca non vuole comprare un altro computer?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-14t19_06_47_adam---engaging-friend.mp3",
+          "choices": [
+            "Non le serve più.",
+            "Non ha trovato nessun negozio.",
+            "Ha deciso di comprare un tablet.",
+            "Preferisce aspettare piuttosto che scegliere un modello inadatto."
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
