@@ -3445,6 +3445,19 @@
             "Basso"
           ],
           "correct": 1
+        },
+        {
+          "id": 81,
+          "type": "listening",
+          "prompt": "Perché Elisa ha rifiutato il lavoro?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-14t18_55_11_adam---engaging-friend.mp3",
+          "choices": [
+            "Perché lo stipendio era troppo basso.",
+            "Perché gli orari erano poco compatibili con la sua vita.",
+            "Perché il lavoro era troppo lontano.",
+            "Perché non le piaceva l'azienda."
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
