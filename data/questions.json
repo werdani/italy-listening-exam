@@ -3523,6 +3523,19 @@
             "Anna e Martina hanno risolto completamente il problema"
           ],
           "correct": 2
+        },
+        {
+          "id": 87,
+          "type": "listening",
+          "prompt": "Cosa ha fatto cambiare idea a Valeria?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-14t19_11_42_adam---engaging-friend.mp3",
+          "choices": [
+            "Il consiglio di una ragazza che le ha spiegato meglio il corso.",
+            "Una riduzione del prezzo.",
+            "Una modifica del programma",
+            "La cancellazione di alcune lezioni."
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
