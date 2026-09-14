@@ -3341,6 +3341,19 @@
             "Infermiere"
           ],
           "correct": 3
+        },
+        {
+          "id": 73,
+          "type": "mcq",
+          "prompt": "Che cosa fai? — ______ la cena",
+          "audio": "",
+          "choices": [
+            "Sto preparando",
+            "sto studiando",
+            "Sto preparato",
+            "sta dormendo"
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
