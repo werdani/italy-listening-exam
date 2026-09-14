@@ -3354,6 +3354,19 @@
             "sta dormendo"
           ],
           "correct": 0
+        },
+        {
+          "id": 74,
+          "type": "mcq",
+          "prompt": "In quale città si trova il famoso Duomo con la grande cupola progettata da Brunelleschi?",
+          "audio": "",
+          "choices": [
+            "Roma",
+            "Napoli",
+            "Firenze",
+            "Milano"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
