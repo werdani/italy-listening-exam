@@ -3276,6 +3276,19 @@
             "Dove"
           ],
           "correct": 1
+        },
+        {
+          "id": 68,
+          "type": "mcq",
+          "prompt": "Studio italiano ______ inglese perché mi piace di più.",
+          "audio": "",
+          "choices": [
+            "più che",
+            "maggiore di",
+            "più di",
+            "tanto che"
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
