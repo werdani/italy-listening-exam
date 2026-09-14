@@ -3380,6 +3380,19 @@
             "Sia"
           ],
           "correct": 1
+        },
+        {
+          "id": 76,
+          "type": "mcq",
+          "prompt": "trapassato remoto si usa soprattutto per indicare",
+          "audio": "",
+          "choices": [
+            "Un’azione contemporanea a un’altra",
+            "Un’azione futura",
+            "Un’abitudine nel passato",
+            "Un’azione anteriore a un’altra espressa al passato remoto"
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
