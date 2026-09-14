@@ -3360,6 +3360,11 @@
             "id": 8,
             "name": "Vocabolario per questo livello",
             "file": "assets/pdf/a1-2-new-vocabolario-mtpvfijp.pdf"
+          },
+          {
+            "id": 9,
+            "name": "Indicazioni stradali",
+            "file": "assets/pdf/a1-2-new-indicazioni-stradali-imperativo-indiretto.pdf"
           }
         ]
       },
