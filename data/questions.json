@@ -3471,6 +3471,19 @@
             "Il film era troppo lungo."
           ],
           "correct": 2
+        },
+        {
+          "id": 83,
+          "type": "listening",
+          "prompt": "Perché Davide potrebbe non partecipare alla riunione?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-14t19_00_24_adam---engaging-friend.mp3",
+          "choices": [
+            "Non è interessato al progetto.",
+            "Ha dimenticato la data.",
+            "È fuori città per una settimana.",
+            "Gli hanno cambiato il turno."
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
