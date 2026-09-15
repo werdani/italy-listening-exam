@@ -3588,6 +3588,19 @@
             "La velocità del servizio."
           ],
           "correct": 3
+        },
+        {
+          "id": 92,
+          "type": "listening",
+          "prompt": "Perché Riccardo ha rifiutato il viaggio?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-15t19_17_34_adam---engaging-friend.mp3",
+          "choices": [
+            "Non gli piaceva la compagnia.",
+            "Le date non erano adatte ai suoi impegni lavorativi",
+            "Non aveva abbastanza soldi.",
+            "Non voleva viaggiare."
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
