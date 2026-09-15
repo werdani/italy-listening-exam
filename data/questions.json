@@ -3575,6 +3575,19 @@
             "Era malato."
           ],
           "correct": 0
+        },
+        {
+          "id": 91,
+          "type": "listening",
+          "prompt": "Cosa non ha convinto Nicolò?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-15t19_13_03_adam---engaging-friend.mp3",
+          "choices": [
+            "La qualità del cibo",
+            "Il prezzo.",
+            "L'ambiente del ristorante.",
+            "La velocità del servizio."
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
