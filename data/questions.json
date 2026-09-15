@@ -3562,6 +3562,19 @@
             "Non conosce nessuno a Milano."
           ],
           "correct": 2
+        },
+        {
+          "id": 90,
+          "type": "listening",
+          "prompt": "Perché Giorgio non ha restituito il libro ieri?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-15t19_10_34_adam---engaging-friend.mp3",
+          "choices": [
+            "La biblioteca era già chiusa.",
+            "Aveva dimenticato il libro a casa.",
+            "Non aveva finito di leggerlo.",
+            "Era malato."
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
