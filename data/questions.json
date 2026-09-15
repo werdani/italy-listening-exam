@@ -3601,6 +3601,19 @@
             "Non voleva viaggiare."
           ],
           "correct": 1
+        },
+        {
+          "id": 93,
+          "type": "listening",
+          "prompt": "Quale sarà una conseguenza della nuova organizzazione?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-15t19_20_58_adam---engaging-friend.mp3",
+          "choices": [
+            "Si lavorerà meno ore.",
+            "Tutti lavoreranno sempre da casa.",
+            "Diminuirà lo stipendio.",
+            "Aumenteranno gli obiettivi da raggiungere."
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
