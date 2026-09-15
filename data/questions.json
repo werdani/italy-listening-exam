@@ -3549,6 +3549,19 @@
             "Vuole licenziare Marco."
           ],
           "correct": 1
+        },
+        {
+          "id": 89,
+          "type": "listening",
+          "prompt": "Qual è il principale dubbio di Stefano?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-15t19_06_48_adam---engaging-friend.mp3",
+          "choices": [
+            "Non gli piace il lavoro.",
+            "Non vuole vivere con altre persone.",
+            "È preoccupato per le spese della vita a Milano.",
+            "Non conosce nessuno a Milano."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
