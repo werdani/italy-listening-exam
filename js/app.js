@@ -234,7 +234,7 @@
       el.hidden = !active;
       el.classList.toggle("screen-active", active);
     });
-    ["screenLibrary", "screenLibraryLevel", "screenCourses", "screenCourse"].forEach((id) => {
+    ["screenLibrary", "screenLibraryLevel", "screenCourses", "screenCourse", "screenPodcast", "screenPodcastList"].forEach((id) => {
       const el = document.getElementById(id);
       if (el) {
         el.hidden = true;
@@ -1078,6 +1078,7 @@
       AscoltoContent.setSiteConfig(contentData.site);
       if (window.AscoltoLibraryUI) AscoltoLibraryUI.setContent(contentData);
       if (window.AscoltoCoursesUI) AscoltoCoursesUI.setContent(contentData);
+      if (window.AscoltoPodcastUI) AscoltoPodcastUI.setContent(contentData);
 
       if (!contentData.levels || !contentData.levels.length) return false;
 
@@ -1263,6 +1264,9 @@
       }
       if (window.AscoltoCoursesUI) {
         AscoltoCoursesUI.init(contentData);
+      }
+      if (window.AscoltoPodcastUI) {
+        AscoltoPodcastUI.init(contentData);
       }
 
       const levelId = getSelectedLevelId();

@@ -46,8 +46,10 @@ DRIVE_ID_RE = re.compile(r"^[a-zA-Z0-9_-]{10,}$")
 DEVICE_ID_RE = re.compile(r"^[a-zA-Z0-9_-]{8,80}$")
 PDF_NAME_RE = re.compile(r"^[a-zA-Z0-9_.-]{1,80}\.pdf$", re.I)
 AUDIO_NAME_RE = re.compile(r"^[a-zA-Z0-9_.-]{1,80}\.(mp3|wav|ogg|m4a|aac|webm|flac)$", re.I)
+IMAGE_NAME_RE = re.compile(r"^[a-zA-Z0-9_.-]{1,80}\.(jpe?g|png|webp|gif|svg)$", re.I)
 AUDIO_DIR = ROOT / "assets" / "audio"
 PDF_DIR = ROOT / "assets" / "pdf"
+IMAGE_DIR = ROOT / "assets" / "images"
 _visitors_lock = threading.Lock()
 _content_lock = threading.Lock()
 # In-memory cache for the large questions.json (avoids re-reading ~5MB from disk)
@@ -69,6 +71,25 @@ def save_audio_file(filename: str, raw: bytes) -> Path:
     safe = sanitize_audio_filename(filename)
     AUDIO_DIR.mkdir(parents=True, exist_ok=True)
     dest = AUDIO_DIR / safe
+    tmp = dest.with_suffix(dest.suffix + ".tmp")
+    tmp.write_bytes(raw)
+    tmp.replace(dest)
+    return dest
+
+
+def sanitize_image_filename(name: str) -> str:
+    base = Path(str(name or "cover.jpg")).name.strip()
+    if not IMAGE_NAME_RE.match(base):
+        raise ValueError("Invalid image filename")
+    return base
+
+
+def save_image_file(filename: str, raw: bytes) -> Path:
+    if len(raw) > 8 * 1024 * 1024:
+        raise ValueError("Image file too large (max 8 MB)")
+    safe = sanitize_image_filename(filename)
+    IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+    dest = IMAGE_DIR / safe
     tmp = dest.with_suffix(dest.suffix + ".tmp")
     tmp.write_bytes(raw)
     tmp.replace(dest)
@@ -476,6 +497,9 @@ class Handler(SimpleHTTPRequestHandler):
         if path == "/api/audio":
             self._handle_audio_save()
             return
+        if path == "/api/image":
+            self._handle_image_save()
+            return
         if path == "/api/pdf":
             self._handle_pdf_save()
             return
@@ -660,6 +684,50 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(reply)
         print(f"[audio] Wrote {dest} ({len(raw)} bytes)", flush=True)
 
+    def _handle_image_save(self) -> None:
+        length = int(self.headers.get("Content-Length", "0") or 0)
+        if length <= 0:
+            self.send_error(HTTPStatus.BAD_REQUEST, "Empty body")
+            return
+        if length > 12 * 1024 * 1024:
+            self.send_error(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, "Payload too large")
+            return
+
+        try:
+            body = self.rfile.read(length)
+            payload = json.loads(body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid JSON")
+            return
+
+        filename = str((payload or {}).get("filename") or "").strip()
+        content_b64 = str((payload or {}).get("content") or "").strip()
+        if not filename or not content_b64:
+            self.send_error(HTTPStatus.BAD_REQUEST, "filename and content required")
+            return
+
+        import base64
+
+        try:
+            raw = base64.b64decode(content_b64, validate=True)
+            dest = save_image_file(filename, raw)
+        except ValueError as exc:
+            self.send_error(HTTPStatus.BAD_REQUEST, str(exc))
+            return
+        except Exception as exc:  # noqa: BLE001
+            self.send_error(HTTPStatus.BAD_REQUEST, f"Invalid image data: {exc}")
+            return
+
+        rel = f"assets/images/{dest.name}"
+        reply = json.dumps({"ok": True, "path": rel, "filename": dest.name}).encode("utf-8")
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(reply)))
+        self._cors()
+        self.end_headers()
+        self.wfile.write(reply)
+        print(f"[image] Wrote {dest} ({len(raw)} bytes)", flush=True)
+
     def _handle_pdf_save(self) -> None:
         length = int(self.headers.get("Content-Length", "0") or 0)
         if length <= 0:
@@ -828,6 +896,7 @@ def main() -> None:
     print(f"Admin: http://{HOST}:{PORT}/admin/")
     print("POST /api/content saves data/questions.json")
     print("POST /api/audio saves assets/audio/*.mp3")
+    print("POST /api/image saves assets/images/*")
     print("POST /api/pdf saves assets/pdf/*.pdf")
     print("POST /api/github/publish pushes questions.json to GitHub")
     print("GET  /api/drive/<fileId> proxies Google Drive media")

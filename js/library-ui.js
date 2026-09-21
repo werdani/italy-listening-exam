@@ -52,7 +52,7 @@
       el.hidden = !active;
       el.classList.toggle("screen-active", active);
     });
-    ["screenCourses", "screenCourse"].forEach((id) => {
+    ["screenCourses", "screenCourse", "screenPodcast", "screenPodcastList"].forEach((id) => {
       const el = document.getElementById(id);
       if (el) {
         el.hidden = true;

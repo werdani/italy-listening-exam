@@ -293,6 +293,12 @@
     return "/api/audio";
   }
 
+  function resolveImageApiUrl() {
+    const path = global.location.pathname || "";
+    if (path.includes("/admin")) return "../api/image";
+    return "/api/image";
+  }
+
   function sanitizeAudioFilename(name) {
     const raw = String(name || "audio.mp3").trim();
     const extMatch = raw.match(/(\.[a-z0-9]{1,8})$/i);
@@ -442,6 +448,79 @@
     } else if (!savedLocally) {
       throw new Error(
         "Impossibile salvare l'audio. Avvia python3 server.py oppure configura GitHub Token."
+      );
+    }
+
+    return {
+      ok: true,
+      path,
+      savedLocally,
+      publishedToGithub,
+      githubError: githubError ? githubError.message || String(githubError) : null,
+    };
+  }
+
+  function sanitizeImageFilename(name) {
+    const raw = String(name || "cover.jpg").trim();
+    const extMatch = raw.match(/(\.(jpe?g|png|webp|gif|svg))$/i);
+    const ext = extMatch ? extMatch[1].toLowerCase().replace(".jpeg", ".jpg") : ".jpg";
+    let base = raw.replace(/\.[^.]+$/, "");
+    base = base
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    if (!base) base = "cover";
+    if (base.length > 60) base = base.slice(0, 60);
+    return `${base}${ext === ".jpeg" ? ".jpg" : ext}`;
+  }
+
+  async function uploadImageAsset({ dataUrl, filename } = {}) {
+    const base64 = dataUrlToBase64(dataUrl);
+    if (!base64) throw new Error("Dati immagine non validi.");
+
+    const sanitized = sanitizeImageFilename(filename || `cover-${Date.now().toString(36)}.jpg`);
+    const path = `assets/images/${sanitized}`;
+
+    let savedLocally = false;
+    try {
+      const res = await fetch(resolveImageApiUrl(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: sanitized, content: base64 }),
+        cache: "no-store",
+      });
+      if (res.ok) {
+        savedLocally = true;
+      } else if (!isGitHubPagesHost()) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `Salvataggio immagine fallito (${res.status})`);
+      }
+    } catch (err) {
+      if (!isGitHubPagesHost() && !(getGithubSettings().token)) {
+        throw err;
+      }
+    }
+
+    const gh = getGithubSettings();
+    let publishedToGithub = false;
+    let githubError = null;
+    const mustPublishGithub = !!(gh.token && (isGitHubPagesHost() || !savedLocally));
+
+    if (gh.token) {
+      try {
+        await publishBinaryToGitHub(path, base64, {
+          message: `Admin dashboard: upload ${path}`,
+        });
+        publishedToGithub = true;
+      } catch (err) {
+        githubError = err;
+        if (mustPublishGithub && !savedLocally) {
+          throw err;
+        }
+      }
+    } else if (!savedLocally) {
+      throw new Error(
+        "Impossibile salvare l'immagine. Avvia python3 server.py oppure configura GitHub Token."
       );
     }
 
@@ -1482,7 +1561,9 @@
     publishToGitHub,
     publishBinaryToGitHub,
     uploadAudioAsset,
+    uploadImageAsset,
     sanitizeAudioFilename,
+    sanitizeImageFilename,
     suggestAudioAssetName,
     getLevel,
     getLevelDurationMinutes,

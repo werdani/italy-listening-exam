@@ -41,7 +41,7 @@
   }
 
   function hideOtherFeatureScreens() {
-    ["screenLibrary", "screenLibraryLevel"].forEach((id) => {
+    ["screenLibrary", "screenLibraryLevel", "screenPodcast", "screenPodcastList"].forEach((id) => {
       const el = document.getElementById(id);
       if (el) {
         el.hidden = true;

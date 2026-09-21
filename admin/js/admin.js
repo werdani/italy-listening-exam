@@ -183,8 +183,13 @@
     const courseView = document.getElementById("viewCourse");
     if (coursesView) coursesView.hidden = name !== "courses";
     if (courseView) courseView.hidden = name !== "course";
+    const podcastView = document.getElementById("viewPodcast");
+    const podcastShowView = document.getElementById("viewPodcastShow");
+    if (podcastView) podcastView.hidden = name !== "podcast";
+    if (podcastShowView) podcastShowView.hidden = name !== "podcastShow";
     if (window.LibraryAdmin) LibraryAdmin.setContent(content);
     if (window.CoursesAdmin) CoursesAdmin.setContent(content);
+    if (window.PodcastAdmin) PodcastAdmin.setContent(content);
   }
 
   function closeAllModals() {
@@ -196,6 +201,8 @@
       document.getElementById("bookModal"),
       document.getElementById("courseModal"),
       document.getElementById("videoModal"),
+      document.getElementById("podcastShowModal"),
+      document.getElementById("episodeModal"),
     ].forEach((m) => {
       if (m) m.hidden = true;
     });
@@ -1391,6 +1398,22 @@
     });
   }
 
+  function initPodcastAdmin() {
+    if (!window.PodcastAdmin) return;
+    PodcastAdmin.init({
+      persist,
+      showToast,
+      openConfirm,
+      closeModal: (el) => {
+        if (el) el.hidden = true;
+      },
+      friendlySaveError,
+      getEffectiveGithubSettings,
+      githubTokenRequiredMessage,
+      showView,
+    });
+  }
+
   function switchAdminNav(target) {
     $$("[data-admin-nav]").forEach((b) => {
       b.classList.toggle("is-active", b.getAttribute("data-admin-nav") === target);
@@ -1401,6 +1424,9 @@
     } else if (target === "courses" && window.CoursesAdmin) {
       CoursesAdmin.setContent(content);
       CoursesAdmin.renderList();
+    } else if (target === "podcast" && window.PodcastAdmin) {
+      PodcastAdmin.setContent(content);
+      PodcastAdmin.renderList();
     } else {
       renderLevels();
     }
@@ -1411,10 +1437,12 @@
     showView("levels");
     initLibraryAdmin();
     initCoursesAdmin();
+    initPodcastAdmin();
     try {
       await loadData();
       if (window.LibraryAdmin) LibraryAdmin.setContent(content);
       if (window.CoursesAdmin) CoursesAdmin.setContent(content);
+      if (window.PodcastAdmin) PodcastAdmin.setContent(content);
       renderLevels();
     } catch (err) {
       console.error(err);

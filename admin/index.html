@@ -85,6 +85,7 @@
         <button type="button" class="admin-nav-btn is-active" data-admin-nav="levels">Livelli esame</button>
         <button type="button" class="admin-nav-btn" data-admin-nav="library">Biblioteca libri</button>
         <button type="button" class="admin-nav-btn" data-admin-nav="courses">Corsi video</button>
+        <button type="button" class="admin-nav-btn" data-admin-nav="podcast">Podcast</button>
       </nav>
 
       <!-- Levels list -->
@@ -338,6 +339,38 @@
 
         <div class="questions-list" id="videosList"></div>
         <p class="empty-state" id="videosEmpty" hidden>Nessun video. Aggiungi un link YouTube o Drive.</p>
+      </section>
+
+      <!-- Podcast -->
+      <section id="viewPodcast" class="admin-view" hidden>
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Ascolto libero</p>
+            <h1>Podcast</h1>
+            <p class="lead">Crea più podcast, ognuno con la propria copertina e gli episodi audio.</p>
+          </div>
+          <div class="page-actions">
+            <button type="button" class="btn btn-primary" id="btnAddPodcastShow">+ Nuovo podcast</button>
+          </div>
+        </div>
+        <div class="levels-grid" id="podcastAdminGrid"></div>
+        <p class="empty-state" id="podcastAdminEmpty" hidden>Nessun podcast. Crea il primo.</p>
+      </section>
+
+      <section id="viewPodcastShow" class="admin-view" hidden>
+        <div class="page-head">
+          <div>
+            <button type="button" class="btn-back" id="btnBackPodcastShows">← Tutti i podcast</button>
+            <h1 id="adminPodcastShowTitle">Podcast</h1>
+            <p class="lead" id="adminPodcastShowLead"></p>
+          </div>
+          <div class="page-actions">
+            <button type="button" class="btn btn-secondary" id="btnEditPodcastShow">Modifica podcast</button>
+            <button type="button" class="btn btn-primary" id="btnAddEpisode">+ Nuovo episodio</button>
+          </div>
+        </div>
+        <div class="questions-list" id="podcastEpisodesList"></div>
+        <p class="empty-state" id="podcastEpisodesEmpty" hidden>Nessun episodio. Carica il primo audio.</p>
       </section>
     </main>
   </div>
@@ -605,6 +638,101 @@
     </div>
   </div>
 
+  <!-- Podcast show modal -->
+  <div class="modal" id="podcastShowModal" hidden role="dialog" aria-modal="true" aria-labelledby="podcastShowModalTitle">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card modal-card-wide" role="document">
+      <h2 id="podcastShowModalTitle">Nuovo podcast</h2>
+      <form id="podcastShowForm" class="admin-form">
+        <input type="hidden" id="podcastShowFormId" />
+        <div class="form-field">
+          <label class="field-label" for="podcastTitle">Titolo del podcast</label>
+          <input type="text" id="podcastTitle" required maxlength="120" placeholder="es. Podcast 100% in Italiano" />
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="podcastAuthor">Autore</label>
+          <input type="text" id="podcastAuthor" maxlength="80" placeholder="es. Signora Reham Ramadan" />
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="podcastDesc">Descrizione</label>
+          <textarea id="podcastDesc" class="admin-control" rows="3" maxlength="500" placeholder="Breve descrizione del podcast"></textarea>
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="podcastCoverInput">Copertina (percorso o URL)</label>
+          <input
+            type="text"
+            id="podcastCoverInput"
+            maxlength="400"
+            placeholder="assets/images/reham.jpeg oppure link Drive"
+          />
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="podcastCoverFile">Oppure carica immagine di copertina</label>
+          <input type="file" id="podcastCoverFile" accept="image/*,.jpg,.jpeg,.png,.webp,.gif" />
+          <p class="field-hint" id="podcastCoverHint">Immagine quadrata consigliata — salvata in assets/images/</p>
+          <img
+            id="podcastCoverPreview"
+            alt="Anteprima copertina"
+            width="96"
+            height="96"
+            style="margin-top:0.65rem;border-radius:14px;object-fit:cover;display:block"
+            hidden
+          />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close-modal>Annulla</button>
+          <button type="submit" class="btn btn-primary" id="podcastShowFormSubmit">Salva</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Podcast episode modal -->
+  <div class="modal" id="episodeModal" hidden role="dialog" aria-modal="true" aria-labelledby="episodeModalTitle">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card modal-card-wide" role="document">
+      <h2 id="episodeModalTitle">Nuovo episodio</h2>
+      <form id="episodeForm" class="admin-form">
+        <input type="hidden" id="episodeFormId" />
+        <div class="form-field">
+          <label class="field-label" for="episodeTitle">Titolo</label>
+          <input type="text" id="episodeTitle" required maxlength="160" placeholder="es. Cosa mangiano gli italiani a colazione?" />
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="episodeDesc">Descrizione (opzionale)</label>
+          <textarea id="episodeDesc" class="admin-control" rows="3" maxlength="600" placeholder="Breve testo dell’episodio"></textarea>
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="episodeDate">Data</label>
+          <input type="date" id="episodeDate" />
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="episodeAudioPath">Link Drive / percorso / URL</label>
+          <input
+            type="text"
+            id="episodeAudioPath"
+            maxlength="500"
+            placeholder="https://drive.google.com/file/d/…/view oppure assets/audio/ep1.mp3"
+          />
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="episodeAudioFile">Oppure carica file audio</label>
+          <input type="file" id="episodeAudioFile" accept="audio/*,.mp3,.wav,.ogg,.m4a" />
+          <p class="field-hint" id="episodeAudioHint">Il file va in <code>assets/audio/</code>.</p>
+        </div>
+        <div class="audio-preview" id="episodeAudioPreviewWrap" hidden>
+          <label class="field-label">Anteprima</label>
+          <audio id="episodeAudioPreview" class="audio-player" controls preload="metadata"></audio>
+        </div>
+        <p class="form-error" id="episodeFormError" hidden role="alert"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close-modal>Annulla</button>
+          <button type="submit" class="btn btn-primary" id="episodeFormSubmit">Salva episodio</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Confirm modal -->
   <div class="modal" id="confirmModal" hidden role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
     <div class="modal-backdrop" data-close-modal></div>
@@ -620,13 +748,15 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-  <script src="../js/content.js?v=gh-token4" defer></script>
+  <script src="../js/content.js?v=img1" defer></script>
   <script src="../js/library.js?v=1" defer></script>
   <script src="../js/courses.js?v=2" defer></script>
+  <script src="../js/podcast.js?v=2" defer></script>
   <script src="../js/visitors.js?v=perf1" defer></script>
   <script src="js/auth.js?v=duration3" defer></script>
   <script src="js/library-admin.js?v=1" defer></script>
   <script src="js/courses-admin.js?v=5" defer></script>
-  <script src="js/admin.js?v=gh-token4" defer></script>
+  <script src="js/podcast-admin.js?v=2" defer></script>
+  <script src="js/admin.js?v=podcast2" defer></script>
 </body>
 </html>
