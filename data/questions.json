@@ -4122,7 +4122,16 @@
         "author": "Signora Reham Ramadan",
         "description": "Ascolta episodi in italiano più lento: pratica la comprensione, amplia il vocabolario e scopri la cultura italiana.",
         "cover": "assets/images/podcast-cover-1-podcast.jpg",
-        "episodes": []
+        "episodes": [
+          {
+            "id": 1,
+            "title": "L’ALFABETO ITALIANO 🇮🇹",
+            "description": "In questo podcast imparerai l’alfabeto italiano, la pronuncia delle lettere e i suoni fondamentali della lingua italiana.\n\n🎧 Ascolta attentamente, ripeti le lettere e migliora la tua pronuncia passo dopo passo.\n\n📚 Perfetto per chi sta iniziando a imparare l’italiano (livello A1).\n\nBuon ascolto e buon apprendimento! 🇮🇹",
+            "audio": "assets/audio/podcast-ep-new-l2-q1-5d4c269cb8.mp3",
+            "date": "2026-09-21",
+            "duration": ""
+          }
+        ]
       }
     ]
   }
