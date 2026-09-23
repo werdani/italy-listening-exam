@@ -3679,6 +3679,19 @@
             "Dovrebbe cambiare azienda."
           ],
           "correct": 0
+        },
+        {
+          "id": 99,
+          "type": "listening",
+          "prompt": "Come è cambiata l'opinione di Marta?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-23t15_13_42_adam---engaging-friend.mp3",
+          "choices": [
+            "Ha iniziato a considerare la proposta più seriamente.",
+            "È diventata completamente contraria.",
+            "Ha deciso di presentare una proposta alternativa",
+            "Ha rifiutato di discutere il progetto."
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
