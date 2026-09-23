@@ -3627,6 +3627,19 @@
             "Il posto era chiuso."
           ],
           "correct": 2
+        },
+        {
+          "id": 95,
+          "type": "listening",
+          "prompt": "Su cosa si baserà principalmente la decisione di Valentina?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-23t15_06_02_adam---engaging-friend.mp3",
+          "choices": [
+            "Solo sull'aspetto della macchina.",
+            "Sul consiglio del venditore.",
+            "Su diversi aspetti pratici e sulle esperienze degli altri proprietari.",
+            "Sul colore disponibile."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
