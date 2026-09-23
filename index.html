@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/style.css?v=dev-photo-1" />
   <link rel="stylesheet" href="css/library.css?v=1" />
   <link rel="stylesheet" href="css/courses.css?v=3" />
-  <link rel="stylesheet" href="css/podcast.css?v=2" />
+  <link rel="stylesheet" href="css/podcast.css?v=3" />
 </head>
 <body>
   <a class="skip-link" href="#main">Vai al contenuto</a>
@@ -291,6 +291,16 @@
           </button>
         </div>
       </div>
+      <div id="podcastDriveWrap" class="podcast-drive-wrap" hidden>
+        <iframe
+          id="podcastDriveFrame"
+          class="podcast-drive-frame"
+          title="Audio Google Drive"
+          allow="autoplay"
+          allowfullscreen
+        ></iframe>
+        <p class="podcast-drive-hint">Se l’audio non parte, premi play sul player Drive.</p>
+      </div>
     </div>
 
     <!-- Exam -->
@@ -500,7 +510,7 @@
   <script src="js/visitors.js?v=perf1" defer></script>
   <script src="js/library-ui.js?v=3" defer></script>
   <script src="js/courses-ui.js?v=7" defer></script>
-  <script src="js/podcast-ui.js?v=2" defer></script>
+  <script src="js/podcast-ui.js?v=3" defer></script>
   <script src="js/app.js?v=perf3" defer></script>
 </body>
 </html>

@@ -58,9 +58,18 @@
     episodeAudioHint: $("#episodeAudioHint"),
     episodeAudioPreview: $("#episodeAudioPreview"),
     episodeAudioPreviewWrap: $("#episodeAudioPreviewWrap"),
+    episodeDrivePreviewWrap: $("#episodeDrivePreviewWrap"),
+    episodeDrivePreviewFrame: $("#episodeDrivePreviewFrame"),
     episodeFormError: $("#episodeFormError"),
     episodeFormSubmit: $("#episodeFormSubmit"),
   };
+
+  /** @type {string|null} */
+  let previewBlobUrl = null;
+  let previewSourceKey = "";
+  let previewCandidateIndex = 0;
+  /** @type {string[]} */
+  let previewCandidates = [];
 
   function escapeHtml(str) {
     return String(str)
@@ -294,34 +303,142 @@
     }
   }
 
+  function revokePreviewBlob() {
+    if (previewBlobUrl) {
+      try {
+        URL.revokeObjectURL(previewBlobUrl);
+      } catch {
+        /* ignore */
+      }
+      previewBlobUrl = null;
+    }
+  }
+
+  function hideDrivePreview() {
+    if (els.episodeDrivePreviewWrap) els.episodeDrivePreviewWrap.hidden = true;
+    if (els.episodeDrivePreviewFrame) els.episodeDrivePreviewFrame.removeAttribute("src");
+    if (els.episodeAudioPreview) els.episodeAudioPreview.hidden = false;
+  }
+
+  function showDrivePreview(fileId) {
+    if (!els.episodeDrivePreviewWrap || !els.episodeDrivePreviewFrame) return false;
+    const AC = global.AscoltoContent;
+    if (!AC?.toGoogleDrivePreviewUrl) return false;
+    if (els.episodeAudioPreview) {
+      els.episodeAudioPreview.onerror = null;
+      els.episodeAudioPreview.removeAttribute("src");
+      try {
+        els.episodeAudioPreview.load();
+      } catch {
+        /* ignore */
+      }
+      els.episodeAudioPreview.hidden = true;
+    }
+    revokePreviewBlob();
+    els.episodeDrivePreviewWrap.hidden = false;
+    els.episodeDrivePreviewFrame.src = AC.toGoogleDrivePreviewUrl(fileId);
+    return true;
+  }
+
   function resetEpisodeForm() {
     if (!els.episodeForm) return;
     els.episodeForm.reset();
     els.episodeFormId.value = "";
     pendingAudioDataUrl = null;
     pendingAudioFile = null;
+    previewSourceKey = "";
+    previewCandidates = [];
+    previewCandidateIndex = 0;
     if (els.episodeFormError) els.episodeFormError.hidden = true;
     if (els.episodeAudioPreviewWrap) els.episodeAudioPreviewWrap.hidden = true;
     if (els.episodeAudioPreview) {
+      els.episodeAudioPreview.onerror = null;
       els.episodeAudioPreview.removeAttribute("src");
-      els.episodeAudioPreview.load();
+      els.episodeAudioPreview.hidden = false;
+      try {
+        els.episodeAudioPreview.load();
+      } catch {
+        /* ignore */
+      }
     }
+    revokePreviewBlob();
+    hideDrivePreview();
     if (els.episodeAudioHint) {
       els.episodeAudioHint.textContent =
         "Carica un MP3 (o WAV/OGG/M4A) oppure incolla un link Drive / percorso assets/audio/…";
     }
   }
 
-  function setAudioPreview(src) {
+  async function setAudioPreview(src) {
     if (!els.episodeAudioPreview || !els.episodeAudioPreviewWrap) return;
     if (!src) {
+      previewSourceKey = "";
       els.episodeAudioPreviewWrap.hidden = true;
+      els.episodeAudioPreview.onerror = null;
       els.episodeAudioPreview.removeAttribute("src");
+      els.episodeAudioPreview.hidden = false;
+      revokePreviewBlob();
+      hideDrivePreview();
       return;
     }
-    const resolved = global.AscoltoContent?.resolveAudioSrc?.(src) || src;
-    els.episodeAudioPreview.src = resolved;
+
     els.episodeAudioPreviewWrap.hidden = false;
+    previewSourceKey = String(src);
+    revokePreviewBlob();
+    hideDrivePreview();
+    els.episodeAudioPreview.onerror = null;
+    els.episodeAudioPreview.hidden = false;
+
+    const AC = global.AscoltoContent;
+    const apiKey = content?.site?.googleApiKey || "";
+    const fileId = AC?.extractGoogleDriveFileId?.(src) || null;
+    const isDrive = !!(fileId && AC?.isGoogleDriveUrl?.(src));
+
+    if (isDrive && AC.prefersDriveEmbed?.(src, { apiKey })) {
+      showDrivePreview(fileId);
+      return;
+    }
+
+    if (isDrive && AC.fetchDriveAudioBlobUrl) {
+      try {
+        const blobUrl = await AC.fetchDriveAudioBlobUrl(src, { apiKey });
+        if (blobUrl && String(src) === previewSourceKey) {
+          previewBlobUrl = blobUrl;
+          els.episodeAudioPreview.src = blobUrl;
+          return;
+        }
+      } catch (err) {
+        console.warn("Admin podcast Drive preview blob failed", err);
+      }
+    }
+
+    previewCandidates = AC?.getAudioPlaybackCandidates
+      ? AC.getAudioPlaybackCandidates(src, { apiKey })
+      : [AC?.resolveAudioSrc?.(src) || src];
+    previewCandidateIndex = 0;
+
+    const tryNext = () => {
+      if (String(src) !== previewSourceKey) return;
+      if (previewCandidateIndex >= previewCandidates.length) {
+        if (isDrive) showDrivePreview(fileId);
+        return;
+      }
+      const url = previewCandidates[previewCandidateIndex];
+      previewCandidateIndex += 1;
+      els.episodeAudioPreview.src = url;
+      try {
+        els.episodeAudioPreview.load();
+      } catch {
+        /* ignore */
+      }
+    };
+
+    els.episodeAudioPreview.onerror = () => {
+      if (String(src) !== previewSourceKey) return;
+      tryNext();
+    };
+
+    tryNext();
   }
 
   function openEpisodeModal(episode = null) {

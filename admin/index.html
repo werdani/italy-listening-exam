@@ -723,6 +723,16 @@
         <div class="audio-preview" id="episodeAudioPreviewWrap" hidden>
           <label class="field-label">Anteprima</label>
           <audio id="episodeAudioPreview" class="audio-player" controls preload="metadata"></audio>
+          <div id="episodeDrivePreviewWrap" class="drive-audio-wrap" hidden>
+            <iframe
+              id="episodeDrivePreviewFrame"
+              class="drive-audio-frame"
+              title="Anteprima Google Drive"
+              allow="autoplay"
+              allowfullscreen
+            ></iframe>
+            <p class="field-hint">Anteprima tramite player Google Drive (il link diretto non funziona nel browser).</p>
+          </div>
         </div>
         <p class="form-error" id="episodeFormError" hidden role="alert"></p>
         <div class="modal-actions">
@@ -756,7 +766,7 @@
   <script src="js/auth.js?v=duration3" defer></script>
   <script src="js/library-admin.js?v=1" defer></script>
   <script src="js/courses-admin.js?v=5" defer></script>
-  <script src="js/podcast-admin.js?v=2" defer></script>
+  <script src="js/podcast-admin.js?v=3" defer></script>
   <script src="js/admin.js?v=podcast2" defer></script>
 </body>
 </html>
