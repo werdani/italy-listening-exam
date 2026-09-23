@@ -3614,6 +3614,19 @@
             "Aumenteranno gli obiettivi da raggiungere."
           ],
           "correct": 3
+        },
+        {
+          "id": 94,
+          "type": "listening",
+          "prompt": "Perché l'appuntamento è stato rimandato?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-23t15_01_49_adam---engaging-friend.mp3",
+          "choices": [
+            "Pietro ha cambiato idea.",
+            "Pietro si è dimenticato dell'appuntamento.",
+            "È stato spostato e le nuove alternative non erano compatibili con il suo lavoro.",
+            "Il posto era chiuso."
+          ],
+          "correct": 2
         }
       ],
       "durationMinutes": 60
