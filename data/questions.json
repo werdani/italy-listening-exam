@@ -3666,6 +3666,19 @@
             "La festa è troppo lontana."
           ],
           "correct": 1
+        },
+        {
+          "id": 98,
+          "type": "listening",
+          "prompt": "Perché Matteo esita ad accettare?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-23t15_12_12_adam---engaging-friend.mp3",
+          "choices": [
+            "Il trasferimento comporterebbe spostamenti molto più lunghi.",
+            "Lo stipendio diminuirebbe.",
+            "Il nuovo incarico non gli interessa.",
+            "Dovrebbe cambiare azienda."
+          ],
+          "correct": 0
         }
       ],
       "durationMinutes": 60
