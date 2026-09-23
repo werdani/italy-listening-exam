@@ -3640,6 +3640,19 @@
             "Sul colore disponibile."
           ],
           "correct": 2
+        },
+        {
+          "id": 96,
+          "type": "listening",
+          "prompt": "Qual è la posizione di Massimo?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-23t15_07_57_adam---engaging-friend.mp3",
+          "choices": [
+            "È totalmente contrario all'articolo.",
+            "È completamente d'accordo con l'autore.",
+            "Non ha letto l'articolo.",
+            "Accetta in parte la conclusione, ma ritiene insufficienti alcune argomentazioni."
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
