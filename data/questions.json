@@ -3653,6 +3653,19 @@
             "Accetta in parte la conclusione, ma ritiene insufficienti alcune argomentazioni."
           ],
           "correct": 3
+        },
+        {
+          "id": 97,
+          "type": "listening",
+          "prompt": "Perché Antonio è indeciso?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-23t15_09_48_adam---engaging-friend.mp3",
+          "choices": [
+            "Non conosce nessuno alla festa.",
+            "Vorrebbe andarci, ma deve considerare un impegno del giorno dopo.",
+            "Non è stato invitato.",
+            "La festa è troppo lontana."
+          ],
+          "correct": 1
         }
       ],
       "durationMinutes": 60
