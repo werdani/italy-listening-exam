@@ -48,6 +48,7 @@
     podcastNpCover: $("#podcastNpCover"),
     podcastNpTitle: $("#podcastNpTitle"),
     podcastNpProgress: $("#podcastNpProgress"),
+    podcastNpDriveLabel: $("#podcastNpDriveLabel"),
     btnNpPlay: $("#btnNpPlay"),
     btnNpClose: $("#btnNpClose"),
     podcastDriveWrap: $("#podcastDriveWrap"),
@@ -135,6 +136,7 @@
     if (els.podcastDriveWrap) els.podcastDriveWrap.hidden = true;
     if (els.podcastDriveFrame) els.podcastDriveFrame.removeAttribute("src");
     if (els.podcastNpProgress) els.podcastNpProgress.hidden = false;
+    if (els.podcastNpDriveLabel) els.podcastNpDriveLabel.hidden = true;
     if (els.podcastNowPlaying) els.podcastNowPlaying.classList.remove("is-drive-embed");
     usingDriveEmbed = false;
   }
@@ -162,6 +164,7 @@
     els.podcastDriveWrap.hidden = false;
     els.podcastDriveFrame.src = preview;
     if (els.podcastNpProgress) els.podcastNpProgress.hidden = true;
+    if (els.podcastNpDriveLabel) els.podcastNpDriveLabel.hidden = false;
     if (els.podcastNowPlaying) els.podcastNowPlaying.classList.add("is-drive-embed");
     usingDriveEmbed = true;
     updatePlayingUi(true);
