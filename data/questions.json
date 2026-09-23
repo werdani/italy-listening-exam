@@ -3692,6 +3692,19 @@
             "Ha rifiutato di discutere il progetto."
           ],
           "correct": 0
+        },
+        {
+          "id": 100,
+          "type": "listening",
+          "prompt": "Perché Riccardo non ha ancora restituito i soldi?",
+          "audio": "assets/audio/l7-new-elevenlabs_2026-09-23t15_15_12_adam---engaging-friend.mp3",
+          "choices": [
+            "Ha dimenticato la promessa.",
+            "Paolo non li vuole più.",
+            "Ha speso i soldi per un'altra cosa.",
+            "Il suo stipendio è arrivato più tardi del previsto."
+          ],
+          "correct": 3
         }
       ],
       "durationMinutes": 60
