@@ -57,8 +57,13 @@
     podcastInlineAudio: $("#podcastInlineAudio"),
     podcastInlineDriveWrap: $("#podcastInlineDriveWrap"),
     podcastInlineDriveFrame: $("#podcastInlineDriveFrame"),
+    podcastDriveLoading: $("#podcastDriveLoading"),
+    podcastDriveOpenBtn: $("#podcastDriveOpenBtn"),
+    podcastDriveHint: $("#podcastDriveHint"),
     toast: $("#toast"),
   };
+
+  let driveLoadTimer = null;
 
   function escapeHtml(str) {
     return String(str)
@@ -136,14 +141,33 @@
     }
   }
 
+  function clearDriveLoadTimer() {
+    if (driveLoadTimer) {
+      clearTimeout(driveLoadTimer);
+      driveLoadTimer = null;
+    }
+  }
+
   function hideDriveFallback() {
     driveFallbackFileId = null;
     usingDriveEmbed = false;
+    clearDriveLoadTimer();
     if (els.podcastInlineDriveWrap) {
       els.podcastInlineDriveWrap.hidden = true;
-      els.podcastInlineDriveWrap.classList.remove("is-active");
+      els.podcastInlineDriveWrap.classList.remove("is-active", "is-ready");
     }
-    if (els.podcastInlineDriveFrame) els.podcastInlineDriveFrame.removeAttribute("src");
+    if (els.podcastInlineDriveFrame) {
+      els.podcastInlineDriveFrame.onload = null;
+      els.podcastInlineDriveFrame.removeAttribute("src");
+    }
+    if (els.podcastDriveOpenBtn) {
+      els.podcastDriveOpenBtn.hidden = true;
+      els.podcastDriveOpenBtn.removeAttribute("href");
+    }
+    if (els.podcastDriveHint) {
+      els.podcastDriveHint.hidden = false;
+      els.podcastDriveHint.textContent = "Tocca ▶ sul player per ascoltare";
+    }
     if (els.podcastInlineAudio) {
       els.podcastInlineAudio.hidden = true;
       els.podcastInlineAudio.removeAttribute("src");
@@ -177,7 +201,7 @@
     return row;
   }
 
-  /** Exam-style Drive player, mounted under the episode (no floating popup). */
+  /** Exam-style Drive player under the episode (works on GitHub Pages). */
   function showDriveEmbed(fileId) {
     hideNowPlaying();
     if (!fileId || !els.podcastInlineDriveWrap || !els.podcastInlineDriveFrame) {
@@ -202,16 +226,52 @@
       }
     }
     revokeAudioBlob();
+    clearDriveLoadTimer();
 
     driveFallbackFileId = fileId;
     usingDriveEmbed = true;
     mountInlineUnderEpisode(activeEpisodeId);
 
+    const preview = global.AscoltoContent.toGoogleDrivePreviewUrl(fileId);
     if (els.podcastInlineAudio) els.podcastInlineAudio.hidden = true;
     if (els.podcastInlineLabel) els.podcastInlineLabel.textContent = "Ascolta l’episodio";
+    if (els.podcastDriveOpenBtn) {
+      els.podcastDriveOpenBtn.href = preview;
+      els.podcastDriveOpenBtn.hidden = true;
+    }
+    if (els.podcastDriveHint) {
+      els.podcastDriveHint.hidden = false;
+      els.podcastDriveHint.textContent = "Tocca ▶ sul player per ascoltare";
+    }
+
     els.podcastInlineDriveWrap.hidden = false;
     els.podcastInlineDriveWrap.classList.add("is-active");
-    els.podcastInlineDriveFrame.src = global.AscoltoContent.toGoogleDrivePreviewUrl(fileId);
+    els.podcastInlineDriveWrap.classList.remove("is-ready");
+
+    const frame = els.podcastInlineDriveFrame;
+    frame.onload = () => {
+      if (String(fileId) !== String(driveFallbackFileId)) return;
+      els.podcastInlineDriveWrap.classList.add("is-ready");
+      clearDriveLoadTimer();
+    };
+    frame.removeAttribute("src");
+    // defer src set so removeAttribute takes effect
+    requestAnimationFrame(() => {
+      if (String(fileId) !== String(driveFallbackFileId)) return;
+      frame.src = preview;
+    });
+
+    // Drive often stays on spinner (3rd-party cookies). Offer open button.
+    driveLoadTimer = setTimeout(() => {
+      if (String(fileId) !== String(driveFallbackFileId)) return;
+      els.podcastInlineDriveWrap.classList.add("is-ready");
+      if (els.podcastDriveOpenBtn) els.podcastDriveOpenBtn.hidden = false;
+      if (els.podcastDriveHint) {
+        els.podcastDriveHint.textContent =
+          "Se non parte, premi «Apri audio su Google Drive».";
+      }
+    }, 6000);
+
     updatePlayingUi(true);
     return true;
   }

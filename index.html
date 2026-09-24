@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/style.css?v=dev-photo-1" />
   <link rel="stylesheet" href="css/library.css?v=1" />
   <link rel="stylesheet" href="css/courses.css?v=3" />
-  <link rel="stylesheet" href="css/podcast.css?v=10" />
+  <link rel="stylesheet" href="css/podcast.css?v=11" />
 </head>
 <body>
   <a class="skip-link" href="#main">Vai al contenuto</a>
@@ -307,7 +307,10 @@
         hidden
       ></audio>
       <div id="podcastInlineDriveWrap" class="podcast-drive-skin" hidden>
-        <div class="podcast-drive-skin-bar">
+        <div class="podcast-drive-skin-bar" id="podcastDriveBar">
+          <div class="podcast-drive-loading" id="podcastDriveLoading" aria-hidden="true">
+            <span class="podcast-drive-spinner"></span>
+          </div>
           <iframe
             id="podcastInlineDriveFrame"
             class="podcast-drive-skin-frame"
@@ -315,12 +318,17 @@
             allow="autoplay; encrypted-media"
             referrerpolicy="no-referrer-when-downgrade"
           ></iframe>
-          <!-- Masks hide Drive chrome (bad clock / pop-out); clicks still reach play -->
-          <span class="podcast-drive-mask podcast-drive-mask-left" aria-hidden="true"></span>
           <span class="podcast-drive-mask podcast-drive-mask-right" aria-hidden="true"></span>
-          <span class="podcast-drive-mask podcast-drive-mask-top" aria-hidden="true"></span>
         </div>
-        <p class="podcast-drive-skin-hint">Tocca ▶ sul player per ascoltare</p>
+        <a
+          class="btn btn-primary btn-sm podcast-drive-open"
+          id="podcastDriveOpenBtn"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          hidden
+        >Apri audio su Google Drive</a>
+        <p class="podcast-drive-skin-hint" id="podcastDriveHint">Tocca ▶ sul player per ascoltare</p>
       </div>
     </div>
 
@@ -531,7 +539,7 @@
   <script src="js/visitors.js?v=perf1" defer></script>
   <script src="js/library-ui.js?v=3" defer></script>
   <script src="js/courses-ui.js?v=7" defer></script>
-  <script src="js/podcast-ui.js?v=13" defer></script>
+  <script src="js/podcast-ui.js?v=14" defer></script>
   <script src="js/app.js?v=perf3" defer></script>
 </body>
 </html>
