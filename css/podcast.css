@@ -305,18 +305,25 @@
   border-radius: 8px;
 }
 
-/* Custom skin that hides Google Drive chrome; clicks go to invisible iframe */
+/* Live (GitHub Pages): exam-like bar; invisible Drive iframe aligned for clicks */
 .podcast-drive-skin {
   position: relative;
-  height: 42px;
-  border-radius: 8px;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--text) 10%, var(--surface));
-  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
 }
 
 .podcast-drive-skin[hidden] {
   display: none !important;
+}
+
+.podcast-drive-skin-bar {
+  position: relative;
+  height: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--text) 8%, var(--surface));
 }
 
 .podcast-drive-skin-ui {
@@ -326,19 +333,20 @@
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  padding: 0 0.65rem;
+  padding: 0 0.75rem;
   pointer-events: none;
 }
 
 .podcast-drive-skin-play {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: var(--primary);
   color: #fff;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 40%, transparent);
 }
 
 .podcast-drive-skin-track {
@@ -351,37 +359,54 @@
 
 .podcast-drive-skin-fill {
   display: block;
-  width: 28%;
+  width: 16%;
   height: 100%;
   border-radius: inherit;
   background: var(--primary);
-  animation: podcast-drive-pulse 1.8s ease-in-out infinite;
+}
+
+.podcast-drive-skin.is-active .podcast-drive-skin-fill {
+  animation: podcast-drive-pulse 1.6s ease-in-out infinite;
 }
 
 @keyframes podcast-drive-pulse {
   0%,
   100% {
-    opacity: 0.55;
-    width: 22%;
+    width: 12%;
+    opacity: 0.7;
   }
   50% {
+    width: 48%;
     opacity: 1;
-    width: 38%;
   }
+}
+
+.podcast-drive-skin-time {
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex-shrink: 0;
 }
 
 .podcast-drive-skin-frame {
   position: absolute;
-  inset: 0;
+  left: 0;
+  /* Shift Drive controls into the visible/clickable strip */
+  top: -38px;
   z-index: 2;
-  width: 180%;
-  height: 140px;
-  max-width: none;
+  width: 100%;
+  height: 120px;
   border: 0;
-  /* Completely hide Drive chrome; clicks still reach the player */
   opacity: 0;
-  transform: translate(-8%, -28%);
   cursor: pointer;
+}
+
+.podcast-drive-skin-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
 }
 
 .podcast-episode.is-expanded {

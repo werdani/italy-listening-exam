@@ -139,7 +139,10 @@
   function hideDriveFallback() {
     driveFallbackFileId = null;
     usingDriveEmbed = false;
-    if (els.podcastInlineDriveWrap) els.podcastInlineDriveWrap.hidden = true;
+    if (els.podcastInlineDriveWrap) {
+      els.podcastInlineDriveWrap.hidden = true;
+      els.podcastInlineDriveWrap.classList.remove("is-active");
+    }
     if (els.podcastInlineDriveFrame) els.podcastInlineDriveFrame.removeAttribute("src");
     if (els.podcastInlineAudio) {
       els.podcastInlineAudio.hidden = true;
@@ -207,6 +210,7 @@
     if (els.podcastInlineAudio) els.podcastInlineAudio.hidden = true;
     if (els.podcastInlineLabel) els.podcastInlineLabel.textContent = "Ascolta l’episodio";
     els.podcastInlineDriveWrap.hidden = false;
+    els.podcastInlineDriveWrap.classList.add("is-active");
     els.podcastInlineDriveFrame.src = global.AscoltoContent.toGoogleDrivePreviewUrl(fileId);
     updatePlayingUi(true);
     return true;
