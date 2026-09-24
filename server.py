@@ -66,8 +66,8 @@ def sanitize_audio_filename(name: str) -> str:
 
 
 def save_audio_file(filename: str, raw: bytes) -> Path:
-    if len(raw) > 15 * 1024 * 1024:
-        raise ValueError("Audio file too large (max 15 MB)")
+    if len(raw) > 60 * 1024 * 1024:
+        raise ValueError("Audio file too large (max 60 MB)")
     safe = sanitize_audio_filename(filename)
     AUDIO_DIR.mkdir(parents=True, exist_ok=True)
     dest = AUDIO_DIR / safe
@@ -497,6 +497,9 @@ class Handler(SimpleHTTPRequestHandler):
         if path == "/api/audio":
             self._handle_audio_save()
             return
+        if path == "/api/audio/from-drive":
+            self._handle_audio_from_drive()
+            return
         if path == "/api/image":
             self._handle_image_save()
             return
@@ -645,7 +648,7 @@ class Handler(SimpleHTTPRequestHandler):
         if length <= 0:
             self.send_error(HTTPStatus.BAD_REQUEST, "Empty body")
             return
-        if length > 22 * 1024 * 1024:
+        if length > 65 * 1024 * 1024:
             self.send_error(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, "Payload too large")
             return
 
@@ -683,6 +686,69 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(reply)
         print(f"[audio] Wrote {dest} ({len(raw)} bytes)", flush=True)
+
+    def _handle_audio_from_drive(self) -> None:
+        length = int(self.headers.get("Content-Length", "0") or 0)
+        if length <= 0 or length > 8192:
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid body")
+            return
+
+        try:
+            body = self.rfile.read(length)
+            payload = json.loads(body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid JSON")
+            return
+
+        file_id = str((payload or {}).get("fileId") or "").strip()
+        filename = str((payload or {}).get("filename") or "").strip()
+        if not DRIVE_ID_RE.match(file_id):
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid Google Drive file id")
+            return
+
+        if not filename:
+            filename = f"drive-{file_id[:12]}.mp3"
+
+        try:
+            data, ctype = fetch_google_drive_file(file_id)
+            if "audio" in (ctype or "") and filename.lower().endswith((".jpg", ".png", ".jpeg", ".webp", ".gif")):
+                filename = f"drive-{file_id[:12]}.mp3"
+            if not Path(filename).suffix:
+                if "wav" in ctype:
+                    filename = f"{filename}.wav"
+                elif "ogg" in ctype:
+                    filename = f"{filename}.ogg"
+                elif "mp4" in ctype or "m4a" in ctype:
+                    filename = f"{filename}.m4a"
+                else:
+                    filename = f"{filename}.mp3"
+            dest = save_audio_file(filename, data)
+        except ValueError as exc:
+            self.send_error(HTTPStatus.BAD_REQUEST, str(exc))
+            return
+        except Exception as exc:  # noqa: BLE001
+            msg = str(exc)
+            print(f"[audio/from-drive] fail {file_id}: {msg}", flush=True)
+            reply = json.dumps({"ok": False, "error": msg}).encode("utf-8")
+            self.send_response(HTTPStatus.BAD_GATEWAY)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(reply)))
+            self._cors()
+            self.end_headers()
+            self.wfile.write(reply)
+            return
+
+        rel = f"assets/audio/{dest.name}"
+        reply = json.dumps(
+            {"ok": True, "path": rel, "filename": dest.name, "bytes": len(data), "contentType": ctype}
+        ).encode("utf-8")
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(reply)))
+        self._cors()
+        self.end_headers()
+        self.wfile.write(reply)
+        print(f"[audio/from-drive] Wrote {dest} ({len(data)} bytes)", flush=True)
 
     def _handle_image_save(self) -> None:
         length = int(self.headers.get("Content-Length", "0") or 0)
@@ -896,6 +962,7 @@ def main() -> None:
     print(f"Admin: http://{HOST}:{PORT}/admin/")
     print("POST /api/content saves data/questions.json")
     print("POST /api/audio saves assets/audio/*.mp3")
+    print("POST /api/audio/from-drive imports Drive audio into assets/audio/")
     print("POST /api/image saves assets/images/*")
     print("POST /api/pdf saves assets/pdf/*.pdf")
     print("POST /api/github/publish pushes questions.json to GitHub")

@@ -293,6 +293,12 @@
     return "/api/audio";
   }
 
+  function resolveAudioFromDriveApiUrl() {
+    const path = global.location.pathname || "";
+    if (path.includes("/admin")) return "../api/audio/from-drive";
+    return "/api/audio/from-drive";
+  }
+
   function resolveImageApiUrl() {
     const path = global.location.pathname || "";
     if (path.includes("/admin")) return "../api/image";
@@ -457,6 +463,51 @@
       savedLocally,
       publishedToGithub,
       githubError: githubError ? githubError.message || String(githubError) : null,
+    };
+  }
+
+  /**
+   * Download a public Google Drive audio file into assets/audio/ via server.py.
+   * Returns { path: "assets/audio/…" } so the native player can use a local file.
+   */
+  async function importDriveAudioAsset({ fileId, filename } = {}) {
+    const id = String(fileId || "").trim();
+    if (!(id && /^[a-zA-Z0-9_-]{10,}$/.test(id))) {
+      throw new Error("ID Google Drive non valido.");
+    }
+
+    const safeName = sanitizeAudioFilename(
+      filename || `podcast-drive-${id.slice(0, 10)}.mp3`
+    );
+
+    const res = await fetch(resolveAudioFromDriveApiUrl(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fileId: id, filename: safeName }),
+      cache: "no-store",
+    });
+
+    let payload = null;
+    try {
+      payload = await res.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!res.ok || !payload?.ok || !payload.path) {
+      const msg =
+        (payload && (payload.error || payload.message)) ||
+        `Import Drive fallito (${res.status}). Avvia python server.py e condividi il file come “Anyone with the link”.`;
+      throw new Error(msg);
+    }
+
+    return {
+      ok: true,
+      path: String(payload.path),
+      filename: payload.filename || safeName,
+      savedLocally: true,
+      publishedToGithub: false,
+      bytes: payload.bytes || 0,
     };
   }
 
@@ -1561,6 +1612,7 @@
     publishToGitHub,
     publishBinaryToGitHub,
     uploadAudioAsset,
+    importDriveAudioAsset,
     uploadImageAsset,
     sanitizeAudioFilename,
     sanitizeImageFilename,

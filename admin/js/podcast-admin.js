@@ -365,7 +365,7 @@
     hideDrivePreview();
     if (els.episodeAudioHint) {
       els.episodeAudioHint.textContent =
-        "Carica un MP3 (o WAV/OGG/M4A) oppure incolla un link Drive / percorso assets/audio/…";
+        "Carica un MP3 (o WAV/OGG/M4A) oppure incolla un link Drive — verrà salvato in assets/audio/…";
     }
   }
 
@@ -514,6 +514,18 @@
           filename: `podcast-ep-${episodeId || "new"}-${pendingAudioFile.name}`,
         });
         audioPath = upload.path;
+      } else if (audioPath && global.AscoltoContent?.isGoogleDriveUrl?.(audioPath)) {
+        // Import Drive → local assets so the public player stays native
+        const fileId = global.AscoltoContent.extractGoogleDriveFileId(audioPath);
+        if (!fileId) {
+          throw new Error("Link Google Drive non riconosciuto.");
+        }
+        setButtonLoading(btn, true, "Importazione da Drive…");
+        const imported = await global.AscoltoContent.importDriveAudioAsset({
+          fileId,
+          filename: `podcast-ep-${episodeId || "new"}-${fileId.slice(0, 8)}.mp3`,
+        });
+        audioPath = imported.path;
       }
 
       if (audioPath && global.AscoltoContent?.normalizeAudioUrl) {
