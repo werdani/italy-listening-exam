@@ -18,7 +18,8 @@
   let audioSourceKey = "";
   /** @type {string|null} */
   let audioBlobUrl = null;
-  let usingDriveEmbed = false;
+  /** @type {string|null} */
+  let driveFallbackFileId = null;
   let toastTimer = null;
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -51,8 +52,7 @@
     podcastNpDriveLabel: $("#podcastNpDriveLabel"),
     btnNpPlay: $("#btnNpPlay"),
     btnNpClose: $("#btnNpClose"),
-    podcastDriveWrap: $("#podcastDriveWrap"),
-    podcastDriveFrame: $("#podcastDriveFrame"),
+    btnNpOpenDrive: $("#btnNpOpenDrive"),
     toast: $("#toast"),
   };
 
@@ -132,42 +132,36 @@
     }
   }
 
-  function hideDriveEmbed() {
-    if (els.podcastDriveWrap) els.podcastDriveWrap.hidden = true;
-    if (els.podcastDriveFrame) els.podcastDriveFrame.removeAttribute("src");
-    if (els.podcastNpProgress) els.podcastNpProgress.hidden = false;
+  function hideDriveFallback() {
+    driveFallbackFileId = null;
     if (els.podcastNpDriveLabel) els.podcastNpDriveLabel.hidden = true;
-    if (els.podcastNowPlaying) els.podcastNowPlaying.classList.remove("is-drive-embed");
-    usingDriveEmbed = false;
+    if (els.podcastNpOpenDrive) {
+      els.podcastNpOpenDrive.hidden = true;
+      els.podcastNpOpenDrive.removeAttribute("href");
+    }
+    if (els.podcastNowPlaying) els.podcastNowPlaying.classList.remove("is-drive-fallback");
   }
 
-  function showDriveEmbed(fileId) {
-    if (!els.podcastDriveWrap || !els.podcastDriveFrame || !global.AscoltoContent?.toGoogleDrivePreviewUrl) {
+  function showDriveFallback(fileId) {
+    hideDriveFallback();
+    if (!fileId || !global.AscoltoContent?.toGoogleDrivePreviewUrl) {
+      showToast("Impossibile riprodurre l’audio. Controlla il file o la condivisione Drive.");
+      updatePlayingUi(false);
       return false;
     }
+    driveFallbackFileId = fileId;
     const preview = global.AscoltoContent.toGoogleDrivePreviewUrl(fileId);
-    if (audioEl) {
-      audioEl.onerror = null;
-      try {
-        audioEl.pause();
-      } catch {
-        /* ignore */
-      }
-      audioEl.removeAttribute("src");
-      try {
-        audioEl.load();
-      } catch {
-        /* ignore */
-      }
+    if (els.podcastNpDriveLabel) {
+      els.podcastNpDriveLabel.hidden = false;
+      els.podcastNpDriveLabel.textContent = "Apri su Google Drive per ascoltare";
     }
-    revokeAudioBlob();
-    els.podcastDriveWrap.hidden = false;
-    els.podcastDriveFrame.src = preview;
-    if (els.podcastNpProgress) els.podcastNpProgress.hidden = true;
-    if (els.podcastNpDriveLabel) els.podcastNpDriveLabel.hidden = false;
-    if (els.podcastNowPlaying) els.podcastNowPlaying.classList.add("is-drive-embed");
-    usingDriveEmbed = true;
-    updatePlayingUi(true);
+    if (els.podcastNpOpenDrive) {
+      els.podcastNpOpenDrive.href = preview;
+      els.podcastNpOpenDrive.hidden = false;
+    }
+    if (els.podcastNowPlaying) els.podcastNowPlaying.classList.add("is-drive-fallback");
+    updatePlayingUi(false);
+    showToast("Apri l’audio su Google Drive.");
     return true;
   }
 
@@ -202,15 +196,14 @@
   }
 
   function updatePlayingUi(isPlaying) {
-    const playingNow = usingDriveEmbed ? true : isPlaying;
     if (els.btnNpPlay) {
-      els.btnNpPlay.innerHTML = playingNow ? ICON_PAUSE : ICON_PLAY;
-      els.btnNpPlay.setAttribute("aria-label", playingNow ? "Pausa" : "Riproduci");
+      els.btnNpPlay.innerHTML = isPlaying ? ICON_PAUSE : ICON_PLAY;
+      els.btnNpPlay.setAttribute("aria-label", isPlaying ? "Pausa" : "Riproduci");
     }
     if (els.podcastEpisodeList) {
       els.podcastEpisodeList.querySelectorAll(".podcast-episode").forEach((row) => {
         const id = Number(row.getAttribute("data-episode-id"));
-        const playing = id === activeEpisodeId && playingNow;
+        const playing = id === activeEpisodeId && isPlaying;
         row.classList.toggle("is-playing", id === activeEpisodeId);
         const btn = row.querySelector(".podcast-episode-play");
         if (btn) {
@@ -253,7 +246,7 @@
     audioCandidateIndex = 0;
     audio.onerror = null;
     revokeAudioBlob();
-    hideDriveEmbed();
+    hideDriveFallback();
 
     try {
       audio.pause();
@@ -264,50 +257,36 @@
     }
 
     const AC = global.AscoltoContent;
+    if (AC?.detectDriveProxy) {
+      try {
+        await AC.detectDriveProxy();
+      } catch {
+        /* ignore */
+      }
+    }
+
     const apiKey = content?.site?.googleApiKey || "";
     const fileId = AC?.extractGoogleDriveFileId?.(src) || null;
     const isDrive = !!(fileId && AC?.isGoogleDriveUrl?.(src));
-
-    // GitHub Pages / no proxy: Drive embed is the reliable path for public files
-    if (isDrive && AC.prefersDriveEmbed?.(src, { apiKey })) {
-      showDriveEmbed(fileId);
-      return;
-    }
-
-    if (isDrive && AC.fetchDriveAudioBlobUrl) {
-      try {
-        const blobUrl = await AC.fetchDriveAudioBlobUrl(src, { apiKey });
-        if (blobUrl && String(src || "") === audioSourceKey) {
-          audioBlobUrl = blobUrl;
-          audio.src = blobUrl;
-          audio.load();
-          await audio.play().catch(() => {});
-          updatePlayingUi(true);
-          return;
-        }
-      } catch (err) {
-        console.warn("Podcast Drive API blob failed", err);
-      }
-    }
 
     audioCandidates = AC?.getAudioPlaybackCandidates
       ? AC.getAudioPlaybackCandidates(src, { apiKey })
       : [resolveSrc(src)];
     audioCandidateIndex = 0;
 
-    const failToEmbedOrToast = () => {
-      if (isDrive && showDriveEmbed(fileId)) {
-        showToast("Uso il player Google Drive.");
+    const failGracefully = () => {
+      if (isDrive) {
+        showDriveFallback(fileId);
         return;
       }
-      showToast("Impossibile riprodurre l’audio. Controlla il file o la condivisione Drive.");
+      showToast("Impossibile riprodurre l’audio.");
       updatePlayingUi(false);
     };
 
     const tryNext = () => {
       if (String(src || "") !== audioSourceKey) return;
       if (audioCandidateIndex >= audioCandidates.length) {
-        failToEmbedOrToast();
+        failGracefully();
         return;
       }
       const url = audioCandidates[audioCandidateIndex];
@@ -320,8 +299,9 @@
       audio.src = url;
       audio.load();
       audio.play().catch(() => {
-        /* onerror will advance candidates */
+        /* onerror advances candidates */
       });
+      updatePlayingUi(true);
     };
 
     audio.onerror = () => {
@@ -329,8 +309,8 @@
       tryNext();
     };
 
+    // Native mini-player only — never inject the Google Drive iframe UI
     tryNext();
-    updatePlayingUi(true);
   }
 
   function playEpisode(episode) {
@@ -338,16 +318,16 @@
     const show = currentShow();
     if (!show) return;
     const audio = ensureAudio();
-    const same =
-      activeEpisodeId === Number(episode.id) &&
-      (usingDriveEmbed || (audio.src && !audio.ended));
+    const same = activeEpisodeId === Number(episode.id) && audio.src && !audio.ended;
 
     activeEpisodeId = Number(episode.id);
     showNowPlaying(episode, show);
 
-    if (same && usingDriveEmbed) {
+    if (driveFallbackFileId && same) {
+      if (els.btnNpOpenDrive?.href) global.open(els.btnNpOpenDrive.href, "_blank", "noopener,noreferrer");
       return;
     }
+
     if (same && !audio.paused) {
       audio.pause();
       return;
@@ -361,7 +341,10 @@
   }
 
   function toggleNpPlay() {
-    if (usingDriveEmbed) return;
+    if (driveFallbackFileId) {
+      if (els.btnNpOpenDrive?.href) global.open(els.btnNpOpenDrive.href, "_blank", "noopener,noreferrer");
+      return;
+    }
     const audio = ensureAudio();
     if (!activeEpisodeId) {
       const first = currentShow()?.episodes?.[0];
@@ -391,7 +374,7 @@
       }
     }
     revokeAudioBlob();
-    hideDriveEmbed();
+    hideDriveFallback();
     activeEpisodeId = null;
     updatePlayingUi(false);
     hideNowPlaying();
@@ -490,8 +473,7 @@
       const dateLabel = global.AscoltoPodcast.formatDate(ep.date);
       const durationLabel = global.AscoltoPodcast.formatDurationLabel(ep.duration);
       const isActive = Number(ep.id) === activeEpisodeId && activeShowId === Number(show.id);
-      const isPlaying =
-        isActive && (usingDriveEmbed || (audioEl && !audioEl.paused));
+      const isPlaying = isActive && audioEl && !audioEl.paused;
 
       li.innerHTML = `
         <div class="podcast-episode-body">
