@@ -394,6 +394,10 @@
   pointer-events: auto;
 }
 
+.podcast-now-playing.is-drive-embed {
+  width: min(560px, calc(100% - 1.25rem));
+}
+
 .podcast-now-playing-card {
   border-radius: 20px;
   border: 1px solid var(--border);
@@ -412,6 +416,39 @@
   padding: 0.7rem 0.85rem;
 }
 
+.podcast-now-playing.is-drive-embed .podcast-now-playing-inner {
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.podcast-drive-wrap {
+  display: block;
+  padding: 0.55rem 0.75rem 0.75rem;
+}
+
+.podcast-drive-wrap[hidden] {
+  display: none !important;
+}
+
+.podcast-drive-frame-shell {
+  position: relative;
+  height: 128px;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  background: #0b0e13;
+}
+
+.podcast-drive-frame {
+  display: block;
+  width: 100%;
+  height: 148px;
+  margin: 0;
+  border: 0;
+  background: #0b0e13;
+  transform: translateY(-10px);
+}
+
 .podcast-np-drive-label {
   margin: 0.2rem 0 0;
   font-size: 0.72rem;
@@ -424,9 +461,13 @@
   display: none !important;
 }
 
+.podcast-now-playing.is-drive-embed .podcast-np-progress,
 .podcast-now-playing.is-drive-fallback .podcast-np-progress {
-  opacity: 0.35;
-  pointer-events: none;
+  display: none;
+}
+
+.podcast-now-playing.is-drive-embed .podcast-np-btn-play {
+  display: none;
 }
 
 .podcast-np-cover {
@@ -513,15 +554,6 @@
   background: var(--primary-hover);
 }
 
-.podcast-np-btn-drive {
-  background: color-mix(in srgb, var(--primary) 16%, transparent);
-  color: var(--primary);
-}
-
-.podcast-np-btn-drive[hidden] {
-  display: none !important;
-}
-
 .podcast-np-btn svg {
   width: 18px;
   height: 18px;
@@ -529,6 +561,10 @@
 
 body.has-podcast-player {
   padding-bottom: 5.5rem;
+}
+
+body.has-podcast-player:has(.podcast-now-playing.is-drive-embed) {
+  padding-bottom: 13rem;
 }
 
 @media (max-width: 560px) {
@@ -542,6 +578,19 @@ body.has-podcast-player {
 
   .podcast-now-playing {
     bottom: 0.65rem;
+  }
+
+  .podcast-drive-frame-shell {
+    height: 120px;
+  }
+
+  .podcast-drive-frame {
+    height: 140px;
+    transform: translateY(-8px);
+  }
+
+  body.has-podcast-player:has(.podcast-now-playing.is-drive-embed) {
+    padding-bottom: 12rem;
   }
 }
 
