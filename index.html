@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/style.css?v=dev-photo-1" />
   <link rel="stylesheet" href="css/library.css?v=1" />
   <link rel="stylesheet" href="css/courses.css?v=3" />
-  <link rel="stylesheet" href="css/podcast.css?v=6" />
+  <link rel="stylesheet" href="css/podcast.css?v=7" />
 </head>
 <body>
   <a class="skip-link" href="#main">Vai al contenuto</a>
@@ -265,14 +265,13 @@
       </div>
     </section>
 
-    <!-- Sticky mini player -->
+    <!-- Sticky mini player (local / native audio only) -->
     <div class="podcast-now-playing" id="podcastNowPlaying" hidden>
       <div class="podcast-now-playing-card">
         <div class="podcast-now-playing-inner">
           <img id="podcastNpCover" class="podcast-np-cover" src="assets/images/reham.jpeg" alt="" width="44" height="44" />
           <div class="podcast-np-info">
             <p class="podcast-np-title" id="podcastNpTitle">—</p>
-            <p class="podcast-np-drive-label" id="podcastNpDriveLabel" hidden>Tocca ▶ sul player per ascoltare</p>
             <input
               type="range"
               class="podcast-np-progress"
@@ -293,17 +292,29 @@
             </button>
           </div>
         </div>
-        <div id="podcastDriveWrap" class="podcast-drive-wrap" hidden>
-          <div class="podcast-drive-frame-shell">
-            <iframe
-              id="podcastDriveFrame"
-              class="podcast-drive-frame"
-              title="Audio Google Drive"
-              allow="autoplay"
-              allowfullscreen
-            ></iframe>
-          </div>
-        </div>
+      </div>
+    </div>
+
+    <!-- Inline episode player (exam-style, especially for Google Drive) -->
+    <div id="podcastInlinePlayer" class="podcast-inline-player audio-block" hidden>
+      <label class="audio-label" id="podcastInlineLabel">Ascolta l’episodio</label>
+      <audio
+        id="podcastInlineAudio"
+        class="audio-player"
+        controls
+        controlsList="nodownload noplaybackrate"
+        preload="metadata"
+        hidden
+      ></audio>
+      <div id="podcastInlineDriveWrap" class="drive-audio-wrap" hidden>
+        <iframe
+          id="podcastInlineDriveFrame"
+          class="drive-audio-frame"
+          title="Audio Google Drive"
+          allow="autoplay"
+          allowfullscreen
+        ></iframe>
+        <p class="audio-hint">Se l’audio non parte, premi play sul player qui sopra.</p>
       </div>
     </div>
 
@@ -514,7 +525,7 @@
   <script src="js/visitors.js?v=perf1" defer></script>
   <script src="js/library-ui.js?v=3" defer></script>
   <script src="js/courses-ui.js?v=7" defer></script>
-  <script src="js/podcast-ui.js?v=8" defer></script>
+  <script src="js/podcast-ui.js?v=9" defer></script>
   <script src="js/app.js?v=perf3" defer></script>
 </body>
 </html>

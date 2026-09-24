@@ -50,11 +50,13 @@
     podcastNpCover: $("#podcastNpCover"),
     podcastNpTitle: $("#podcastNpTitle"),
     podcastNpProgress: $("#podcastNpProgress"),
-    podcastNpDriveLabel: $("#podcastNpDriveLabel"),
     btnNpPlay: $("#btnNpPlay"),
     btnNpClose: $("#btnNpClose"),
-    podcastDriveWrap: $("#podcastDriveWrap"),
-    podcastDriveFrame: $("#podcastDriveFrame"),
+    podcastInlinePlayer: $("#podcastInlinePlayer"),
+    podcastInlineLabel: $("#podcastInlineLabel"),
+    podcastInlineAudio: $("#podcastInlineAudio"),
+    podcastInlineDriveWrap: $("#podcastInlineDriveWrap"),
+    podcastInlineDriveFrame: $("#podcastInlineDriveFrame"),
     toast: $("#toast"),
   };
 
@@ -137,19 +139,45 @@
   function hideDriveFallback() {
     driveFallbackFileId = null;
     usingDriveEmbed = false;
-    if (els.podcastNpDriveLabel) els.podcastNpDriveLabel.hidden = true;
-    if (els.podcastDriveWrap) els.podcastDriveWrap.hidden = true;
-    if (els.podcastDriveFrame) els.podcastDriveFrame.removeAttribute("src");
-    if (els.podcastNpProgress) els.podcastNpProgress.hidden = false;
-    if (els.podcastNowPlaying) {
-      els.podcastNowPlaying.classList.remove("is-drive-fallback");
-      els.podcastNowPlaying.classList.remove("is-drive-embed");
+    if (els.podcastInlineDriveWrap) els.podcastInlineDriveWrap.hidden = true;
+    if (els.podcastInlineDriveFrame) els.podcastInlineDriveFrame.removeAttribute("src");
+    if (els.podcastInlineAudio) {
+      els.podcastInlineAudio.hidden = true;
+      els.podcastInlineAudio.removeAttribute("src");
+      try {
+        els.podcastInlineAudio.load();
+      } catch {
+        /* ignore */
+      }
     }
+    parkInlinePlayer();
   }
 
+  function parkInlinePlayer() {
+    if (!els.podcastInlinePlayer) return;
+    els.podcastInlinePlayer.hidden = true;
+    document.body.appendChild(els.podcastInlinePlayer);
+  }
+
+  function mountInlineUnderEpisode(episodeId) {
+    if (!els.podcastInlinePlayer || !els.podcastEpisodeList) return null;
+    const row = els.podcastEpisodeList.querySelector(`[data-episode-id="${episodeId}"]`);
+    if (!row) return null;
+    const host = row.querySelector(".podcast-episode-player-host");
+    if (!host) return null;
+    host.appendChild(els.podcastInlinePlayer);
+    els.podcastInlinePlayer.hidden = false;
+    row.classList.add("is-expanded");
+    els.podcastEpisodeList.querySelectorAll(".podcast-episode").forEach((li) => {
+      if (li !== row) li.classList.remove("is-expanded");
+    });
+    return row;
+  }
+
+  /** Exam-style Drive player, mounted under the episode (no floating popup). */
   function showDriveEmbed(fileId) {
-    hideDriveFallback();
-    if (!fileId || !els.podcastDriveWrap || !els.podcastDriveFrame) {
+    hideNowPlaying();
+    if (!fileId || !els.podcastInlineDriveWrap || !els.podcastInlineDriveFrame) {
       showToast("Impossibile riprodurre l’audio.");
       updatePlayingUi(false);
       return false;
@@ -174,20 +202,34 @@
 
     driveFallbackFileId = fileId;
     usingDriveEmbed = true;
-    els.podcastDriveWrap.hidden = false;
-    els.podcastDriveFrame.src = global.AscoltoContent.toGoogleDrivePreviewUrl(fileId);
-    if (els.podcastNpProgress) els.podcastNpProgress.hidden = true;
-    if (els.podcastNpDriveLabel) {
-      els.podcastNpDriveLabel.hidden = false;
-      els.podcastNpDriveLabel.textContent = "Tocca ▶ sul player per ascoltare";
-    }
-    if (els.podcastNowPlaying) els.podcastNowPlaying.classList.add("is-drive-embed");
+    mountInlineUnderEpisode(activeEpisodeId);
+
+    if (els.podcastInlineAudio) els.podcastInlineAudio.hidden = true;
+    if (els.podcastInlineLabel) els.podcastInlineLabel.textContent = "Ascolta l’episodio";
+    els.podcastInlineDriveWrap.hidden = false;
+    els.podcastInlineDriveFrame.src = global.AscoltoContent.toGoogleDrivePreviewUrl(fileId);
     updatePlayingUi(true);
     return true;
   }
 
+  function showInlineNativeAudio(src) {
+    usingDriveEmbed = false;
+    driveFallbackFileId = null;
+    hideNowPlaying();
+    mountInlineUnderEpisode(activeEpisodeId);
+    if (els.podcastInlineDriveWrap) els.podcastInlineDriveWrap.hidden = true;
+    if (els.podcastInlineDriveFrame) els.podcastInlineDriveFrame.removeAttribute("src");
+    if (els.podcastInlineAudio) {
+      els.podcastInlineAudio.hidden = false;
+      els.podcastInlineAudio.src = src;
+      els.podcastInlineAudio.load();
+      els.podcastInlineAudio.play().catch(() => {});
+    }
+    if (els.podcastInlineLabel) els.podcastInlineLabel.textContent = "Ascolta l’episodio";
+    updatePlayingUi(true);
+  }
+
   function showDriveFallback(fileId) {
-    // On static hosts (GitHub Pages) use Drive embed — plays without saving files
     return showDriveEmbed(fileId);
   }
 
@@ -299,6 +341,7 @@
 
     // Progressive stream via local proxy (no disk save) — native mini-player UI
     if (isDrive && proxyOk && AC.toDriveProxyUrl) {
+      hideDriveFallback();
       const proxyUrl = AC.toDriveProxyUrl(fileId);
       audio.onerror = () => {
         if (String(src || "") !== audioSourceKey) return;
@@ -324,17 +367,14 @@
       return;
     }
 
-    // GitHub Pages / no proxy: try Drive API blob, else embed player (no disk save)
+    // GitHub Pages / no proxy: try Drive API blob → inline <audio>, else exam-style Drive embed under episode
     if (isDrive && !proxyOk) {
       if (AC.fetchDriveAudioBlobUrl && apiKey) {
         try {
           const blobUrl = await AC.fetchDriveAudioBlobUrl(src, { apiKey });
           if (blobUrl && String(src || "") === audioSourceKey) {
             audioBlobUrl = blobUrl;
-            audio.src = blobUrl;
-            audio.load();
-            await audio.play().catch(() => {});
-            updatePlayingUi(true);
+            showInlineNativeAudio(blobUrl);
             return;
           }
         } catch (err) {
@@ -397,12 +437,15 @@
     const show = currentShow();
     if (!show) return;
     const audio = ensureAudio();
+    const AC = global.AscoltoContent;
+    const isDrive = !!(
+      AC?.extractGoogleDriveFileId?.(episode.audio) && AC?.isGoogleDriveUrl?.(episode.audio)
+    );
     const same =
       activeEpisodeId === Number(episode.id) &&
       (usingDriveEmbed || (audio.src && !audio.ended));
 
     activeEpisodeId = Number(episode.id);
-    showNowPlaying(episode, show);
 
     if (same && usingDriveEmbed) return;
 
@@ -414,6 +457,9 @@
       audio.play().catch(() => {});
       return;
     }
+
+    if (!isDrive) showNowPlaying(episode, show);
+    else hideNowPlaying();
 
     loadEpisodeAudio(episode.audio);
   }
@@ -470,6 +516,7 @@
 
   function renderList() {
     if (!content?.podcast) return;
+    stopPlayer();
     const podcast = content.podcast;
     activeShowId = null;
 
@@ -568,10 +615,17 @@
         <button type="button" class="podcast-episode-play" data-play-episode="${ep.id}" aria-label="Riproduci episodio">
           ${isPlaying ? ICON_PAUSE : ICON_PLAY}
         </button>
+        <div class="podcast-episode-player-host"></div>
       `;
       if (isActive) li.classList.add("is-playing");
+      if (isActive && usingDriveEmbed) li.classList.add("is-expanded");
       els.podcastEpisodeList.appendChild(li);
     });
+
+    // Re-attach inline player under the active episode after re-render
+    if (activeEpisodeId && usingDriveEmbed) {
+      mountInlineUnderEpisode(activeEpisodeId);
+    }
 
     showScreen("podcast");
   }
