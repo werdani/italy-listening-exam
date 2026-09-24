@@ -301,21 +301,87 @@
 
 .podcast-inline-player .audio-player {
   width: 100%;
-}
-
-.podcast-inline-player .drive-audio-frame {
-  width: 100%;
-  min-height: 90px;
-  height: 100px;
-  border: 0;
+  height: 42px;
   border-radius: 8px;
-  background: #111;
 }
 
-.podcast-inline-player .audio-hint {
-  margin: 0.45rem 0 0;
-  font-size: 0.82rem;
-  color: var(--muted);
+/* Custom skin that hides Google Drive chrome; clicks go to invisible iframe */
+.podcast-drive-skin {
+  position: relative;
+  height: 42px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--text) 10%, var(--surface));
+  border: 1px solid var(--border);
+}
+
+.podcast-drive-skin[hidden] {
+  display: none !important;
+}
+
+.podcast-drive-skin-ui {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0 0.65rem;
+  pointer-events: none;
+}
+
+.podcast-drive-skin-play {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.podcast-drive-skin-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 16%, transparent);
+  overflow: hidden;
+}
+
+.podcast-drive-skin-fill {
+  display: block;
+  width: 28%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+  animation: podcast-drive-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes podcast-drive-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    width: 22%;
+  }
+  50% {
+    opacity: 1;
+    width: 38%;
+  }
+}
+
+.podcast-drive-skin-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 180%;
+  height: 140px;
+  max-width: none;
+  border: 0;
+  /* Completely hide Drive chrome; clicks still reach the player */
+  opacity: 0;
+  transform: translate(-8%, -28%);
+  cursor: pointer;
 }
 
 .podcast-episode.is-expanded {
