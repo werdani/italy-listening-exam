@@ -161,7 +161,7 @@
     }
     if (els.podcastNowPlaying) els.podcastNowPlaying.classList.add("is-drive-fallback");
     updatePlayingUi(false);
-    showToast("Apri l’audio su Google Drive.");
+    showToast("Per i link Drive apri il sito con python server.py (porta 8080).");
     return true;
   }
 
@@ -257,11 +257,12 @@
     }
 
     const AC = global.AscoltoContent;
+    let proxyOk = false;
     if (AC?.detectDriveProxy) {
       try {
-        await AC.detectDriveProxy();
+        proxyOk = !!(await AC.detectDriveProxy());
       } catch {
-        /* ignore */
+        proxyOk = false;
       }
     }
 
@@ -269,48 +270,85 @@
     const fileId = AC?.extractGoogleDriveFileId?.(src) || null;
     const isDrive = !!(fileId && AC?.isGoogleDriveUrl?.(src));
 
-    audioCandidates = AC?.getAudioPlaybackCandidates
-      ? AC.getAudioPlaybackCandidates(src, { apiKey })
-      : [resolveSrc(src)];
-    audioCandidateIndex = 0;
-
-    const failGracefully = () => {
-      if (isDrive) {
-        showDriveFallback(fileId);
-        return;
-      }
-      showToast("Impossibile riprodurre l’audio.");
-      updatePlayingUi(false);
-    };
-
-    const tryNext = () => {
-      if (String(src || "") !== audioSourceKey) return;
-      if (audioCandidateIndex >= audioCandidates.length) {
-        failGracefully();
-        return;
-      }
-      const url = audioCandidates[audioCandidateIndex];
-      audioCandidateIndex += 1;
-      try {
-        audio.pause();
-      } catch {
-        /* ignore */
-      }
-      audio.src = url;
+    // Progressive stream via local proxy (no disk save) — native mini-player UI
+    if (isDrive && proxyOk && AC.toDriveProxyUrl) {
+      const proxyUrl = AC.toDriveProxyUrl(fileId);
+      audio.onerror = () => {
+        if (String(src || "") !== audioSourceKey) return;
+        // Fall through to other candidates below
+        audio.onerror = null;
+        startCandidatePlayback();
+      };
+      audio.src = proxyUrl;
       audio.load();
-      audio.play().catch(() => {
-        /* onerror advances candidates */
-      });
+      audio.play().catch(() => {});
       updatePlayingUi(true);
-    };
+      // If it stays healthy, we're done; onerror will continue.
+      audio.addEventListener(
+        "loadeddata",
+        () => {
+          if (String(src || "") === audioSourceKey) {
+            audio.onerror = () => {
+              if (String(src || "") !== audioSourceKey) return;
+              startCandidatePlayback();
+            };
+          }
+        },
+        { once: true }
+      );
+      return;
+    }
 
-    audio.onerror = () => {
+    startCandidatePlayback();
+
+    function startCandidatePlayback() {
       if (String(src || "") !== audioSourceKey) return;
-      tryNext();
-    };
+      audioCandidates = AC?.getAudioPlaybackCandidates
+        ? AC.getAudioPlaybackCandidates(src, { apiKey })
+        : [resolveSrc(src)];
+      if (!proxyOk) {
+        audioCandidates = audioCandidates.filter((u) => !/\/api\/drive\//.test(u));
+      } else {
+        // Already tried proxy above
+        audioCandidates = audioCandidates.filter((u) => !/\/api\/drive\//.test(u));
+      }
+      audioCandidateIndex = 0;
 
-    // Native mini-player only — never inject the Google Drive iframe UI
-    tryNext();
+      const failGracefully = () => {
+        if (isDrive) {
+          showDriveFallback(fileId);
+          return;
+        }
+        showToast("Impossibile riprodurre l’audio.");
+        updatePlayingUi(false);
+      };
+
+      const tryNext = () => {
+        if (String(src || "") !== audioSourceKey) return;
+        if (audioCandidateIndex >= audioCandidates.length) {
+          failGracefully();
+          return;
+        }
+        const url = audioCandidates[audioCandidateIndex];
+        audioCandidateIndex += 1;
+        try {
+          audio.pause();
+        } catch {
+          /* ignore */
+        }
+        audio.src = url;
+        audio.load();
+        audio.play().catch(() => {});
+        updatePlayingUi(true);
+      };
+
+      audio.onerror = () => {
+        if (String(src || "") !== audioSourceKey) return;
+        tryNext();
+      };
+
+      tryNext();
+    }
   }
 
   function playEpisode(episode) {

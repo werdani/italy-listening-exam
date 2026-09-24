@@ -191,6 +191,15 @@ def get_content_payload() -> tuple[bytes, bytes, str]:
 
 def fetch_google_drive_file(file_id: str) -> tuple[bytes, str]:
     """Download a publicly shared Drive file, handling the virus-scan interstitial."""
+    ctype, chunks = _drive_media_chunks(file_id)
+    return b"".join(chunks), ctype
+
+
+def _drive_media_chunks(file_id: str, chunk_size: int = 64 * 1024):
+    """
+    Resolve a public Drive file to (content_type, iterable_of_bytes).
+    Streams after the virus-scan interstitial so the HTTP client can start sooner.
+    """
     jar = CookieJar()
     opener = build_opener(HTTPCookieProcessor(jar))
 
@@ -200,22 +209,26 @@ def fetch_google_drive_file(file_id: str) -> tuple[bytes, str]:
 
     url = f"https://drive.google.com/uc?export=download&id={file_id}&confirm=t"
     try:
-        with open_url(url) as resp:
-            data = resp.read()
-            ctype = resp.headers.get("Content-Type", "application/octet-stream")
+        resp = open_url(url)
     except HTTPError as exc:
         raise RuntimeError(f"Drive HTTP {exc.code}") from exc
     except URLError as exc:
         raise RuntimeError(f"Drive network error: {exc.reason}") from exc
 
+    ctype = resp.headers.get("Content-Type", "application/octet-stream")
+    head = resp.read(8192)
     looks_html = (
         "text/html" in (ctype or "").lower()
-        or data.lstrip()[:15].lower().startswith(b"<!doctype")
-        or data.lstrip()[:6].lower().startswith(b"<html")
+        or head.lstrip()[:15].lower().startswith(b"<!doctype")
+        or head.lstrip()[:6].lower().startswith(b"<html")
     )
 
     if looks_html:
-        html = data.decode("utf-8", errors="ignore")
+        html = (head + resp.read()).decode("utf-8", errors="ignore")
+        try:
+            resp.close()
+        except Exception:  # noqa: BLE001
+            pass
         token = None
         m = re.search(r'name="confirm"\s+value="([^"]+)"', html)
         if m:
@@ -226,43 +239,64 @@ def fetch_google_drive_file(file_id: str) -> tuple[bytes, str]:
                 token = m.group(1)
         if not token:
             token = "t"
-
         url2 = f"https://drive.google.com/uc?export=download&id={file_id}&confirm={token}"
         try:
-            with open_url(url2) as resp2:
-                data = resp2.read()
-                ctype = resp2.headers.get("Content-Type", "application/octet-stream")
+            resp = open_url(url2)
         except Exception as exc:  # noqa: BLE001
             raise RuntimeError(f"Drive confirm download failed: {exc}") from exc
-
+        ctype = resp.headers.get("Content-Type", "application/octet-stream")
+        head = resp.read(8192)
         if (
             "text/html" in (ctype or "").lower()
-            or data.lstrip()[:15].lower().startswith(b"<!doctype")
-            or data.lstrip()[:6].lower().startswith(b"<html")
+            or head.lstrip()[:15].lower().startswith(b"<!doctype")
+            or head.lstrip()[:6].lower().startswith(b"<html")
         ):
+            try:
+                resp.close()
+            except Exception:  # noqa: BLE001
+                pass
             raise RuntimeError(
                 "Drive returned HTML instead of media. "
                 "Make sure the file is shared as 'Anyone with the link'."
             )
 
     if not ctype or "octet-stream" in ctype or "text/html" in ctype:
-        # Guess from magic bytes
-        if data[:3] == b"ID3" or data[:2] == b"\xff\xfb" or data[:2] == b"\xff\xf3":
+        if head[:3] == b"ID3" or head[:2] == b"\xff\xfb" or head[:2] == b"\xff\xf3":
             ctype = "audio/mpeg"
-        elif data[:4] == b"fLaC":
+        elif head[:4] == b"fLaC":
             ctype = "audio/flac"
-        elif data[:4] == b"OggS":
+        elif head[:4] == b"OggS":
             ctype = "audio/ogg"
-        elif data[:4] == b"RIFF":
+        elif head[:4] == b"RIFF":
             ctype = "audio/wav"
-        elif data[:4] == b"\x89PNG":
+        elif head[:4] == b"\x89PNG":
             ctype = "image/png"
-        elif data[:2] == b"\xff\xd8":
+        elif head[:2] == b"\xff\xd8":
             ctype = "image/jpeg"
         else:
             ctype = "audio/mpeg"
 
-    return data, ctype
+    def chunks():
+        try:
+            if head:
+                yield head
+            while True:
+                block = resp.read(chunk_size)
+                if not block:
+                    break
+                yield block
+        finally:
+            try:
+                resp.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+    return ctype, chunks()
+
+
+def open_google_drive_stream(file_id: str):
+    """Return (content_type, byte_iterator) for streaming proxy responses."""
+    return _drive_media_chunks(file_id)
 
 
 def github_api_json(
@@ -621,7 +655,7 @@ class Handler(SimpleHTTPRequestHandler):
             return
 
         try:
-            data, ctype = fetch_google_drive_file(file_id)
+            ctype, chunks = open_google_drive_stream(file_id)
         except Exception as exc:  # noqa: BLE001
             msg = str(exc)
             print(f"[drive] fail {file_id}: {msg}", flush=True)
@@ -634,14 +668,18 @@ class Handler(SimpleHTTPRequestHandler):
             self.wfile.write(body)
             return
 
-        print(f"[drive] ok {file_id} ({len(data)} bytes, {ctype})", flush=True)
+        print(f"[drive] stream {file_id} ({ctype})", flush=True)
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-Type", ctype)
-        self.send_header("Content-Length", str(len(data)))
         self.send_header("Accept-Ranges", "none")
+        self.send_header("Cache-Control", "private, max-age=300")
         self._cors()
         self.end_headers()
-        self.wfile.write(data)
+        try:
+            for block in chunks:
+                self.wfile.write(block)
+        except (BrokenPipeError, ConnectionResetError):
+            print(f"[drive] client closed {file_id}", flush=True)
 
     def _handle_audio_save(self) -> None:
         length = int(self.headers.get("Content-Length", "0") or 0)
