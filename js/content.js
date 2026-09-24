@@ -1441,7 +1441,8 @@
     const apiKey = getGoogleApiKey(options);
     const list = [];
 
-    if (driveProxyAvailable === true) {
+    // Prefer streaming via local proxy (no disk save) whenever we're not on GitHub Pages
+    if (driveProxyAvailable === true || (driveProxyAvailable !== false && !isGitHubPagesHost())) {
       list.push(toDriveProxyUrl(fileId));
     }
 
