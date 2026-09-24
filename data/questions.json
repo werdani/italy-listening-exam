@@ -4217,7 +4217,14 @@
         "id": 4,
         "name": "Corso A2.2",
         "description": "Corso A2.2",
-        "videos": []
+        "videos": [
+          {
+            "id": 1,
+            "title": "1. I verbi riflessivi",
+            "url": "https://youtu.be/PLqFXZZVNcY",
+            "provider": "youtube"
+          }
+        ]
       }
     ]
   },
