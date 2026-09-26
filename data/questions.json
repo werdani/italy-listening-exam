@@ -4217,7 +4217,69 @@
         "id": 4,
         "name": "Corso A2.2",
         "description": "Corso A2.2",
-        "videos": []
+        "videos": [
+          {
+            "id": 1,
+            "title": "1. I verbi riflessivi",
+            "url": "https://youtu.be/PLqFXZZVNcY",
+            "provider": "youtube"
+          },
+          {
+            "id": 2,
+            "title": "2. Si impersonale",
+            "url": "https://youtu.be/G8E_TGP2G1A",
+            "provider": "youtube"
+          },
+          {
+            "id": 3,
+            "title": "3. Pronomi indiretti",
+            "url": "https://youtu.be/Belky_amJ2A",
+            "provider": "youtube"
+          },
+          {
+            "id": 4,
+            "title": "4. La stampa italiana",
+            "url": "https://youtu.be/Z9X-OxtIYyc",
+            "provider": "youtube"
+          },
+          {
+            "id": 5,
+            "title": "5. Il condizionale semplice",
+            "url": "https://youtu.be/l5M7YbS0f20",
+            "provider": "youtube"
+          },
+          {
+            "id": 6,
+            "title": "6. Il condizionale composto.mp4",
+            "url": "https://youtu.be/WXX7s0DR1hA",
+            "provider": "youtube"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "name": "Corso B1.1",
+        "description": "Corso B1.1",
+        "videos": [
+          {
+            "id": 1,
+            "title": "1. Pronomi combinati.mp4",
+            "url": "https://youtu.be/oAXChh1WsLI",
+            "provider": "youtube"
+          },
+          {
+            "id": 2,
+            "title": "2. Facoltà.mp4",
+            "url": "https://youtu.be/ekYVrhLkN8s",
+            "provider": "youtube"
+          },
+          {
+            "id": 3,
+            "title": "3. Pronomi relativi",
+            "url": "https://youtu.be/0_sdwOVBTnM",
+            "provider": "youtube"
+          }
+        ]
       }
     ]
   },
@@ -4231,24 +4293,7 @@
         "author": "Signora Reham Ramadan",
         "description": "Ascolta episodi in italiano più lento: pratica la comprensione, amplia il vocabolario e scopri la cultura italiana.",
         "cover": "assets/images/podcast-cover-1-podcast.jpg",
-        "episodes": [
-          {
-            "id": 2,
-            "title": "test",
-            "description": "test",
-            "audio": "https://drive.usercontent.google.com/download?id=1nT7jKG-oUG4N6aUVkEEt7oPqB811nMkZ&export=download&confirm=t",
-            "date": "2026-09-24",
-            "duration": ""
-          },
-          {
-            "id": 1,
-            "title": "Parla dei tuoi sentimenti in italiano 🇮🇹 | Conversazioni reali con Elen e Riccardo – Podcast Italiano",
-            "description": "In questo episodio del nostro podcast italiano, Elen e Riccardo parlano di sentimenti ed emozioni attraverso una conversazione naturale e realistica. 🇮🇹",
-            "audio": "https://drive.usercontent.google.com/download?id=1nT7jKG-oUG4N6aUVkEEt7oPqB811nMkZ&export=download&confirm=t",
-            "date": "2026-09-23",
-            "duration": ""
-          }
-        ]
+        "episodes": []
       }
     ]
   }
