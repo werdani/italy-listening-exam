@@ -4260,7 +4260,14 @@
         "id": 5,
         "name": "Corso B1.1",
         "description": "Corso B1.1",
-        "videos": []
+        "videos": [
+          {
+            "id": 1,
+            "title": "1. Pronomi combinati.mp4",
+            "url": "https://youtu.be/oAXChh1WsLI",
+            "provider": "youtube"
+          }
+        ]
       }
     ]
   },
