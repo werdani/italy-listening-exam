@@ -726,6 +726,164 @@
     return getGithubSettings();
   }
 
+  /* ---------- Firebase Storage (podcast audio) ---------- */
+
+  const FB_API_KEY = "ascoltoit-firebase-apikey";
+  const FB_BUCKET_KEY = "ascoltoit-firebase-bucket";
+  const FB_PROJECT_KEY = "ascoltoit-firebase-project";
+
+  function normalizeFirebaseBucket(value) {
+    return String(value || "")
+      .trim()
+      .replace(/^gs:\/\//i, "")
+      .replace(/\/.*$/, "");
+  }
+
+  function inferFirebaseProjectId(bucket) {
+    const match = String(bucket || "").match(
+      /^([a-z0-9-]+)\.(?:appspot\.com|firebasestorage\.app)$/i
+    );
+    return match ? match[1] : "";
+  }
+
+  function getFirebaseSettings() {
+    try {
+      const bucket = normalizeFirebaseBucket(localStorage.getItem(FB_BUCKET_KEY) || "");
+      const projectId =
+        String(localStorage.getItem(FB_PROJECT_KEY) || "").trim() ||
+        inferFirebaseProjectId(bucket);
+      return {
+        apiKey: String(localStorage.getItem(FB_API_KEY) || "").trim(),
+        bucket,
+        projectId,
+      };
+    } catch {
+      return { apiKey: "", bucket: "", projectId: "" };
+    }
+  }
+
+  function saveFirebaseSettings({ apiKey, bucket, projectId } = {}) {
+    try {
+      if (apiKey != null) {
+        const key = sanitizeApiKey(apiKey);
+        if (key) localStorage.setItem(FB_API_KEY, key);
+        else localStorage.removeItem(FB_API_KEY);
+      }
+      if (bucket != null) {
+        const normalized = normalizeFirebaseBucket(bucket);
+        if (normalized) localStorage.setItem(FB_BUCKET_KEY, normalized);
+        else localStorage.removeItem(FB_BUCKET_KEY);
+      }
+      if (projectId != null) {
+        const id = String(projectId).trim();
+        if (id) localStorage.setItem(FB_PROJECT_KEY, id);
+        else localStorage.removeItem(FB_PROJECT_KEY);
+      }
+    } catch {
+      /* ignore */
+    }
+    return getFirebaseSettings();
+  }
+
+  function loadScriptOnce(src) {
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[data-src="${src}"]`);
+      if (existing && existing.dataset.loaded === "1") {
+        resolve();
+        return;
+      }
+      if (existing) {
+        existing.addEventListener("load", () => resolve(), { once: true });
+        existing.addEventListener("error", () => reject(new Error("Caricamento Firebase fallito.")), {
+          once: true,
+        });
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = src;
+      script.dataset.src = src;
+      script.async = true;
+      script.onload = () => {
+        script.dataset.loaded = "1";
+        resolve();
+      };
+      script.onerror = () => reject(new Error("Impossibile caricare Firebase dal CDN."));
+      document.head.appendChild(script);
+    });
+  }
+
+  let firebaseAppName = null;
+
+  async function ensureFirebaseApp() {
+    const settings = getFirebaseSettings();
+    if (!settings.apiKey || !settings.bucket || !settings.projectId) {
+      throw new Error(
+        "Configura Firebase (API Key, Project ID e Storage Bucket) nel pannello admin."
+      );
+    }
+    if (!isLikelyGoogleApiKey(settings.apiKey)) {
+      throw new Error("La Firebase API Key deve iniziare con AIza…");
+    }
+
+    await loadScriptOnce("https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js");
+    await loadScriptOnce("https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js");
+
+    const firebase = global.firebase;
+    if (!firebase || !firebase.initializeApp || !firebase.storage) {
+      throw new Error("SDK Firebase non disponibile.");
+    }
+
+    const signature = `${settings.projectId}|${settings.bucket}|${settings.apiKey}`;
+    if (firebaseAppName && firebaseAppName !== signature) {
+      const previous = firebase.app();
+      if (previous) await previous.delete().catch(() => {});
+      firebaseAppName = null;
+    }
+
+    if (!firebaseAppName) {
+      firebase.initializeApp({
+        apiKey: settings.apiKey,
+        authDomain: `${settings.projectId}.firebaseapp.com`,
+        projectId: settings.projectId,
+        storageBucket: settings.bucket,
+      });
+      firebaseAppName = signature;
+    }
+
+    return firebase;
+  }
+
+  /**
+   * Upload a podcast episode file to Firebase Storage.
+   * Returns a public HTTPS download URL stored as episode.audio.
+   */
+  async function uploadPodcastAudioToFirebase(file) {
+    if (!file) throw new Error("File audio mancante.");
+    const firebase = await ensureFirebaseApp();
+    const safeName = sanitizeAudioFilename(file.name || `episode-${Date.now()}.mp3`);
+    const objectPath = `podcasts/${Date.now().toString(36)}-${safeName}`;
+    const storageRef = firebase.storage().ref(objectPath);
+
+    let snapshot;
+    try {
+      snapshot = await storageRef.put(file, {
+        contentType: file.type || "audio/mpeg",
+        cacheControl: "public,max-age=31536000",
+      });
+    } catch (err) {
+      const code = err && err.code ? String(err.code) : "";
+      if (code === "storage/unauthorized" || code === "storage/unauthenticated") {
+        throw new Error(
+          "Firebase ha rifiutato l’upload. Nelle Storage Rules consenti lettura pubblica e scrittura su podcasts/ per file audio."
+        );
+      }
+      throw new Error((err && err.message) || "Upload su Firebase fallito.");
+    }
+
+    const url = await snapshot.ref.getDownloadURL();
+    return { ok: true, path: url, storagePath: objectPath };
+  }
+
   function utf8ToBase64(text) {
     const bytes = new TextEncoder().encode(text);
     const chunk = 0x8000;
@@ -1607,6 +1765,9 @@
     exportContent,
     getGithubSettings,
     saveGithubSettings,
+    getFirebaseSettings,
+    saveFirebaseSettings,
+    uploadPodcastAudioToFirebase,
     sanitizeGithubToken,
     looksLikeGithubToken,
     validateGithubToken,

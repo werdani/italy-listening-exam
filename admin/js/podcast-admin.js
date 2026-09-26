@@ -365,7 +365,7 @@
     hideDrivePreview();
     if (els.episodeAudioHint) {
       els.episodeAudioHint.textContent =
-        "Carica un MP3 (o WAV/OGG/M4A) oppure incolla un link Drive / percorso assets/audio/…";
+        "Carica un MP3 (o WAV/OGG/M4A) su Firebase, oppure incolla un link Drive / URL.";
     }
   }
 
@@ -477,7 +477,7 @@
       pendingAudioFile = file;
       setAudioPreview(dataUrl);
       if (els.episodeAudioHint) {
-        els.episodeAudioHint.textContent = `Pronto: ${file.name} (${Math.round(file.size / 1024)} KB) → assets/audio/`;
+        els.episodeAudioHint.textContent = `Pronto: ${file.name} (${Math.round(file.size / 1024)} KB) → Firebase Storage`;
       }
       if (els.episodeFormError) els.episodeFormError.hidden = true;
     } catch (err) {
@@ -502,17 +502,14 @@
     let audioPath = els.episodeAudioPath.value.trim();
     const episodeId = els.episodeFormId.value;
     const btn = els.episodeFormSubmit;
-    setButtonLoading(btn, true, pendingAudioDataUrl ? "Caricamento audio…" : "Salvataggio…");
+    setButtonLoading(btn, true, pendingAudioFile ? "Caricamento su Firebase…" : "Salvataggio…");
 
     try {
-      if (pendingAudioDataUrl && pendingAudioFile) {
-        if (!global.AscoltoContent?.uploadAudioAsset) {
-          throw new Error("Upload audio non disponibile.");
+      if (pendingAudioFile) {
+        if (!global.AscoltoContent?.uploadPodcastAudioToFirebase) {
+          throw new Error("Upload Firebase non disponibile.");
         }
-        const upload = await global.AscoltoContent.uploadAudioAsset({
-          dataUrl: pendingAudioDataUrl,
-          filename: `podcast-ep-${episodeId || "new"}-${pendingAudioFile.name}`,
-        });
+        const upload = await global.AscoltoContent.uploadPodcastAudioToFirebase(pendingAudioFile);
         audioPath = upload.path;
       }
 

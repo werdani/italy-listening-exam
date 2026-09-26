@@ -57,6 +57,11 @@
     ghBranch: $("#ghBranch"),
     ghAutoPublish: $("#ghAutoPublish"),
     githubStatus: $("#githubStatus"),
+    firebaseForm: $("#firebaseForm"),
+    fbApiKey: $("#fbApiKey"),
+    fbProjectId: $("#fbProjectId"),
+    fbBucket: $("#fbBucket"),
+    firebaseStatus: $("#firebaseStatus"),
     visitorCount: $("#visitorCount"),
     visitorStatsHint: $("#visitorStatsHint"),
     btnRefreshVisitors: $("#btnRefreshVisitors"),
@@ -388,6 +393,57 @@
     }
   }
 
+  function setFirebaseStatus(message, type = "") {
+    if (!els.firebaseStatus) return;
+    if (!message) {
+      els.firebaseStatus.hidden = true;
+      els.firebaseStatus.textContent = "";
+      els.firebaseStatus.className = "drive-status";
+      return;
+    }
+    els.firebaseStatus.hidden = false;
+    els.firebaseStatus.textContent = message;
+    els.firebaseStatus.className = `drive-status ${type}`.trim();
+  }
+
+  function fillFirebaseForm() {
+    if (!AscoltoContent.getFirebaseSettings || !els.firebaseForm) return;
+    const fb = AscoltoContent.getFirebaseSettings();
+    if (els.fbApiKey) {
+      els.fbApiKey.value = "";
+      els.fbApiKey.placeholder = fb.apiKey
+        ? "API Key salvata — incolla una nuova per sostituirla"
+        : "AIza…";
+    }
+    if (els.fbProjectId) els.fbProjectId.value = fb.projectId || "";
+    if (els.fbBucket) els.fbBucket.value = fb.bucket || "";
+    if (fb.apiKey && fb.bucket && fb.projectId) {
+      setFirebaseStatus("Firebase configurato. I nuovi audio del podcast andranno su Storage.", "ok");
+    } else {
+      setFirebaseStatus("Inserisci API Key, Project ID e bucket prima di caricare un episodio.", "warn");
+    }
+  }
+
+  function onFirebaseFormSubmit(e) {
+    e.preventDefault();
+    const current = AscoltoContent.getFirebaseSettings();
+    const apiKey = els.fbApiKey && els.fbApiKey.value.trim() ? els.fbApiKey.value.trim() : current.apiKey;
+    const projectId = els.fbProjectId ? els.fbProjectId.value.trim() : "";
+    const bucket = els.fbBucket ? els.fbBucket.value.trim() : "";
+    if (!apiKey || !projectId || !bucket) {
+      setFirebaseStatus("Servono API Key, Project ID e Storage bucket.", "warn");
+      showToast("Configurazione Firebase incompleta.");
+      return;
+    }
+    if (AscoltoContent.isLikelyGoogleApiKey && !AscoltoContent.isLikelyGoogleApiKey(apiKey)) {
+      setFirebaseStatus("La API Key deve iniziare con AIza…", "warn");
+      return;
+    }
+    AscoltoContent.saveFirebaseSettings({ apiKey, projectId, bucket });
+    fillFirebaseForm();
+    showToast("Impostazioni Firebase salvate in questo browser.");
+  }
+
   async function onGithubFormSubmit(e) {
     e.preventDefault();
     const typed = typedGithubToken();
@@ -644,6 +700,7 @@
     updateSourceBanner();
     fillSiteForm();
     fillGithubForm();
+    fillFirebaseForm();
     refreshVisitorStats();
 
     const levels = content.levels || [];
@@ -1479,6 +1536,7 @@
     if (els.btnPublishGithub) els.btnPublishGithub.addEventListener("click", publishHandler);
     if (els.btnPublishGithub2) els.btnPublishGithub2.addEventListener("click", publishHandler);
     if (els.githubForm) els.githubForm.addEventListener("submit", onGithubFormSubmit);
+    if (els.firebaseForm) els.firebaseForm.addEventListener("submit", onFirebaseFormSubmit);
     if (els.btnRefreshVisitors) {
       els.btnRefreshVisitors.addEventListener("click", () => {
         refreshVisitorStats();

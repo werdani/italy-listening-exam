@@ -178,6 +178,51 @@
           </form>
         </section>
 
+        <section class="card publish-card" aria-labelledby="firebaseTitle">
+          <p class="eyebrow">Firebase Storage</p>
+          <h2 id="firebaseTitle">Audio del podcast</h2>
+          <p class="lead branding-lead">
+            I file audio delle puntate vanno su <strong>Firebase Storage</strong>, non in
+            <code>assets/audio/</code>. Le impostazioni restano solo in questo browser.
+          </p>
+          <form id="firebaseForm" class="admin-form branding-form">
+            <div class="form-field">
+              <label class="field-label" for="fbApiKey">Firebase API Key</label>
+              <input
+                type="password"
+                id="fbApiKey"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="AIza…"
+              />
+            </div>
+            <div class="form-row-2">
+              <div class="form-field">
+                <label class="field-label" for="fbProjectId">Project ID</label>
+                <input type="text" id="fbProjectId" placeholder="il-mio-progetto" spellcheck="false" />
+              </div>
+              <div class="form-field">
+                <label class="field-label" for="fbBucket">Storage bucket</label>
+                <input
+                  type="text"
+                  id="fbBucket"
+                  placeholder="il-mio-progetto.firebasestorage.app"
+                  spellcheck="false"
+                />
+              </div>
+            </div>
+            <p class="field-hint">
+              Da Firebase Console → Impostazioni progetto → Le tue app. Nelle
+              <strong>Storage Rules</strong> consenti lettura pubblica e scrittura solo su
+              <code>podcasts/</code> per file <code>audio/*</code>.
+            </p>
+            <div class="page-actions">
+              <button type="submit" class="btn btn-secondary" id="btnSaveFirebase">Salva impostazioni Firebase</button>
+            </div>
+            <p class="drive-status" id="firebaseStatus" hidden></p>
+          </form>
+        </section>
+
         <section class="card branding-card" aria-labelledby="brandingTitle">
           <div class="branding-card-head">
             <div>
@@ -718,7 +763,7 @@
         <div class="form-field">
           <label class="field-label" for="episodeAudioFile">Oppure carica file audio</label>
           <input type="file" id="episodeAudioFile" accept="audio/*,.mp3,.wav,.ogg,.m4a" />
-          <p class="field-hint" id="episodeAudioHint">Il file va in <code>assets/audio/</code>.</p>
+          <p class="field-hint" id="episodeAudioHint">Il file viene caricato su <code>Firebase Storage</code> (cartella podcasts/).</p>
         </div>
         <div class="audio-preview" id="episodeAudioPreviewWrap" hidden>
           <label class="field-label">Anteprima</label>
@@ -758,7 +803,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-  <script src="../js/content.js?v=pod7" defer></script>
+  <script src="../js/content.js?v=firebase1" defer></script>
   <script src="../js/library.js?v=1" defer></script>
   <script src="../js/courses.js?v=2" defer></script>
   <script src="../js/podcast.js?v=2" defer></script>
@@ -766,7 +811,7 @@
   <script src="js/auth.js?v=duration3" defer></script>
   <script src="js/library-admin.js?v=1" defer></script>
   <script src="js/courses-admin.js?v=5" defer></script>
-  <script src="js/podcast-admin.js?v=5" defer></script>
-  <script src="js/admin.js?v=podcast2" defer></script>
+  <script src="js/podcast-admin.js?v=firebase1" defer></script>
+  <script src="js/admin.js?v=firebase1" defer></script>
 </body>
 </html>
