@@ -4082,7 +4082,13 @@
         "id": 10,
         "name": "Letteratura",
         "description": "Leggi libri",
-        "books": []
+        "books": [
+          {
+            "id": 1,
+            "name": "Leggi",
+            "file": "assets/pdf/letteratura-new-ascolto_avanzato_libro_del_profess.pdf"
+          }
+        ]
       }
     ]
   },
