@@ -4077,6 +4077,12 @@
             "file": "assets/pdf/conversazione-new-domande-per-conversazione-mtygai.pdf"
           }
         ]
+      },
+      {
+        "id": 10,
+        "name": "Letteratura",
+        "description": "Leggi libri",
+        "books": []
       }
     ]
   },
