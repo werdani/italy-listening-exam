@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/style.css?v=duration2" />
-  <link rel="stylesheet" href="css/admin.css?v=savefix6" />
+  <link rel="stylesheet" href="css/admin.css?v=examsub2" />
   <link rel="stylesheet" href="../css/library.css?v=1" />
   <link rel="stylesheet" href="../css/courses.css?v=4" />
 </head>
@@ -83,10 +83,51 @@
     <main id="main" class="admin-main" tabindex="-1">
       <nav class="admin-nav" aria-label="Sezioni admin">
         <button type="button" class="admin-nav-btn is-active" data-admin-nav="levels">Livelli esame</button>
+        <button type="button" class="admin-nav-btn" data-admin-nav="results">Risultati esame</button>
         <button type="button" class="admin-nav-btn" data-admin-nav="library">Biblioteca libri</button>
         <button type="button" class="admin-nav-btn" data-admin-nav="courses">Corsi video</button>
         <button type="button" class="admin-nav-btn" data-admin-nav="podcast">Podcast</button>
       </nav>
+
+      <!-- Exam results -->
+      <section id="viewResults" class="admin-view" hidden>
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Studenti</p>
+            <h1>Risultati esame</h1>
+            <p class="lead">Nome, telefono e punteggio di chi ha completato un esame.</p>
+          </div>
+          <div class="page-actions">
+            <button type="button" class="btn btn-secondary" id="btnRefreshExamResults">Aggiorna</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table class="admin-table" id="examResultsTable">
+              <thead>
+                <tr>
+                  <th>Inizio</th>
+                  <th>Fine</th>
+                  <th>Nome</th>
+                  <th>Telefono</th>
+                  <th>Livello</th>
+                  <th>Punteggio</th>
+                  <th>%</th>
+                  <th>Esito</th>
+                </tr>
+              </thead>
+              <tbody id="examResultsBody"></tbody>
+            </table>
+          </div>
+          <p class="empty-state" id="examResultsEmpty" hidden>Nessun risultato ancora.</p>
+          <div class="results-pager" id="examResultsPager" hidden>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnExamResultsPrev">← Precedente</button>
+            <p class="results-pager-meta" id="examResultsPageMeta">Pagina 1</p>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnExamResultsNext">Successiva →</button>
+          </div>
+          <p class="field-hint" id="examResultsHint"></p>
+        </div>
+      </section>
 
       <!-- Levels list -->
       <section id="viewLevels" class="admin-view" hidden>
@@ -214,7 +255,9 @@
             <p class="field-hint">
               Da Firebase Console → Impostazioni progetto → Le tue app. Nelle
               <strong>Storage Rules</strong> consenti lettura pubblica e scrittura solo su
-              <code>podcasts/</code> per file <code>audio/*</code>.
+              <code>podcasts/</code> per file <code>audio/*</code>. Per i risultati esame
+              attiva <strong>Firestore</strong> e consenti create/read su
+              <code>examSubmissions</code>.
             </p>
             <div class="page-actions">
               <button type="submit" class="btn btn-secondary" id="btnSaveFirebase">Salva impostazioni Firebase</button>
@@ -803,15 +846,16 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-  <script src="../js/content.js?v=firebase1" defer></script>
+  <script src="../js/content.js?v=examsub1" defer></script>
   <script src="../js/library.js?v=1" defer></script>
   <script src="../js/courses.js?v=2" defer></script>
   <script src="../js/podcast.js?v=2" defer></script>
   <script src="../js/visitors.js?v=perf1" defer></script>
+  <script src="../js/exam-submissions.js?v=2" defer></script>
   <script src="js/auth.js?v=duration3" defer></script>
   <script src="js/library-admin.js?v=1" defer></script>
   <script src="js/courses-admin.js?v=5" defer></script>
   <script src="js/podcast-admin.js?v=firebase1" defer></script>
-  <script src="js/admin.js?v=firebase1" defer></script>
+  <script src="js/admin.js?v=examsub3" defer></script>
 </body>
 </html>

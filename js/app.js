@@ -6,7 +6,7 @@
   "use strict";
 
   const STORAGE_KEY = "ascoltoit-exam-state";
-  const STORAGE_VERSION = 4;
+  const STORAGE_VERSION = 5;
   const THEME_KEY = "listenlab-theme";
   const LEVEL_KEY = "ascoltoit-selected-level";
 
@@ -27,6 +27,7 @@
     preventSkip: true,
     status: "idle", // idle | in_progress | completed
     results: null,
+    student: /** @type {{ name: string, phone: string }|null} */ (null),
   };
 
   let timerId = null;
@@ -101,6 +102,11 @@
     modalTitle: $("#modalTitle"),
     modalMessage: $("#modalMessage"),
     modalConfirm: $("#modalConfirm"),
+    studentModal: $("#studentModal"),
+    studentForm: $("#studentForm"),
+    studentName: $("#studentName"),
+    studentPhone: $("#studentPhone"),
+    studentFormError: $("#studentFormError"),
     toast: $("#toast"),
   };
 
@@ -141,6 +147,7 @@
       startedAt: state.startedAt,
       preventSkip: state.preventSkip,
       status: state.status,
+      student: state.student,
       savedAt: Date.now(),
     };
     try {
@@ -1014,6 +1021,7 @@
     clearSavedState();
     renderResults(auto);
     showScreen("results");
+    persistExamSubmission(auto);
   }
 
   function renderResults(autoSubmitted) {
@@ -1151,6 +1159,61 @@
     els.preventSkipToggle.checked = state.preventSkip;
     state.status = "in_progress";
     state.results = null;
+    if (saved.student?.name && saved.student?.phone) {
+      state.student = {
+        name: String(saved.student.name),
+        phone: String(saved.student.phone),
+      };
+    }
+  }
+
+  function closeStudentModal() {
+    if (!els.studentModal) return;
+    els.studentModal.hidden = true;
+    if (els.studentFormError) {
+      els.studentFormError.hidden = true;
+      els.studentFormError.textContent = "";
+    }
+  }
+
+  function openStudentModal() {
+    if (!els.studentModal) {
+      beginExam(false);
+      return;
+    }
+    if (els.studentFormError) {
+      els.studentFormError.hidden = true;
+      els.studentFormError.textContent = "";
+    }
+    if (els.studentName && !els.studentName.value && state.student?.name) {
+      els.studentName.value = state.student.name;
+    }
+    if (els.studentPhone && !els.studentPhone.value && state.student?.phone) {
+      els.studentPhone.value = state.student.phone;
+    }
+    els.studentModal.hidden = false;
+    els.studentName?.focus();
+  }
+
+  function requestStartExam() {
+    if (!examData || !examData.questions.length) {
+      showToast("Questo livello non ha domande.");
+      return;
+    }
+    if (hasResumableAttempt()) {
+      openModal({
+        title: "Iniziare un nuovo esame?",
+        message: "Il progresso salvato verrà eliminato e ripartirai dall'inizio.",
+        confirmLabel: "Ricomincia",
+        onConfirm: () => {
+          clearSavedState();
+          closeModal();
+          openStudentModal();
+        },
+      });
+      return;
+    }
+    openStudentModal();
   }
 
   function beginExam(resume = false) {
@@ -1164,8 +1227,9 @@
     if (resume && saved && hasResumableAttempt()) {
       restoreExam(saved);
     } else {
-      if (resume === false && saved) {
-        // Start over
+      if (!state.student?.name || !state.student?.phone) {
+        openStudentModal();
+        return;
       }
       initFreshExam();
     }
@@ -1175,6 +1239,40 @@
     renderQuestion();
     startTimer();
     showToast(resume ? "Esame ripreso." : "Esame iniziato. Buona fortuna!");
+  }
+
+  async function persistExamSubmission(autoSubmitted) {
+    const api = globalThis.AscoltoExamSubmissions;
+    if (!api || !state.results || !state.student) return;
+
+    const level = contentData
+      ? AscoltoContent.getLevel(contentData, state.levelId)
+      : null;
+
+    try {
+      const endedAt = Date.now();
+      await api.saveSubmission({
+        name: state.student.name,
+        phone: state.student.phone,
+        levelId: state.levelId,
+        levelName: level?.name || "",
+        level,
+        examTitle: examData?.exam?.title || contentData?.exam?.title || "",
+        score: state.results.score,
+        maxScore: state.results.maxScore,
+        percentage: state.results.percentage,
+        passed: state.results.passed,
+        correct: state.results.correct,
+        wrong: state.results.wrong,
+        elapsedSeconds: state.results.elapsed,
+        autoSubmitted: Boolean(autoSubmitted),
+        startedAt: state.startedAt || endedAt,
+        endedAt,
+      });
+    } catch (err) {
+      console.error(err);
+      showToast("Esame inviato, ma il salvataggio dei dati non è riuscito.");
+    }
   }
 
   function resetToHome() {
@@ -1374,22 +1472,7 @@
       });
     });
 
-    els.btnStart.addEventListener("click", () => {
-      if (hasResumableAttempt()) {
-        openModal({
-          title: "Iniziare un nuovo esame?",
-          message: "Il progresso salvato verrà eliminato e ripartirai dall'inizio.",
-          confirmLabel: "Ricomincia",
-          onConfirm: () => {
-            clearSavedState();
-            closeModal();
-            beginExam(false);
-          },
-        });
-      } else {
-        beginExam(false);
-      }
-    });
+    els.btnStart.addEventListener("click", requestStartExam);
     els.btnResume.addEventListener("click", () => beginExam(true));
     els.btnPrev.addEventListener("click", goPrev);
     els.btnNext.addEventListener("click", goNext);
@@ -1397,9 +1480,36 @@
     els.btnReview.addEventListener("click", renderReview);
     els.btnRetake.addEventListener("click", () => {
       clearSavedState();
-      beginExam(false);
+      openStudentModal();
     });
     els.btnBackHome.addEventListener("click", resetToHome);
+
+    if (els.studentForm) {
+      els.studentForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const api = globalThis.AscoltoExamSubmissions;
+        const raw = {
+          name: els.studentName?.value || "",
+          phone: els.studentPhone?.value || "",
+        };
+        const checked = api?.validateStudent
+          ? api.validateStudent(raw)
+          : { ok: true, name: raw.name.trim(), phone: raw.phone.trim() };
+        if (!checked.ok) {
+          if (els.studentFormError) {
+            els.studentFormError.hidden = false;
+            els.studentFormError.textContent = checked.error;
+          }
+          return;
+        }
+        state.student = { name: checked.name, phone: checked.phone };
+        closeStudentModal();
+        beginExam(false);
+      });
+    }
+    $$("[data-close-student-modal]").forEach((el) => {
+      el.addEventListener("click", closeStudentModal);
+    });
     els.preventSkipToggle.addEventListener("change", () => {
       state.preventSkip = els.preventSkipToggle.checked;
       if (state.status === "in_progress") saveState();

@@ -1767,6 +1767,8 @@
     saveGithubSettings,
     getFirebaseSettings,
     saveFirebaseSettings,
+    loadScriptOnce,
+    ensureFirebaseApp,
     uploadPodcastAudioToFirebase,
     sanitizeGithubToken,
     looksLikeGithubToken,
