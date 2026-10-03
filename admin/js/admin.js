@@ -530,14 +530,20 @@
     }
     if (els.fbProjectId) els.fbProjectId.value = fb.projectId || "";
     if (els.fbBucket) els.fbBucket.value = fb.bucket || "";
+    const inPublished = !!(content?.site?.firebase?.apiKey && content?.site?.firebase?.projectId);
     if (fb.apiKey && fb.bucket && fb.projectId) {
-      setFirebaseStatus("Firebase configurato. I nuovi audio del podcast andranno su Storage.", "ok");
+      setFirebaseStatus(
+        inPublished
+          ? "Firebase pronto (Storage + risultati esame). Già nel contenuto da pubblicare."
+          : "Firebase nel browser. Premi «Salva» poi pubblica online per i risultati su GitHub Pages.",
+        inPublished ? "ok" : "warn"
+      );
     } else {
-      setFirebaseStatus("Inserisci API Key, Project ID e bucket prima di caricare un episodio.", "warn");
+      setFirebaseStatus("Inserisci API Key, Project ID e bucket.", "warn");
     }
   }
 
-  function onFirebaseFormSubmit(e) {
+  async function onFirebaseFormSubmit(e) {
     e.preventDefault();
     const current = AscoltoContent.getFirebaseSettings();
     const apiKey = els.fbApiKey && els.fbApiKey.value.trim() ? els.fbApiKey.value.trim() : current.apiKey;
@@ -553,8 +559,35 @@
       return;
     }
     AscoltoContent.saveFirebaseSettings({ apiKey, projectId, bucket });
+    if (AscoltoContent.applyFirebaseSettingsToContent) {
+      content = AscoltoContent.applyFirebaseSettingsToContent(content, {
+        apiKey,
+        projectId,
+        bucket,
+      });
+    } else {
+      content.site = content.site || {};
+      content.site.firebase = { apiKey, projectId, bucket };
+      AscoltoContent.setSiteConfig(content.site);
+    }
     fillFirebaseForm();
-    showToast("Impostazioni Firebase salvate in questo browser.");
+    showToast("Firebase salvato. Pubblicazione…");
+    setFirebaseStatus("Salvataggio e pubblicazione in corso…", "warn");
+    try {
+      await persist({ publish: true });
+      setFirebaseStatus(
+        "Firebase salvato e pubblicato. I risultati esame ora funzionano sul sito online.",
+        "ok"
+      );
+      showToast("Firebase pubblicato. Rifai un esame di prova.");
+    } catch (err) {
+      console.error(err);
+      setFirebaseStatus(
+        "Salvato in locale. Pubblica online manualmente (GitHub) per abilitare i risultati.",
+        "warn"
+      );
+      showToast(friendlySaveError(err) || "Pubblicazione fallita — riprova da Pubblica online.");
+    }
   }
 
   async function onGithubFormSubmit(e) {
@@ -1530,6 +1563,17 @@
     content = data;
     contentSource = source === "local" ? "local" : "file";
     AscoltoContent.setSiteConfig(content.site);
+    // If Firebase was saved only in this browser, mirror into content for publish
+    const fb = AscoltoContent.getFirebaseSettings?.();
+    if (
+      fb?.apiKey &&
+      fb?.projectId &&
+      fb?.bucket &&
+      !content.site?.firebase?.apiKey &&
+      AscoltoContent.applyFirebaseSettingsToContent
+    ) {
+      content = AscoltoContent.applyFirebaseSettingsToContent(content, fb);
+    }
     // Health check is tiny; keep it but never block UI longer than needed.
     if (AscoltoContent.detectDriveProxy) {
       AscoltoContent.detectDriveProxy().catch(() => {});

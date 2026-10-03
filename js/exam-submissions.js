@@ -1,12 +1,20 @@
 /**
  * Exam submissions — student name/phone + score.
- * Prefers local API (/api/exam-submissions), falls back to Firebase Firestore.
+ * Local API when available; Firebase Firestore on GitHub Pages / when API is down.
  */
 (() => {
   "use strict";
 
   const COLLECTION = "examSubmissions";
   const global = window;
+
+  function isGitHubPagesHost() {
+    if (global.AscoltoContent?.isGitHubPagesHost) {
+      return global.AscoltoContent.isGitHubPagesHost();
+    }
+    const host = (global.location && global.location.hostname) || "";
+    return /\.github\.io$/i.test(host);
+  }
 
   function normalizePhone(value) {
     return String(value || "").replace(/[^\d+]/g, "").trim();
@@ -84,7 +92,9 @@
   async function ensureFirestore() {
     const settings = global.AscoltoContent?.getFirebaseSettings?.();
     if (!settings?.apiKey || !settings?.projectId || !settings?.bucket) {
-      throw new Error("Firebase non configurato.");
+      throw new Error(
+        "Firebase non configurato. Salva Firebase nell'admin e pubblica online."
+      );
     }
 
     await global.AscoltoContent.loadScriptOnce?.(
@@ -131,6 +141,12 @@
   async function saveSubmission(input) {
     const payload = buildPayload(input);
 
+    // GitHub Pages has no local API — go straight to Firestore
+    if (isGitHubPagesHost()) {
+      const remote = await saveViaFirestore(payload);
+      return { ...remote, payload };
+    }
+
     try {
       const local = await saveViaLocalApi(payload);
       return { ...local, source: local.source || "api", payload };
@@ -149,6 +165,9 @@
   }
 
   async function listSubmissions() {
+    if (isGitHubPagesHost()) {
+      return listViaFirestore();
+    }
     try {
       return await listViaLocalApi();
     } catch (_) {
