@@ -4340,6 +4340,12 @@
             "provider": "youtube"
           }
         ]
+      },
+      {
+        "id": 6,
+        "name": "Corso B1.2",
+        "description": "Corso B1.2",
+        "videos": []
       }
     ]
   },
