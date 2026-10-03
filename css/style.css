@@ -851,6 +851,7 @@ h1 {
   gap: 0.45rem;
   justify-content: center;
   padding: 0.25rem 0 0.5rem;
+  max-width: 100%;
 }
 
 .dot {
@@ -862,8 +863,20 @@ h1 {
   color: var(--text-secondary);
   font-size: 0.8rem;
   font-weight: 700;
+  flex: 0 0 auto;
   transition: background var(--transition), color var(--transition), border-color var(--transition),
     transform var(--transition);
+}
+
+/* Keep dense exams (e.g. 100 questions) readable */
+.question-dots:has(.dot:nth-child(40)) {
+  gap: 0.35rem;
+}
+
+.question-dots:has(.dot:nth-child(40)) .dot {
+  width: 1.85rem;
+  height: 1.85rem;
+  font-size: 0.72rem;
 }
 
 .dot:hover {
@@ -1309,73 +1322,95 @@ h1 {
 .site-footer {
   margin-top: auto;
   border-top: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
 }
 
 .footer-inner {
   max-width: 920px;
   margin: 0 auto;
-  padding: 1.15rem 1.25rem 1.35rem;
+  padding: 1.35rem 1.25rem 1.6rem;
+}
+
+.footer-bar {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.85rem;
-  text-align: center;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  padding: 1rem 1.15rem;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .footer-credit {
   margin: 0;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
+  min-width: 0;
 }
 
 .dev-photo {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  border: 2px solid color-mix(in srgb, var(--primary) 40%, var(--border));
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-soft) 70%, transparent);
+  border: 2px solid color-mix(in srgb, var(--primary) 35%, var(--border));
+  box-shadow: 0 0 0 3px var(--primary-soft);
   background: var(--surface);
 }
 
-.footer-credit-text {
-  margin: 0;
-  font-size: 0.92rem;
-  color: var(--text-secondary);
+.footer-credit-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
   text-align: start;
 }
 
-.footer-credit-text strong {
+.footer-credit-label {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.footer-credit-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
   color: var(--text);
-  font-weight: 650;
+  line-height: 1.2;
 }
 
 .dev-links {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 0.65rem;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 
 .dev-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
-  min-height: 44px;
-  padding: 0.55rem 1rem;
+  gap: 0.4rem;
+  min-height: 40px;
+  padding: 0.45rem 0.9rem;
   border-radius: 999px;
   text-decoration: none;
-  font-size: 0.88rem;
-  font-weight: 600;
+  font-size: 0.84rem;
+  font-weight: 650;
   color: #fff !important;
   border: 1px solid transparent;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
   transition: transform var(--transition), filter var(--transition), box-shadow var(--transition);
 }
 
@@ -1384,9 +1419,9 @@ h1 {
 }
 
 .dev-link:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.08);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .dev-link:focus-visible {
@@ -1408,15 +1443,36 @@ h1 {
   border-color: #d33426;
 }
 
-@media (max-width: 520px) {
-  .dev-link {
-    flex: 1 1 auto;
-    min-width: 8.5rem;
+@media (max-width: 720px) {
+  .footer-bar {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.9rem;
+  }
+
+  .footer-credit {
     justify-content: center;
   }
 
+  .footer-credit-copy {
+    text-align: center;
+  }
+
+  .dev-links {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .dev-link {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
   .dev-link-label {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
   }
 }
 

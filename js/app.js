@@ -50,6 +50,11 @@
     teacherCreditName: $("#teacherCreditName"),
     teacherCreditTagline: $("#teacherCreditTagline"),
     levelSelect: $("#levelSelect"),
+    homeLevelSelect: $("#homeLevelSelect"),
+    homeLevelDropdown: $("#homeLevelDropdown"),
+    homeLevelTrigger: $("#homeLevelTrigger"),
+    homeLevelTriggerText: $("#homeLevelTriggerText"),
+    homeLevelMenu: $("#homeLevelMenu"),
     levelDescription: $("#levelDescription"),
     metaQuestions: $("#metaQuestions"),
     metaMarks: $("#metaMarks"),
@@ -195,11 +200,14 @@
       return saved;
     }
 
-    // 3) Current <select> value (only if options already exist)
-    if (els.levelSelect && els.levelSelect.options.length > 0) {
-      const fromSelect = Number(els.levelSelect.value);
-      if (!Number.isNaN(fromSelect) && AscoltoContent.getLevel(contentData, fromSelect)) {
-        return fromSelect;
+    // 3) Current <select> value (home card or details)
+    const selectCandidates = [els.homeLevelSelect, els.levelSelect];
+    for (const select of selectCandidates) {
+      if (select && select.options.length > 0) {
+        const fromSelect = Number(select.value);
+        if (!Number.isNaN(fromSelect) && AscoltoContent.getLevel(contentData, fromSelect)) {
+          return fromSelect;
+        }
       }
     }
 
@@ -324,6 +332,104 @@
 
   /* ---------- Home ---------- */
 
+  function closeHomeLevelMenu() {
+    if (!els.homeLevelDropdown || !els.homeLevelMenu || !els.homeLevelTrigger) return;
+    els.homeLevelDropdown.classList.remove("is-open");
+    els.homeLevelMenu.hidden = true;
+    els.homeLevelTrigger.setAttribute("aria-expanded", "false");
+  }
+
+  function openHomeLevelMenu() {
+    if (!els.homeLevelDropdown || !els.homeLevelMenu || !els.homeLevelTrigger) return;
+    els.homeLevelDropdown.classList.add("is-open");
+    els.homeLevelMenu.hidden = false;
+    els.homeLevelTrigger.setAttribute("aria-expanded", "true");
+    const selected = els.homeLevelMenu.querySelector(".feature-level-option.is-selected");
+    if (selected) selected.focus();
+  }
+
+  function syncHomeLevelSelect(activeId) {
+    if (!els.homeLevelSelect || activeId == null) return;
+    const value = String(activeId);
+    if (els.homeLevelSelect.value !== value) {
+      els.homeLevelSelect.value = value;
+    }
+    const selectedOpt = els.homeLevelSelect.selectedOptions?.[0];
+    if (els.homeLevelTriggerText) {
+      els.homeLevelTriggerText.textContent = selectedOpt
+        ? selectedOpt.textContent
+        : "Livello";
+    }
+    if (els.homeLevelMenu) {
+      $$(".feature-level-option", els.homeLevelMenu).forEach((btn) => {
+        const isSelected = btn.dataset.levelId === value;
+        btn.classList.toggle("is-selected", isSelected);
+        btn.setAttribute("aria-selected", isSelected ? "true" : "false");
+      });
+    }
+  }
+
+  function rebuildHomeLevelMenu(levels, selectedId) {
+    if (!els.homeLevelMenu) return;
+    els.homeLevelMenu.innerHTML = "";
+    levels.forEach((level) => {
+      const li = document.createElement("li");
+      li.setAttribute("role", "presentation");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "feature-level-option";
+      btn.dataset.levelId = String(level.id);
+      btn.setAttribute("role", "option");
+      btn.textContent = level.name;
+      const isSelected = Number(level.id) === Number(selectedId);
+      btn.classList.toggle("is-selected", isSelected);
+      btn.setAttribute("aria-selected", isSelected ? "true" : "false");
+      btn.addEventListener("click", () => {
+        if (els.homeLevelSelect) {
+          els.homeLevelSelect.value = String(level.id);
+          els.homeLevelSelect.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+        closeHomeLevelMenu();
+        els.homeLevelTrigger?.focus();
+      });
+      li.appendChild(btn);
+      els.homeLevelMenu.appendChild(li);
+    });
+  }
+
+  function scrollToExamLevels() {
+    const card = document.querySelector(".feature-card--exams");
+    if (card) {
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
+
+  function showLandingView() {
+    const landing = document.getElementById("landingView");
+    const panel = document.getElementById("examPanel");
+    if (landing) landing.hidden = false;
+    if (panel) panel.hidden = true;
+  }
+
+  function showExamDetails(levelId) {
+    const preferred =
+      levelId != null ? Number(levelId) : getSelectedLevelId();
+    if (preferred != null && !Number.isNaN(preferred)) {
+      if (els.levelSelect) els.levelSelect.value = String(preferred);
+      setActiveLevel(preferred);
+    }
+    renderHome({ levelId: preferred });
+    showScreen("home");
+
+    const landing = document.getElementById("landingView");
+    const panel = document.getElementById("examPanel");
+    if (landing) landing.hidden = true;
+    if (panel) {
+      panel.hidden = false;
+      panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
   function populateLevelSelect(preferredId) {
     if (!els.levelSelect || !contentData) return;
     const levels = contentData.levels || [];
@@ -334,22 +440,36 @@
           ? Number(state.levelId)
           : getSelectedLevelId();
 
-    els.levelSelect.innerHTML = "";
-    levels.forEach((level) => {
-      const opt = document.createElement("option");
-      opt.value = String(level.id);
-      const mins = AscoltoContent.getLevelDurationMinutes
-        ? AscoltoContent.getLevelDurationMinutes(level, contentData.exam)
-        : contentData.exam?.durationMinutes || 15;
-      opt.textContent = `${level.name} (${level.questions.length} domande · ${mins} min)`;
-      els.levelSelect.appendChild(opt);
-    });
+    const fillSelect = (select, withMeta) => {
+      if (!select) return;
+      select.innerHTML = "";
+      levels.forEach((level) => {
+        const opt = document.createElement("option");
+        opt.value = String(level.id);
+        if (withMeta) {
+          const mins = AscoltoContent.getLevelDurationMinutes
+            ? AscoltoContent.getLevelDurationMinutes(level, contentData.exam)
+            : contentData.exam?.durationMinutes || 15;
+          opt.textContent = `${level.name} (${level.questions.length} domande · ${mins} min)`;
+        } else {
+          opt.textContent = level.name;
+        }
+        select.appendChild(opt);
+      });
+    };
+
+    fillSelect(els.levelSelect, true);
+    fillSelect(els.homeLevelSelect, false);
 
     const exists = keepId != null && AscoltoContent.getLevel(contentData, keepId);
     const value = exists ? keepId : levels[0] ? levels[0].id : "";
     if (value !== "" && value != null) {
-      els.levelSelect.value = String(value);
+      const str = String(value);
+      if (els.levelSelect) els.levelSelect.value = str;
+      if (els.homeLevelSelect) els.homeLevelSelect.value = str;
     }
+    rebuildHomeLevelMenu(levels, value);
+    syncHomeLevelSelect(value);
   }
 
   function renderHome(options = {}) {
@@ -361,6 +481,7 @@
       options.levelId != null ? Number(options.levelId) : getSelectedLevelId();
     setActiveLevel(preferred);
     populateLevelSelect(state.levelId);
+    syncHomeLevelSelect(state.levelId);
 
     const levelId = state.levelId;
     const level = AscoltoContent.getLevel(contentData, levelId);
@@ -397,8 +518,9 @@
         : "Inizia l'esame";
   }
 
-  function onLevelChange() {
-    const levelId = Number(els.levelSelect.value);
+  function onLevelChange(event) {
+    const source = event?.currentTarget || els.levelSelect;
+    const levelId = Number(source?.value);
     if (Number.isNaN(levelId)) return;
     setActiveLevel(levelId);
     // Re-render meta for the chosen level without resetting the dropdown
@@ -1061,6 +1183,7 @@
     state.status = "idle";
     state.results = null;
     showScreen("home");
+    showLandingView();
     refreshContentFromStore({ silent: true });
   }
 
@@ -1183,6 +1306,74 @@
     if (els.levelSelect) {
       els.levelSelect.addEventListener("change", onLevelChange);
     }
+    if (els.homeLevelSelect) {
+      els.homeLevelSelect.addEventListener("change", onLevelChange);
+    }
+    if (els.homeLevelTrigger && els.homeLevelDropdown) {
+      els.homeLevelTrigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (els.homeLevelDropdown.classList.contains("is-open")) {
+          closeHomeLevelMenu();
+        } else {
+          openHomeLevelMenu();
+        }
+      });
+      document.addEventListener("click", (e) => {
+        if (!els.homeLevelDropdown.contains(e.target)) {
+          closeHomeLevelMenu();
+        }
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeHomeLevelMenu();
+      });
+    }
+
+    const goLanding = () => {
+      renderHome();
+      showScreen("home");
+      showLandingView();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const btnEsami = $("#btnEsami");
+    if (btnEsami) btnEsami.addEventListener("click", goLanding);
+
+    const goExamLevels = () => {
+      renderHome();
+      showScreen("home");
+      showLandingView();
+      scrollToExamLevels();
+    };
+    const startTestFromHome = () => {
+      const fromHome = els.homeLevelSelect ? Number(els.homeLevelSelect.value) : null;
+      const levelId =
+        fromHome != null && !Number.isNaN(fromHome) ? fromHome : getSelectedLevelId();
+      showExamDetails(levelId);
+    };
+    const btnNavExams = $("#btnNavExams");
+    if (btnNavExams) btnNavExams.addEventListener("click", goExamLevels);
+    const btnTakeTest = $("#btnTakeTest");
+    if (btnTakeTest) btnTakeTest.addEventListener("click", startTestFromHome);
+    const btnLogoHome = $("#btnLogoHome");
+    if (btnLogoHome) {
+      btnLogoHome.addEventListener("click", (e) => {
+        e.preventDefault();
+        goLanding();
+      });
+    }
+    const btnBackFromExamDetails = $("#btnBackFromExamDetails");
+    if (btnBackFromExamDetails) {
+      btnBackFromExamDetails.addEventListener("click", goLanding);
+    }
+
+    $$(".landing-nav-link[data-trigger]").forEach((link) => {
+      link.addEventListener("click", () => {
+        const id = link.getAttribute("data-trigger");
+        const target = id ? document.getElementById(id) : null;
+        if (target) target.click();
+      });
+    });
+
     els.btnStart.addEventListener("click", () => {
       if (hasResumableAttempt()) {
         openModal({
@@ -1280,6 +1471,7 @@
 
       renderHome();
       showScreen("home");
+      showLandingView();
 
       // Probe Drive proxy in the background — must not delay the home screen.
       if (AscoltoContent.detectDriveProxy) {
