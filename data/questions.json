@@ -13,9 +13,9 @@
     "ownerPhoto": "assets/images/reham.jpeg",
     "googleApiKey": "",
     "firebase": {
-      "apiKey": "",
-      "projectId": "",
-      "bucket": ""
+      "apiKey": "AIzaSyBzYdWTSQyjKTl0OuIMGo_aqtRKrhEZ0Ww",
+      "projectId": "podcast-d4c4a",
+      "bucket": "podcast-d4c4a.firebasestorage.app"
     }
   },
   "levels": [
