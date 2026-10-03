@@ -822,13 +822,14 @@
           els.visitorStatsHint.textContent = stats.updatedAt
             ? `Aggiornato: ${stats.updatedAt}`
             : "Dati dal server locale.";
-        } else if (stats.source === "counterapi") {
-          els.visitorStatsHint.textContent =
-            "Dati dal contatore online (GitHub Pages). Ogni dispositivo conta una volta.";
+        } else if (stats.source === "firestore") {
+          els.visitorStatsHint.textContent = stats.updatedAt
+            ? `Firestore · aggiornato: ${stats.updatedAt}`
+            : "Dati da Firestore. Ogni dispositivo conta una volta.";
         } else {
           els.visitorStatsHint.textContent =
             stats.error ||
-            "Impossibile leggere le statistiche. Avvia python3 server.py oppure pubblica il sito e riprova.";
+            "Impossibile leggere le statistiche. Configura Firebase e pubblica, oppure avvia python3 server.py.";
         }
       }
     } catch (err) {

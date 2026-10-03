@@ -11,7 +11,12 @@
     "ownerName": "Signora Reham Ramadan",
     "ownerTagline": "Insegnante di italiano in Italia",
     "ownerPhoto": "assets/images/reham.jpeg",
-    "googleApiKey": ""
+    "googleApiKey": "",
+    "firebase": {
+      "apiKey": "AIzaSyBzYdWTSQyjKTl0OuIMGo_aqtRKrhEZ0Ww",
+      "projectId": "podcast-d4c4a",
+      "bucket": "podcast-d4c4a.firebasestorage.app"
+    }
   },
   "levels": [
     {

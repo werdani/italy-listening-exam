@@ -256,9 +256,10 @@
             <p class="field-hint">
               Da Firebase Console → Impostazioni progetto → Le tue app. Nelle
               <strong>Storage Rules</strong> consenti lettura pubblica e scrittura solo su
-              <code>podcasts/</code> per file <code>audio/*</code>. Per i risultati esame
-              attiva <strong>Firestore</strong> e consenti create/read su
-              <code>examSubmissions</code>.
+              <code>podcasts/</code> per file <code>audio/*</code>. In
+              <strong>Firestore</strong> consenti create/read su
+              <code>examSubmissions</code>, e read/write su
+              <code>siteStats</code> + <code>visitorDevices</code> (visitatori unici).
             </p>
             <div class="page-actions">
               <button type="submit" class="btn btn-secondary" id="btnSaveFirebase">Salva impostazioni Firebase</button>
@@ -851,12 +852,12 @@
   <script src="../js/library.js?v=1" defer></script>
   <script src="../js/courses.js?v=2" defer></script>
   <script src="../js/podcast.js?v=2" defer></script>
-  <script src="../js/visitors.js?v=perf1" defer></script>
+  <script src="../js/visitors.js?v=firestore2" defer></script>
   <script src="../js/exam-submissions.js?v=4" defer></script>
   <script src="js/auth.js?v=duration3" defer></script>
   <script src="js/library-admin.js?v=1" defer></script>
   <script src="js/courses-admin.js?v=5" defer></script>
   <script src="js/podcast-admin.js?v=firebase1" defer></script>
-  <script src="js/admin.js?v=examsub4" defer></script>
+  <script src="js/admin.js?v=firestore1" defer></script>
 </body>
 </html>
