@@ -312,7 +312,7 @@ body:has(#screenResults:not([hidden])) .landing-login-btn {
 
 .landing-hero {
   position: relative;
-  min-height: clamp(420px, 58vh, 620px);
+  min-height: clamp(460px, 64vh, 720px);
   display: flex;
   align-items: flex-end;
   overflow: hidden;
@@ -324,8 +324,8 @@ body:has(#screenResults:not([hidden])) .landing-login-btn {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Prefer the upper facade so the Colosseum crown stays visible on wide viewports */
-  object-position: center 18%;
+  /* Upper-middle: Colosseum crown + arcade, without the plaza */
+  object-position: center 32%;
 }
 
 .landing-hero-shade {
