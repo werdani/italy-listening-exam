@@ -11,12 +11,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" href="data/questions.json" as="fetch" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Great+Vibes&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=logo-loader1" />
+  <link rel="stylesheet" href="css/style.css?v=logo-loader2" />
   <link rel="stylesheet" href="css/landing.css?v=22" />
   <link rel="stylesheet" href="css/library.css?v=1" />
   <link rel="stylesheet" href="css/courses.css?v=3" />
   <link rel="stylesheet" href="css/podcast.css?v=11" />
-  <!-- Critical: full-page loader before CSS arrives (avoids FOUC on refresh) -->
+  <!-- Critical: full-page loader before CSS arrives (Rome palette = landing) -->
   <style>
     #screenLoading.screen-active:not([hidden]) {
       position: fixed;
@@ -27,18 +27,21 @@
       justify-content: center;
       margin: 0;
       padding: 1.5rem;
-      background: #f0f4f8;
+      background: #f7f1e8;
       background-image:
-        radial-gradient(1200px 600px at 10% -10%, #d6e6ff 0%, transparent 55%),
-        radial-gradient(900px 500px at 100% 0%, #e8f0fe 0%, transparent 50%),
-        linear-gradient(180deg, #eef3f9 0%, #f5f7fa 40%, #eef2f6 100%);
+        radial-gradient(900px 420px at 12% 18%, rgba(197, 160, 89, 0.18), transparent 60%),
+        radial-gradient(800px 380px at 88% 22%, rgba(61, 126, 184, 0.12), transparent 55%),
+        linear-gradient(180deg, #faf6ef 0%, #f7f1e8 45%, #efe6d8 100%);
+      color: #5c5348;
     }
     html[data-theme="dark"] #screenLoading.screen-active:not([hidden]) {
-      background: #0f1419;
+      background: #12100e;
       background-image:
-        radial-gradient(1000px 500px at 0% 0%, #1a2740 0%, transparent 55%),
-        radial-gradient(800px 400px at 100% 10%, #1c2333 0%, transparent 45%),
-        linear-gradient(180deg, #0f1419 0%, #151a22 50%, #0f1419 100%);
+        radial-gradient(900px 420px at 12% 18%, rgba(197, 160, 89, 0.12), transparent 60%),
+        radial-gradient(800px 380px at 88% 22%, rgba(61, 126, 184, 0.14), transparent 55%),
+        radial-gradient(700px 360px at 55% 85%, rgba(138, 102, 64, 0.1), transparent 55%),
+        linear-gradient(180deg, #171411 0%, #12100e 42%, #0c0a09 100%);
+      color: rgba(247, 241, 232, 0.72);
     }
     body:has(#screenLoading.screen-active:not([hidden])) .site-header,
     body:has(#screenLoading.screen-active:not([hidden])) .site-footer,
@@ -113,7 +116,7 @@
     <section id="screenLoading" class="screen screen-active logo-loader" aria-busy="true" aria-label="Caricamento">
       <div class="logo-loader-inner">
         <div class="logo-loader-mark" aria-hidden="true">
-          <img src="assets/images/logo.svg" alt="" width="88" height="88" class="logo-loader-img" decoding="async" fetchpriority="high" />
+          <img src="assets/images/logo.svg?v=rome1" alt="" width="88" height="88" class="logo-loader-img" decoding="async" fetchpriority="high" />
           <span class="logo-loader-ring"></span>
         </div>
         <p class="logo-loader-text">Caricamento…</p>
