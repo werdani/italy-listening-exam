@@ -1597,6 +1597,7 @@
       }
     } catch (err) {
       console.error(err);
+      els.loading.classList.remove("logo-loader");
       els.loading.innerHTML = `
         <div class="card card-narrow">
           <h1>Impossibile caricare l'esame</h1>
