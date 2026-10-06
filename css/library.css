@@ -2,11 +2,15 @@
 
 .library-level-card,
 .book-card {
+  appearance: none;
+  -webkit-appearance: none;
   border: none;
   background: transparent;
   padding: 0;
   text-align: inherit;
   font: inherit;
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
 }
 
 /* Public — level picker */
@@ -41,6 +45,7 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--primary);
+  -webkit-text-fill-color: var(--primary);
   background: color-mix(in srgb, var(--primary) 12%, transparent);
   padding: 0.2rem 0.55rem;
   border-radius: 999px;
@@ -48,16 +53,20 @@
 
 .library-level-name {
   font-size: 1.15rem;
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
 }
 
 .library-level-meta {
   font-size: 0.85rem;
   color: var(--muted);
+  -webkit-text-fill-color: var(--muted);
 }
 
 .library-level-desc {
   font-size: 0.9rem;
   color: var(--muted);
+  -webkit-text-fill-color: var(--muted);
   line-height: 1.45;
 }
 
@@ -89,8 +98,15 @@
   border-radius: var(--radius);
   background: var(--surface);
   text-decoration: none;
-  color: inherit;
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
   transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+
+.book-card-file:visited,
+.book-card-file:active {
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
 }
 
 .book-card-file:hover {
@@ -103,6 +119,7 @@
   font-size: 0.85rem;
   font-weight: 800;
   color: #fff;
+  -webkit-text-fill-color: #fff;
   background: #dc2626;
   padding: 0.5rem 0.7rem;
   border-radius: 8px;
@@ -112,6 +129,7 @@
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--primary);
+  -webkit-text-fill-color: var(--primary);
 }
 
 .book-card-name {
@@ -120,6 +138,8 @@
   font-weight: 700;
   line-height: 1.4;
   text-align: center;
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
 }
 
 .library-head {
