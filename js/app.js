@@ -51,6 +51,10 @@
     teacherCreditName: $("#teacherCreditName"),
     teacherCreditTagline: $("#teacherCreditTagline"),
     levelSelect: $("#levelSelect"),
+    levelDropdown: $("#levelDropdown"),
+    levelTrigger: $("#levelTrigger"),
+    levelTriggerText: $("#levelTriggerText"),
+    levelMenu: $("#levelMenu"),
     homeLevelSelect: $("#homeLevelSelect"),
     homeLevelDropdown: $("#homeLevelDropdown"),
     homeLevelTrigger: $("#homeLevelTrigger"),
@@ -346,6 +350,66 @@
     els.homeLevelTrigger.setAttribute("aria-expanded", "false");
   }
 
+  function closeExamLevelMenu() {
+    if (!els.levelDropdown || !els.levelMenu || !els.levelTrigger) return;
+    els.levelDropdown.classList.remove("is-open");
+    els.levelMenu.hidden = true;
+    els.levelTrigger.setAttribute("aria-expanded", "false");
+  }
+
+  function openExamLevelMenu() {
+    if (!els.levelDropdown || !els.levelMenu || !els.levelTrigger) return;
+    closeHomeLevelMenu();
+    els.levelDropdown.classList.add("is-open");
+    els.levelMenu.hidden = false;
+    els.levelTrigger.setAttribute("aria-expanded", "true");
+    const selected = els.levelMenu.querySelector(".level-select-option.is-selected");
+    if (selected) selected.focus();
+  }
+
+  function syncExamLevelMenu() {
+    if (!els.levelSelect) return;
+    const value = String(els.levelSelect.value || "");
+    const selectedOpt = els.levelSelect.selectedOptions?.[0];
+    if (els.levelTriggerText) {
+      els.levelTriggerText.textContent = selectedOpt ? selectedOpt.textContent : "Livello";
+    }
+    if (els.levelMenu) {
+      $$(".level-select-option", els.levelMenu).forEach((btn) => {
+        const isSelected = btn.dataset.levelId === value;
+        btn.classList.toggle("is-selected", isSelected);
+        btn.setAttribute("aria-selected", isSelected ? "true" : "false");
+      });
+    }
+  }
+
+  function rebuildExamLevelMenu() {
+    if (!els.levelMenu || !els.levelSelect) return;
+    els.levelMenu.innerHTML = "";
+    [...els.levelSelect.options].forEach((opt) => {
+      const li = document.createElement("li");
+      li.setAttribute("role", "presentation");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "level-select-option";
+      btn.dataset.levelId = opt.value;
+      btn.setAttribute("role", "option");
+      btn.textContent = opt.textContent;
+      const isSelected = opt.value === els.levelSelect.value;
+      btn.classList.toggle("is-selected", isSelected);
+      btn.setAttribute("aria-selected", isSelected ? "true" : "false");
+      btn.addEventListener("click", () => {
+        els.levelSelect.value = opt.value;
+        els.levelSelect.dispatchEvent(new Event("change", { bubbles: true }));
+        closeExamLevelMenu();
+        els.levelTrigger?.focus();
+      });
+      li.appendChild(btn);
+      els.levelMenu.appendChild(li);
+    });
+    syncExamLevelMenu();
+  }
+
   function openHomeLevelMenu() {
     if (!els.homeLevelDropdown || !els.homeLevelMenu || !els.homeLevelTrigger) return;
     els.homeLevelDropdown.classList.add("is-open");
@@ -477,6 +541,7 @@
     }
     rebuildHomeLevelMenu(levels, value);
     syncHomeLevelSelect(value);
+    rebuildExamLevelMenu();
   }
 
   function renderHome(options = {}) {
@@ -1142,6 +1207,7 @@
     if (saved.levelId != null) {
       setActiveLevel(saved.levelId);
       if (els.levelSelect) els.levelSelect.value = String(saved.levelId);
+      syncExamLevelMenu();
     }
     state.levelId = saved.levelId != null ? saved.levelId : state.levelId;
     state.currentIndex = Math.min(saved.currentIndex || 0, examData.questions.length - 1);
@@ -1410,21 +1476,39 @@
     if (els.homeLevelTrigger && els.homeLevelDropdown) {
       els.homeLevelTrigger.addEventListener("click", (e) => {
         e.stopPropagation();
+        closeExamLevelMenu();
         if (els.homeLevelDropdown.classList.contains("is-open")) {
           closeHomeLevelMenu();
         } else {
           openHomeLevelMenu();
         }
       });
-      document.addEventListener("click", (e) => {
-        if (!els.homeLevelDropdown.contains(e.target)) {
-          closeHomeLevelMenu();
+    }
+    if (els.levelTrigger && els.levelDropdown) {
+      els.levelTrigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        closeHomeLevelMenu();
+        if (els.levelDropdown.classList.contains("is-open")) {
+          closeExamLevelMenu();
+        } else {
+          openExamLevelMenu();
         }
       });
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeHomeLevelMenu();
-      });
     }
+    document.addEventListener("click", (e) => {
+      if (els.homeLevelDropdown && !els.homeLevelDropdown.contains(e.target)) {
+        closeHomeLevelMenu();
+      }
+      if (els.levelDropdown && !els.levelDropdown.contains(e.target)) {
+        closeExamLevelMenu();
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeHomeLevelMenu();
+        closeExamLevelMenu();
+      }
+    });
 
     const goLanding = () => {
       renderHome();

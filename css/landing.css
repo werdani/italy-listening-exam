@@ -748,6 +748,7 @@ body:has(#screenResults:not([hidden])) .landing-login-btn {
   box-shadow: var(--shadow-lg);
   color: var(--text);
   text-align: center;
+  overflow: visible;
 }
 
 .exam-details-card .btn-back,

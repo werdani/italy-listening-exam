@@ -11,8 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" href="data/questions.json" as="fetch" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Great+Vibes&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=exam-gold1" />
-  <link rel="stylesheet" href="css/landing.css?v=29" />
+  <link rel="stylesheet" href="css/style.css?v=exam-gold2" />
+  <link rel="stylesheet" href="css/landing.css?v=30" />
   <link rel="stylesheet" href="css/library.css?v=3" />
   <link rel="stylesheet" href="css/courses.css?v=5" />
   <link rel="stylesheet" href="css/podcast.css?v=13" />
@@ -244,8 +244,22 @@
           <p id="examDescription" class="lead"></p>
 
           <div class="level-picker" id="levelPicker" aria-label="Seleziona livello">
-            <label class="field-label" for="levelSelect">Livello</label>
-            <select id="levelSelect" class="level-select"></select>
+            <span class="field-label" id="levelSelectLabel">Livello</span>
+            <div class="level-dd" id="levelDropdown">
+              <select id="levelSelect" class="visually-hidden" tabindex="-1" aria-hidden="true"></select>
+              <button
+                type="button"
+                class="level-select level-select-trigger"
+                id="levelTrigger"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                aria-labelledby="levelSelectLabel levelTriggerText"
+              >
+                <span class="level-select-trigger-text" id="levelTriggerText">Livello</span>
+                <span class="level-select-chevron" aria-hidden="true"></span>
+              </button>
+              <ul class="level-select-menu" id="levelMenu" role="listbox" aria-labelledby="levelSelectLabel" hidden></ul>
+            </div>
             <p class="level-desc muted" id="levelDescription"></p>
           </div>
 
@@ -721,6 +735,6 @@
   <script src="js/library-ui.js?v=3" defer></script>
   <script src="js/courses-ui.js?v=7" defer></script>
   <script src="js/podcast-ui.js?v=14" defer></script>
-  <script src="js/app.js?v=examsub2" defer></script>
+  <script src="js/app.js?v=examsub3" defer></script>
 </body>
 </html>
