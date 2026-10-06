@@ -97,8 +97,8 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 80% 55% at 50% -5%, var(--podcast-tint, rgba(26, 115, 232, 0.22)), transparent 70%),
-    linear-gradient(180deg, color-mix(in srgb, var(--podcast-tint-solid, #1a73e8) 8%, var(--surface)) 0%, var(--surface) 55%);
+    radial-gradient(ellipse 80% 55% at 50% -5%, var(--podcast-tint, rgba(197, 160, 89, 0.22)), transparent 70%),
+    linear-gradient(180deg, color-mix(in srgb, var(--podcast-tint-solid, #c5a059) 8%, var(--surface)) 0%, var(--surface) 55%);
   opacity: 1;
   transition: opacity 400ms ease;
 }

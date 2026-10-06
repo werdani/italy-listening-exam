@@ -11,10 +11,10 @@
   --landing-stone: #c5a059;
   --landing-stone-deep: #8a6640;
   /* Accent: soft sky blue from the hero */
-  --landing-accent: #3d7eb8;
-  --landing-accent-strong: #2f6a9c;
-  --landing-accent-deep: #1f4f78;
-  --landing-accent-soft: rgba(61, 126, 184, 0.14);
+  --landing-accent: #c5a059;
+  --landing-accent-strong: #d4b06c;
+  --landing-accent-deep: #8a6640;
+  --landing-accent-soft: rgba(197, 160, 89, 0.16);
   /* Cards — muted, warmer cousins of the hero tones */
   --landing-red: #b86a4a;
   --landing-red-deep: #7a3f2a;
@@ -33,10 +33,10 @@
 }
 
 html[data-theme="dark"] {
-  --landing-accent: #a8c9e6;
-  --landing-accent-strong: #8eb6d9;
-  --landing-accent-deep: #5a8cb5;
-  --landing-accent-soft: rgba(168, 201, 230, 0.16);
+  --landing-accent: #e0c07a;
+  --landing-accent-strong: #ead08a;
+  --landing-accent-deep: #c5a059;
+  --landing-accent-soft: rgba(197, 160, 89, 0.18);
 }
 
 /* Browse screens follow the active theme (light / dark) */
@@ -47,9 +47,10 @@ body:has(#screenCourses:not([hidden])),
 body:has(#screenCourse:not([hidden])),
 body:has(#screenPodcastList:not([hidden])),
 body:has(#screenPodcast:not([hidden])) {
-  --primary: var(--landing-accent);
+  --primary: var(--landing-stone);
   --primary-hover: var(--landing-accent-strong);
   --primary-soft: var(--landing-accent-soft);
+  --focus: 0 0 0 3px rgba(197, 160, 89, 0.38);
   background: var(--bg);
   background-image: var(--bg-accent);
   background-attachment: fixed;
@@ -101,12 +102,53 @@ body:has(#screenResults:not([hidden])) .main {
   padding: 1.5rem 1.25rem 3rem;
 }
 
+/* Exam / results — same gold Rome palette as the public site */
 body:has(#screenExam:not([hidden])),
-body:has(#screenResults:not([hidden])),
-body:has(#screenLoading:not([hidden])) {
+body:has(#screenResults:not([hidden])) {
+  --primary: var(--landing-stone);
+  --primary-hover: #d4b06c;
+  --primary-soft: rgba(197, 160, 89, 0.16);
+  --focus: 0 0 0 3px rgba(197, 160, 89, 0.38);
+  --bg: #f7f1e8;
+  --bg-accent:
+    radial-gradient(900px 420px at 12% 18%, rgba(197, 160, 89, 0.18), transparent 60%),
+    radial-gradient(800px 380px at 88% 22%, rgba(197, 160, 89, 0.08), transparent 55%),
+    linear-gradient(180deg, #faf6ef 0%, #f7f1e8 45%, #efe6d8 100%);
+  --surface: #fffaf3;
+  --surface-elevated: #fffdf8;
+  --border: rgba(138, 102, 64, 0.16);
+  --border-strong: rgba(138, 102, 64, 0.28);
+  --text: #1c1916;
+  --text-secondary: #5c5348;
+  --muted: #7a7268;
+  --shadow: 0 8px 28px rgba(80, 58, 28, 0.1);
   background: var(--bg);
   background-image: var(--bg-accent);
+  background-attachment: fixed;
   color: var(--text);
+}
+
+html[data-theme="dark"] body:has(#screenExam:not([hidden])),
+html[data-theme="dark"] body:has(#screenResults:not([hidden])) {
+  --primary: var(--landing-stone);
+  --primary-hover: #e0c07a;
+  --primary-soft: rgba(197, 160, 89, 0.16);
+  --bg: var(--landing-bg);
+  --surface: var(--landing-bg-elevated);
+  --surface-elevated: #25201b;
+  --border: rgba(247, 241, 232, 0.1);
+  --border-strong: rgba(247, 241, 232, 0.18);
+  --text: var(--landing-ink);
+  --text-secondary: rgba(247, 241, 232, 0.72);
+  --muted: rgba(247, 241, 232, 0.55);
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  background:
+    radial-gradient(900px 420px at 12% 18%, rgba(197, 160, 89, 0.12), transparent 60%),
+    radial-gradient(800px 380px at 88% 22%, rgba(197, 160, 89, 0.08), transparent 55%),
+    radial-gradient(700px 360px at 55% 85%, rgba(138, 102, 64, 0.1), transparent 55%),
+    linear-gradient(180deg, #171411 0%, var(--landing-bg) 42%, #0c0a09 100%);
+  background-attachment: fixed;
+  color: var(--landing-ink);
 }
 
 .app-shell {
@@ -170,8 +212,8 @@ html[data-theme="dark"] .landing-header {
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  border: 2px solid color-mix(in srgb, var(--landing-accent) 50%, rgba(247, 244, 239, 0.35));
-  box-shadow: 0 0 0 2px var(--landing-accent-soft);
+  border: 2px solid color-mix(in srgb, var(--landing-stone) 55%, rgba(247, 244, 239, 0.35));
+  box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.18);
 }
 
 .landing-logo-text {
@@ -240,7 +282,7 @@ body:has(#screenPodcast:not([hidden])) .landing-nav-link[data-nav="podcasts"] {
   background: transparent;
   border-radius: 0;
   box-shadow: none;
-  border-bottom: 2px solid var(--landing-accent);
+  border-bottom: 2px solid var(--landing-stone);
   padding-bottom: 0.3rem;
 }
 
@@ -250,7 +292,7 @@ body:has(#screenPodcast:not([hidden])) .landing-nav-link[data-nav="podcasts"] {
 }
 
 .landing-nav-link:focus-visible {
-  outline: 2px solid var(--landing-accent);
+  outline: 2px solid var(--landing-stone);
   outline-offset: 3px;
   border-radius: 8px;
   box-shadow: none;
@@ -270,8 +312,8 @@ body:has(#screenPodcast:not([hidden])) .landing-nav-link[data-nav="podcasts"] {
 
 .landing-header .icon-btn:hover {
   background: var(--landing-accent-soft);
-  border-color: color-mix(in srgb, var(--landing-accent) 45%, transparent);
-  color: var(--landing-accent-deep);
+  border-color: color-mix(in srgb, var(--landing-stone) 45%, transparent);
+  color: var(--landing-stone-deep);
 }
 
 html[data-theme="dark"] .landing-header .icon-btn:hover {
@@ -718,9 +760,9 @@ body:has(#screenResults:not([hidden])) .landing-login-btn {
   margin: 0 0 1rem;
   padding: 0.58rem 1rem;
   border-radius: 999px;
-  border: 1.5px solid color-mix(in srgb, var(--landing-accent) 35%, var(--border));
-  background: var(--landing-accent-soft);
-  color: var(--landing-accent-deep);
+  border: 1.5px solid color-mix(in srgb, var(--landing-stone) 40%, var(--border));
+  background: rgba(197, 160, 89, 0.14);
+  color: var(--landing-stone-deep);
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
@@ -735,26 +777,26 @@ body:has(#screenResults:not([hidden])) .landing-login-btn {
 
 html[data-theme="dark"] .exam-details-card .btn-back,
 html[data-theme="dark"] .app-content > .screen:not(.screen-home) .btn-back {
-  background: color-mix(in srgb, var(--landing-accent) 16%, transparent);
-  border-color: color-mix(in srgb, var(--landing-accent) 42%, transparent);
-  color: var(--landing-accent);
+  background: rgba(197, 160, 89, 0.14);
+  border-color: color-mix(in srgb, var(--landing-stone) 42%, transparent);
+  color: var(--landing-stone);
 }
 
 .exam-details-card .btn-back:hover,
 .app-content > .screen:not(.screen-home) .btn-back:hover {
   transform: translateY(-1px);
-  background: color-mix(in srgb, var(--landing-accent) 22%, transparent);
-  border-color: var(--landing-accent);
-  color: var(--landing-accent-strong);
-  box-shadow: 0 6px 16px color-mix(in srgb, var(--landing-accent) 22%, transparent);
+  background: rgba(197, 160, 89, 0.22);
+  border-color: var(--landing-stone);
+  color: #e0c07a;
+  box-shadow: 0 6px 16px rgba(197, 160, 89, 0.22);
   text-decoration: none;
   filter: none;
 }
 
 html[data-theme="light"] .exam-details-card .btn-back:hover,
 html[data-theme="light"] .app-content > .screen:not(.screen-home) .btn-back:hover {
-  background: color-mix(in srgb, var(--landing-accent) 14%, #fff);
-  color: var(--landing-accent-deep);
+  background: color-mix(in srgb, var(--landing-stone) 14%, #fff);
+  color: var(--landing-stone-deep);
 }
 
 .exam-details-photo {
@@ -763,11 +805,11 @@ html[data-theme="light"] .app-content > .screen:not(.screen-home) .btn-back:hove
   height: 72px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid color-mix(in srgb, var(--landing-accent) 45%, rgba(247, 244, 239, 0.25));
+  border: 3px solid color-mix(in srgb, var(--landing-stone) 55%, rgba(247, 244, 239, 0.25));
 }
 
 .exam-details-card .eyebrow {
-  color: var(--landing-accent);
+  color: var(--landing-stone);
 }
 
 .exam-details-card h1 {
@@ -776,7 +818,7 @@ html[data-theme="light"] .app-content > .screen:not(.screen-home) .btn-back:hove
 }
 
 .exam-details-card .teacher-credit {
-  color: color-mix(in srgb, var(--landing-accent) 65%, #fff);
+  color: color-mix(in srgb, var(--landing-stone) 70%, #fff);
 }
 
 .exam-details-card .lead {
@@ -816,9 +858,13 @@ html[data-theme="light"] .app-content > .screen:not(.screen-home) .btn-back:hove
 }
 
 .exam-details-card .options-row {
-  background: var(--landing-accent-soft);
-  border-color: color-mix(in srgb, var(--landing-accent) 28%, transparent);
+  background: rgba(197, 160, 89, 0.12);
+  border-color: color-mix(in srgb, var(--landing-stone) 28%, transparent);
   text-align: left;
+}
+
+.exam-details-card .options-row input[type="checkbox"] {
+  accent-color: var(--landing-stone);
 }
 
 .exam-details-card .home-actions {
@@ -826,14 +872,27 @@ html[data-theme="light"] .app-content > .screen:not(.screen-home) .btn-back:hove
 }
 
 .exam-details-card .btn-primary {
-  background: linear-gradient(135deg, #a8d4ff 0%, var(--landing-accent) 50%, var(--landing-accent-deep) 100%);
-  color: #0b1524;
-  box-shadow: 0 8px 22px rgba(62, 140, 220, 0.32);
+  background: linear-gradient(135deg, #e0c07a 0%, var(--landing-stone) 52%, var(--landing-stone-deep) 100%);
+  color: #1a140c;
+  box-shadow: 0 8px 22px rgba(197, 160, 89, 0.32);
+}
+
+.exam-details-card .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ead08a 0%, #d4b06c 48%, var(--landing-stone-deep) 100%);
+  color: #1a140c;
+  box-shadow: 0 10px 24px rgba(197, 160, 89, 0.42);
+  filter: none;
 }
 
 .exam-details-card .btn-ghost {
   color: var(--text);
   border-color: var(--border-strong);
+}
+
+.exam-details-card .btn-ghost:hover:not(:disabled) {
+  background: rgba(197, 160, 89, 0.14);
+  border-color: var(--landing-stone);
+  color: var(--landing-stone);
 }
 
 .exam-details-card .hint {
@@ -855,13 +914,12 @@ html[data-theme="light"] .app-content > .screen:not(.screen-home) .btn-back:hove
 }
 
 .app-content > .screen:not(.screen-home) .eyebrow {
-  color: var(--landing-accent);
+  color: var(--landing-stone);
 }
 
-/* Ensure course/library badges and links use light blue accent */
 .app-content > .screen:not(.screen-home) .library-level-badge,
 .app-content > .screen:not(.screen-home) .course-badge {
-  color: var(--landing-accent);
+  color: var(--landing-stone);
   background: var(--landing-accent-soft);
 }
 
