@@ -440,6 +440,7 @@ textarea.admin-control {
   height: 72px;
   border-radius: 50%;
   object-fit: cover;
+  object-position: center 18%;
   border: 3px solid color-mix(in srgb, var(--primary) 35%, var(--border));
   box-shadow: var(--shadow);
   background: var(--bg);

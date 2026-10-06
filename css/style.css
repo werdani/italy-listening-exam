@@ -190,6 +190,7 @@ button {
   border: 2px solid color-mix(in srgb, var(--primary) 35%, var(--border));
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-soft) 80%, transparent);
   object-fit: cover;
+  object-position: center 18%;
 }
 
 .home-logo.brand-logo-circle {
@@ -649,6 +650,7 @@ h1 {
   border-radius: 16px;
   box-shadow: var(--shadow);
   object-fit: cover;
+  object-position: center 18%;
 }
 
 .home-logo.brand-logo-circle {

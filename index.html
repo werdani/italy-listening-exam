@@ -11,8 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" href="data/questions.json" as="fetch" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Great+Vibes&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=exam-gold2" />
-  <link rel="stylesheet" href="css/landing.css?v=30" />
+  <link rel="stylesheet" href="css/style.css?v=exam-gold5" />
+  <link rel="stylesheet" href="css/landing.css?v=46" />
   <link rel="stylesheet" href="css/library.css?v=3" />
   <link rel="stylesheet" href="css/courses.css?v=5" />
   <link rel="stylesheet" href="css/podcast.css?v=13" />
@@ -83,10 +83,11 @@
 
       <nav class="landing-nav" aria-label="Navigazione principale">
         <button type="button" class="landing-nav-link" data-nav="home" id="btnEsami">Home</button>
-        <button type="button" class="landing-nav-link" data-nav="exams" id="btnNavExams">Exams</button>
-        <button type="button" class="landing-nav-link" data-nav="books" data-trigger="btnBooks">Books</button>
-        <button type="button" class="landing-nav-link" data-nav="courses" data-trigger="btnCourses">Courses</button>
-        <button type="button" class="landing-nav-link" data-nav="podcasts" data-trigger="btnPodcast">Podcasts</button>
+        <button type="button" class="landing-nav-link" data-nav="exams" id="btnNavExams">Esami</button>
+        <button type="button" class="landing-nav-link" data-nav="books" data-trigger="btnBooks">Libri</button>
+        <button type="button" class="landing-nav-link" data-nav="courses" data-trigger="btnCourses">Corsi</button>
+        <button type="button" class="landing-nav-link" data-nav="podcasts" data-trigger="btnPodcast">Podcast</button>
+        <button type="button" class="landing-nav-link" data-nav="about" id="btnNavAbout">Chi sono</button>
       </nav>
 
       <div class="header-actions landing-header-actions">
@@ -106,7 +107,7 @@
             <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/>
           </svg>
         </button>
-        <a class="landing-login-btn" href="admin/">Login</a>
+        <a class="landing-login-btn" href="admin/">Accedi</a>
       </div>
     </div>
   </header>
@@ -139,17 +140,17 @@
             fetchpriority="high"
           />
           <div class="landing-hero-shade" aria-hidden="true"></div>
+          <p class="landing-quote">
+            La vita è più bella<br />in italiano
+            <span class="landing-quote-heart" aria-hidden="true">♥</span>
+          </p>
           <div class="landing-hero-inner">
             <div class="landing-hero-copy">
-              <h1 class="landing-headline" id="landingHeadline">Small Steps, Big Dreams</h1>
+              <h1 class="landing-headline" id="landingHeadline">Piccoli passi,<br />grandi sogni</h1>
               <p class="landing-sub">
-                Learn Italian the smart way with our exams, books, courses and podcasts.
+                Impara l’italiano in modo intelligente: esami, libri, corsi e podcast.
               </p>
             </div>
-            <p class="landing-quote">
-              La vita è più bella in italiano
-              <span class="landing-quote-heart" aria-hidden="true">♥</span>
-            </p>
           </div>
         </div>
 
@@ -159,9 +160,9 @@
               <span class="feature-card-icon" aria-hidden="true">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3h8a2 2 0 0 1 2 2v14l-6-3-6 3V5a2 2 0 0 1 2-2z"/></svg>
               </span>
-              <h2 class="feature-card-title">Exams</h2>
-              <p class="feature-card-desc">Practice tests for all levels</p>
-              <button type="button" class="feature-card-btn" id="btnTakeTest">Take a Test →</button>
+              <h2 class="feature-card-title">Esami</h2>
+              <p class="feature-card-desc">Test di pratica per tutti i livelli</p>
+              <button type="button" class="feature-card-btn" id="btnTakeTest">Fai un test →</button>
             </div>
             <div class="feature-card-levels">
               <span class="feature-level-label" id="homeLevelLabel">Livello</span>
@@ -189,9 +190,9 @@
               <span class="feature-card-icon" aria-hidden="true">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 5.5V21.5"/></svg>
               </span>
-              <h2 class="feature-card-title">Books</h2>
-              <p class="feature-card-desc">Top Italian books &amp; learning materials</p>
-              <button type="button" class="feature-card-btn" id="btnBooks">Explore Books →</button>
+              <h2 class="feature-card-title">Libri</h2>
+              <p class="feature-card-desc">Libri e materiali per imparare l’italiano</p>
+              <button type="button" class="feature-card-btn" id="btnBooks">Scopri i libri →</button>
             </div>
             <div class="feature-card-media feature-card-media--books" aria-hidden="true"></div>
           </article>
@@ -201,9 +202,9 @@
               <span class="feature-card-icon" aria-hidden="true">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 3 8 4v4c0 4.5-3.2 8.4-8 10-4.8-1.6-8-5.5-8-10V7l8-4z"/><path d="M9.5 12.5 11 14l3.5-3.5"/></svg>
               </span>
-              <h2 class="feature-card-title">Courses</h2>
-              <p class="feature-card-desc">Structured lessons for real progress</p>
-              <button type="button" class="feature-card-btn" id="btnCourses">View Courses →</button>
+              <h2 class="feature-card-title">Corsi</h2>
+              <p class="feature-card-desc">Lezioni strutturate per progressi concreti</p>
+              <button type="button" class="feature-card-btn" id="btnCourses">Vedi i corsi →</button>
             </div>
             <div class="feature-card-media feature-card-media--courses" aria-hidden="true"></div>
           </article>
@@ -213,13 +214,76 @@
               <span class="feature-card-icon" aria-hidden="true">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg>
               </span>
-              <h2 class="feature-card-title">Podcasts</h2>
-              <p class="feature-card-desc">Native speakers, real life topics</p>
-              <button type="button" class="feature-card-btn" id="btnPodcast">Listen Now →</button>
+              <h2 class="feature-card-title">Podcast</h2>
+              <p class="feature-card-desc">Madrelingua e temi della vita reale</p>
+              <button type="button" class="feature-card-btn" id="btnPodcast">Ascolta ora →</button>
             </div>
             <div class="feature-card-media feature-card-media--podcasts" aria-hidden="true"></div>
           </article>
         </div>
+
+        <section class="landing-about" id="about" aria-label="Chi sono">
+          <div class="landing-about-grid">
+            <article class="landing-about-card" aria-labelledby="aboutHeading">
+              <div class="landing-about-photo-wrap">
+                <img
+                  id="aboutPhoto"
+                  class="landing-about-photo"
+                  src="assets/images/reham.jpeg"
+                  alt="Signora Reham Ramadan"
+                  width="112"
+                  height="112"
+                  decoding="async"
+                />
+              </div>
+              <div class="landing-about-copy">
+                <p class="landing-about-eyebrow">Insegnante</p>
+                <h2 class="landing-about-title" id="aboutHeading">Chi sono</h2>
+                <p class="landing-about-name" id="aboutName">Signora Reham Ramadan</p>
+                <p class="landing-about-tag" id="aboutTagline">Insegnante di italiano in Italia</p>
+                <p class="landing-about-lead" id="aboutLead">
+                  Insegno italiano in Italia con un metodo chiaro: ascolto, libri, corsi e pratica reale.
+                  Piccoli passi, progressi sicuri.
+                </p>
+                <button type="button" class="landing-about-cta" id="btnAboutExam">Fai un test →</button>
+              </div>
+            </article>
+
+            <article class="landing-about-card" id="about-developer" aria-labelledby="aboutDevHeading">
+              <div class="landing-about-photo-wrap">
+                <img
+                  class="landing-about-photo landing-about-photo--dev"
+                  src="assets/images/ammar.jpeg"
+                  alt="Ammar Werdani"
+                  width="112"
+                  height="112"
+                  decoding="async"
+                />
+              </div>
+              <div class="landing-about-copy">
+                <p class="landing-about-eyebrow">Sviluppo</p>
+                <h2 class="landing-about-title" id="aboutDevHeading">Lo sviluppatore</h2>
+                <p class="landing-about-name">Ammar Werdani</p>
+                <p class="landing-about-tag">Sviluppatore web</p>
+                <p class="landing-about-lead">
+                  Ho realizzato questa piattaforma per rendere l’apprendimento semplice, veloce e piacevole:
+                  esami, libri, corsi e podcast in un unico spazio.
+                </p>
+                <nav class="landing-about-links" aria-label="Contatti sviluppatore">
+                  <a class="dev-link dev-whatsapp" href="https://wa.me/201156568723" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+                    <span class="dev-link-label">WhatsApp</span>
+                  </a>
+                  <a class="dev-link dev-linkedin" href="https://www.linkedin.com/in/ammar-werdani/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                    <span class="dev-link-label">LinkedIn</span>
+                  </a>
+                  <a class="dev-link dev-mail" href="mailto:ammaryasser554zz@gmail.com" aria-label="Email">
+                    <span class="dev-link-label">Email</span>
+                  </a>
+                </nav>
+              </div>
+            </article>
+          </div>
+        </section>
       </div><!-- /#landingView -->
 
       <!-- Exam details (sibling of landing — must not be inside landingView) -->
@@ -302,13 +366,13 @@
     <section id="screenLibrary" class="screen" hidden aria-labelledby="libraryTitle">
       <div class="card home-card fade-in">
         <div class="library-head">
-          <button type="button" class="btn-back" id="btnBackFromLibrary">← Torna all’esame</button>
+          <button type="button" class="btn-back" id="btnBackFromLibrary">← Torna alla home</button>
           <p class="eyebrow">Materiali di lettura</p>
           <h1 id="libraryTitle">Leggi il libro</h1>
           <p class="lead" id="libraryDescription">Scegli un livello e apri i libri PDF.</p>
         </div>
         <div class="library-levels-grid" id="libraryLevelsGrid"></div>
-        <p class="empty-state" id="libraryEmpty" hidden>Nessun livello biblioteca disponibile.</p>
+          <p class="empty-state" id="libraryEmpty" hidden>Nessun livello disponibile nella biblioteca.</p>
       </div>
     </section>
 
@@ -330,10 +394,10 @@
     <section id="screenCourses" class="screen" hidden aria-labelledby="coursesTitle">
       <div class="card home-card fade-in">
         <div class="library-head">
-          <button type="button" class="btn-back" id="btnBackFromCourses">← Torna all’esame</button>
+          <button type="button" class="btn-back" id="btnBackFromCourses">← Torna alla home</button>
           <p class="eyebrow">Lezioni video</p>
           <h1 id="coursesTitle">Corsi video</h1>
-          <p class="lead" id="coursesDescription">Scegli un corso e guarda i video della playlist.</p>
+          <p class="lead" id="coursesDescription">Scegli un corso e guarda i video.</p>
         </div>
         <div class="library-levels-grid" id="coursesGrid"></div>
         <p class="empty-state" id="coursesEmpty" hidden>Nessun corso disponibile.</p>
@@ -345,7 +409,7 @@
       <div class="card home-card fade-in course-detail-card">
         <div class="library-head">
           <button type="button" class="btn-back" id="btnBackFromCourse">← Tutti i corsi</button>
-          <p class="eyebrow">Playlist</p>
+          <p class="eyebrow">Elenco video</p>
           <h1 id="courseTitle">Corso</h1>
           <p class="lead" id="courseDescription"></p>
         </div>
@@ -360,11 +424,11 @@
                 allowfullscreen
                 hidden
               ></iframe>
-              <p class="course-player-empty" id="coursePlayerEmpty">Seleziona un video dalla playlist.</p>
+              <p class="course-player-empty" id="coursePlayerEmpty">Seleziona un video dall’elenco.</p>
             </div>
           </div>
           <div class="course-playlist-panel">
-            <h2 class="course-playlist-heading">Playlist</h2>
+            <h2 class="course-playlist-heading">Elenco video</h2>
             <div class="playlist-list" id="playlistList" role="list"></div>
             <p class="empty-state" id="playlistEmpty" hidden>Nessun video in questo corso.</p>
           </div>
@@ -376,7 +440,7 @@
     <section id="screenPodcastList" class="screen" hidden aria-labelledby="podcastListTitle">
       <div class="card home-card fade-in">
         <div class="library-head">
-          <button type="button" class="btn-back" id="btnBackFromPodcastList">← Torna all’esame</button>
+          <button type="button" class="btn-back" id="btnBackFromPodcastList">← Torna alla home</button>
           <p class="eyebrow">Ascolto</p>
           <h1 id="podcastListTitle">Podcast</h1>
           <p class="lead" id="podcastListDescription">Scegli un podcast e ascolta gli episodi.</p>
@@ -625,68 +689,6 @@
     </section>
   </main>
 
-  <footer class="site-footer" role="contentinfo">
-    <div class="footer-inner">
-      <div class="footer-bar">
-        <div class="footer-credit">
-          <img
-            class="dev-photo"
-            src="assets/images/ammar.jpeg"
-            alt="Ammar Werdani"
-            width="48"
-            height="48"
-            loading="lazy"
-          />
-          <div class="footer-credit-copy">
-            <p class="footer-credit-label">Sviluppato da</p>
-            <p class="footer-credit-name">Ammar Werdani</p>
-          </div>
-        </div>
-        <nav class="dev-links" aria-label="Contatti sviluppatore">
-          <a
-            class="dev-link dev-whatsapp"
-            href="https://wa.me/201156568723"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="WhatsApp +20 115 656 8723"
-            aria-label="WhatsApp: +20 115 656 8723"
-          >
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor">
-              <path d="M17.47 14.38c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35z"/>
-              <path d="M12.04 2C6.5 2 2.01 6.49 2.01 12.03c0 1.77.46 3.49 1.34 5.01L2 22l5.1-1.34A9.99 9.99 0 0 0 12.04 22C17.58 22 22 17.51 22 11.97 22 6.43 17.58 2 12.04 2zm0 18.17c-1.58 0-3.13-.42-4.48-1.22l-.32-.19-3.03.8.81-2.95-.21-.34a8.14 8.14 0 0 1-1.25-4.37c0-4.5 3.66-8.16 8.17-8.16 4.5 0 8.16 3.66 8.16 8.16-.01 4.5-3.67 8.17-8.17 8.17z"/>
-            </svg>
-            <span class="dev-link-label">WhatsApp</span>
-          </a>
-          <a
-            class="dev-link dev-linkedin"
-            href="https://www.linkedin.com/in/ammar-werdani/"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="LinkedIn"
-            aria-label="LinkedIn di Ammar Werdani"
-          >
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor">
-              <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22 0H2C.9 0 0 .9 0 2v20c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V2c0-1.1-.9-2-2-2z"/>
-            </svg>
-            <span class="dev-link-label">LinkedIn</span>
-          </a>
-          <a
-            class="dev-link dev-mail"
-            href="mailto:ammaryasser554zz@gmail.com"
-            title="Email"
-            aria-label="Email: ammaryasser554zz@gmail.com"
-          >
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="5" width="18" height="14" rx="2"/>
-              <path d="m3 7 9 7 9-7"/>
-            </svg>
-            <span class="dev-link-label">Email</span>
-          </a>
-        </nav>
-      </div>
-    </div>
-  </footer>
-
   <!-- Confirm dialog -->
   <div class="modal" id="confirmModal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-backdrop" data-close-modal></div>
@@ -728,13 +730,13 @@
 
   <script src="js/content.js?v=examsub4" defer></script>
   <script src="js/library.js?v=1" defer></script>
-  <script src="js/courses.js?v=2" defer></script>
+  <script src="js/courses.js?v=3" defer></script>
   <script src="js/podcast.js?v=2" defer></script>
   <script src="js/visitors.js?v=firestore3" defer></script>
   <script src="js/exam-submissions.js?v=4" defer></script>
-  <script src="js/library-ui.js?v=3" defer></script>
-  <script src="js/courses-ui.js?v=7" defer></script>
-  <script src="js/podcast-ui.js?v=14" defer></script>
-  <script src="js/app.js?v=examsub3" defer></script>
+  <script src="js/library-ui.js?v=4" defer></script>
+  <script src="js/courses-ui.js?v=8" defer></script>
+  <script src="js/podcast-ui.js?v=15" defer></script>
+  <script src="js/app.js?v=examsub6" defer></script>
 </body>
 </html>

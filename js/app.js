@@ -338,6 +338,19 @@
     if (els.teacherCreditTagline) {
       els.teacherCreditTagline.textContent = tagline ? ` — ${tagline}` : "";
     }
+    const aboutPhoto = $("#aboutPhoto");
+    const aboutName = $("#aboutName");
+    const aboutTagline = $("#aboutTagline");
+    if (aboutPhoto) {
+      aboutPhoto.src = photo;
+      aboutPhoto.alt = name;
+      aboutPhoto.onerror = () => {
+        aboutPhoto.onerror = null;
+        aboutPhoto.src = "assets/images/reham.jpeg";
+      };
+    }
+    if (aboutName) aboutName.textContent = name;
+    if (aboutTagline) aboutTagline.textContent = tagline;
     document.title = `${name} — Esame di Ascolto`;
   }
 
@@ -1348,6 +1361,7 @@
     state.results = null;
     showScreen("home");
     showLandingView();
+    document.body.classList.remove("nav-about", "nav-developer");
     refreshContentFromStore({ silent: true });
   }
 
@@ -1511,22 +1525,42 @@
     });
 
     const goLanding = () => {
+      document.body.classList.remove("nav-about", "nav-developer");
       renderHome();
       showScreen("home");
       showLandingView();
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
+    const goAbout = () => {
+      renderHome();
+      showScreen("home");
+      showLandingView();
+      document.body.classList.remove("nav-developer");
+      document.body.classList.add("nav-about");
+      const about = document.getElementById("about");
+      if (about) {
+        requestAnimationFrame(() => {
+          about.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
+    };
+
     const btnEsami = $("#btnEsami");
     if (btnEsami) btnEsami.addEventListener("click", goLanding);
 
+    const btnNavAbout = $("#btnNavAbout");
+    if (btnNavAbout) btnNavAbout.addEventListener("click", goAbout);
+
     const goExamLevels = () => {
+      document.body.classList.remove("nav-about", "nav-developer");
       renderHome();
       showScreen("home");
       showLandingView();
       scrollToExamLevels();
     };
     const startTestFromHome = () => {
+      document.body.classList.remove("nav-about", "nav-developer");
       const fromHome = els.homeLevelSelect ? Number(els.homeLevelSelect.value) : null;
       const levelId =
         fromHome != null && !Number.isNaN(fromHome) ? fromHome : getSelectedLevelId();
@@ -1536,6 +1570,8 @@
     if (btnNavExams) btnNavExams.addEventListener("click", goExamLevels);
     const btnTakeTest = $("#btnTakeTest");
     if (btnTakeTest) btnTakeTest.addEventListener("click", startTestFromHome);
+    const btnAboutExam = $("#btnAboutExam");
+    if (btnAboutExam) btnAboutExam.addEventListener("click", startTestFromHome);
     const btnLogoHome = $("#btnLogoHome");
     if (btnLogoHome) {
       btnLogoHome.addEventListener("click", (e) => {
@@ -1550,6 +1586,7 @@
 
     $$(".landing-nav-link[data-trigger]").forEach((link) => {
       link.addEventListener("click", () => {
+        document.body.classList.remove("nav-about", "nav-developer");
         const id = link.getAttribute("data-trigger");
         const target = id ? document.getElementById(id) : null;
         if (target) target.click();
