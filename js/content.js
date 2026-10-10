@@ -949,16 +949,24 @@
     };
   }
 
-  async function listFirestoreUsers() {
+  async function listFirestoreUsers(options = {}) {
+    const pageSize = Math.min(50, Math.max(1, Number(options.pageSize) || 10));
     const firebase = await ensureFirestore();
     try {
-      const snap = await firebase
+      let query = firebase
         .firestore()
         .collection(USERS_COLLECTION)
         .orderBy("createdAt", "desc")
-        .limit(300)
-        .get();
-      return snap.docs.map(userFromDoc);
+        .limit(pageSize + 1);
+      if (options.startAfter) query = query.startAfter(options.startAfter);
+      const snap = await query.get();
+      const hasMore = snap.docs.length > pageSize;
+      const docs = hasMore ? snap.docs.slice(0, pageSize) : snap.docs;
+      return {
+        users: docs.map(userFromDoc),
+        lastDoc: docs.length ? docs[docs.length - 1] : null,
+        hasMore,
+      };
     } catch (err) {
       throw new Error(firestoreErrorMessage(err, "Impossibile leggere gli utenti."));
     }

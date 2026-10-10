@@ -5,10 +5,16 @@
 (function (global) {
   "use strict";
 
+  const PAGE_SIZE = 10;
+
   /** @type {object|null} */
   let api = null;
   let eventsBound = false;
   let loading = false;
+  let pageIndex = 0;
+  let hasNext = false;
+  /** @type {Array<unknown>} Firestore cursors. Index 0 is the first page. */
+  let pageCursors = [null];
 
   const $ = (sel, root = document) => root.querySelector(sel);
 
@@ -23,6 +29,10 @@
     refresh: $("#btnRefreshUsers"),
     list: $("#usersList"),
     empty: $("#usersEmpty"),
+    pager: $("#usersPager"),
+    prev: $("#usersPrev"),
+    next: $("#usersNext"),
+    pageLabel: $("#usersPageLabel"),
   };
 
   function escapeHtml(str) {
@@ -108,33 +118,70 @@
     });
   }
 
-  async function loadUsers() {
+  function resetPaging() {
+    pageIndex = 0;
+    hasNext = false;
+    pageCursors = [null];
+  }
+
+  function renderPager() {
+    if (!els.pager) return;
+    const visible = pageIndex > 0 || hasNext;
+    els.pager.hidden = !visible;
+    if (els.prev) els.prev.disabled = pageIndex === 0 || loading;
+    if (els.next) els.next.disabled = !hasNext || loading;
+    if (els.pageLabel) els.pageLabel.textContent = `Pagina ${pageIndex + 1}`;
+  }
+
+  async function loadUsers(options = {}) {
+    if (options.reset) resetPaging();
     if (!global.AscoltoContent || !global.AscoltoContent.listFirestoreUsers) {
       if (els.empty) {
         els.empty.hidden = false;
         els.empty.textContent = "Modulo Firebase non caricato.";
       }
+      renderPager();
       return;
     }
     if (loading) return;
     loading = true;
+    renderPager();
     if (els.empty) {
       els.empty.hidden = false;
       els.empty.textContent = "Caricamento…";
     }
     if (els.list) els.list.innerHTML = "";
     try {
-      const users = await global.AscoltoContent.listFirestoreUsers();
+      const result = await global.AscoltoContent.listFirestoreUsers({
+        pageSize: PAGE_SIZE,
+        startAfter: pageCursors[pageIndex] || null,
+      });
+      const users = Array.isArray(result) ? result : result.users || [];
+      hasNext = Array.isArray(result) ? false : Boolean(result.hasMore);
+      if (!Array.isArray(result) && result.lastDoc) {
+        pageCursors[pageIndex + 1] = result.lastDoc;
+      }
+      if (users.length === 0 && pageIndex > 0) {
+        pageIndex -= 1;
+        loading = false;
+        await loadUsers();
+        return;
+      }
       renderUsers(users);
+      renderPager();
     } catch (err) {
       console.error(err);
+      hasNext = false;
       if (els.list) els.list.innerHTML = "";
       if (els.empty) {
         els.empty.hidden = false;
         els.empty.textContent = err.message || "Impossibile caricare gli utenti.";
       }
+      if (els.pager) els.pager.hidden = true;
     } finally {
       loading = false;
+      if (els.prev) els.prev.disabled = pageIndex === 0;
+      if (els.next) els.next.disabled = !hasNext;
     }
   }
 
@@ -164,7 +211,7 @@
       await global.AscoltoContent.addFirestoreUser({ name, phone, nationalId });
       if (els.form) els.form.reset();
       if (api && api.showToast) api.showToast("Utente salvato su Firebase.");
-      await loadUsers();
+      await loadUsers({ reset: true });
     } catch (err) {
       console.error(err);
       setFormError(err.message || "Salvataggio non riuscito.");
@@ -193,7 +240,21 @@
     if (eventsBound) return;
     eventsBound = true;
     if (els.form) els.form.addEventListener("submit", onSubmit);
-    if (els.refresh) els.refresh.addEventListener("click", () => loadUsers());
+    if (els.refresh) els.refresh.addEventListener("click", () => loadUsers({ reset: true }));
+    if (els.prev) {
+      els.prev.addEventListener("click", () => {
+        if (loading || pageIndex === 0) return;
+        pageIndex -= 1;
+        loadUsers();
+      });
+    }
+    if (els.next) {
+      els.next.addEventListener("click", () => {
+        if (loading || !hasNext) return;
+        pageIndex += 1;
+        loadUsers();
+      });
+    }
     if (els.view) els.view.addEventListener("click", onClick);
   }
 
@@ -202,6 +263,8 @@
       api = hooks;
       bindEvents();
     },
-    renderList: loadUsers,
+    renderList() {
+      return loadUsers({ reset: true });
+    },
   };
 })(window);
