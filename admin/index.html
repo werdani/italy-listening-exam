@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/style.css?v=duration2" />
-  <link rel="stylesheet" href="css/admin.css?v=users2" />
+  <link rel="stylesheet" href="css/admin.css?v=users3" />
   <link rel="stylesheet" href="../css/library.css?v=1" />
   <link rel="stylesheet" href="../css/courses.css?v=4" />
 </head>
@@ -466,6 +466,11 @@
 
         <div class="questions-list" id="usersList"></div>
         <p class="empty-state" id="usersEmpty" hidden>Nessun utente. Aggiungi il primo.</p>
+        <nav class="users-pager" id="usersPager" hidden aria-label="Pagine utenti">
+          <button type="button" class="btn btn-secondary btn-sm" id="usersPrev">Precedente</button>
+          <span class="users-pager-label" id="usersPageLabel">Pagina 1</span>
+          <button type="button" class="btn btn-secondary btn-sm" id="usersNext">Successiva</button>
+        </nav>
       </section>
     </main>
   </div>
@@ -853,7 +858,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-  <script src="../js/content.js?v=users1" defer></script>
+  <script src="../js/content.js?v=users2" defer></script>
   <script src="../js/library.js?v=1" defer></script>
   <script src="../js/courses.js?v=2" defer></script>
   <script src="../js/podcast.js?v=2" defer></script>
@@ -862,7 +867,7 @@
   <script src="js/library-admin.js?v=1" defer></script>
   <script src="js/courses-admin.js?v=5" defer></script>
   <script src="js/podcast-admin.js?v=firebase1" defer></script>
-  <script src="js/users-admin.js?v=users1" defer></script>
+  <script src="js/users-admin.js?v=users2" defer></script>
   <script src="js/admin.js?v=users1" defer></script>
 </body>
 </html>
