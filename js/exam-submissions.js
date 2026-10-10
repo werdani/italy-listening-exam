@@ -16,28 +16,47 @@
     return /\.github\.io$/i.test(host);
   }
 
-  function normalizePhone(value) {
-    return String(value || "").replace(/[^\d+]/g, "").trim();
-  }
-
   function normalizeName(value) {
     return String(value || "").trim().replace(/\s+/g, " ");
   }
 
-  function validateStudent({ name, phone } = {}) {
+  function normalizePhone(value) {
+    let digits = String(value || "").replace(/\D/g, "");
+    if (digits.startsWith("0020")) digits = "0" + digits.slice(4);
+    else if (digits.startsWith("20") && digits.length >= 12) digits = "0" + digits.slice(2);
+    return digits;
+  }
+
+  function normalizeNationalId(value) {
+    return String(value || "").replace(/\D/g, "");
+  }
+
+  function isValidNationalId(value) {
+    if (!/^[23]\d{13}$/.test(value)) return false;
+    const year = (value[0] === "2" ? 1900 : 2000) + Number(value.slice(1, 3));
+    const month = Number(value.slice(3, 5));
+    const day = Number(value.slice(5, 7));
+    const date = new Date(year, month - 1, day);
+    return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+  }
+
+  function validateStudent({ name, phone, nationalId } = {}) {
     const cleanName = normalizeName(name);
     const cleanPhone = normalizePhone(phone);
+    const cleanId = normalizeNationalId(nationalId);
     if (cleanName.length < 2) {
       return { ok: false, error: "Inserisci il nome completo." };
     }
     if (cleanName.length > 80) {
       return { ok: false, error: "Il nome è troppo lungo." };
     }
-    const digits = cleanPhone.replace(/\D/g, "");
-    if (digits.length < 8 || digits.length > 15) {
-      return { ok: false, error: "Inserisci un numero di telefono valido." };
+    if (!/^01[0125]\d{8}$/.test(cleanPhone)) {
+      return { ok: false, error: "Il telefono deve essere un numero egiziano di 11 cifre (01…)." };
     }
-    return { ok: true, name: cleanName, phone: cleanPhone };
+    if (!isValidNationalId(cleanId)) {
+      return { ok: false, error: "Il numero di identità deve essere di 14 cifre e contenere una data di nascita valida." };
+    }
+    return { ok: true, name: cleanName, phone: cleanPhone, nationalId: cleanId };
   }
 
   function buildPayload(input = {}) {
@@ -48,6 +67,7 @@
     return {
       name: checked.name,
       phone: checked.phone,
+      nationalId: checked.nationalId,
       levelId: input.levelId != null ? Number(input.levelId) : null,
       levelName: String(level?.name || input.levelName || "").trim(),
       examTitle: String(input.examTitle || "").trim(),
@@ -179,6 +199,7 @@
     validateStudent,
     normalizeName,
     normalizePhone,
+    normalizeNationalId,
     saveSubmission,
     listSubmissions,
   };

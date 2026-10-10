@@ -27,7 +27,7 @@
     preventSkip: true,
     status: "idle", // idle | in_progress | completed
     results: null,
-    student: /** @type {{ name: string, phone: string }|null} */ (null),
+    student: /** @type {{ name: string, phone: string, nationalId: string }|null} */ (null),
   };
 
   let timerId = null;
@@ -110,6 +110,8 @@
     studentForm: $("#studentForm"),
     studentName: $("#studentName"),
     studentPhone: $("#studentPhone"),
+    studentNationalId: $("#studentNationalId"),
+    studentModalConfirm: $("#studentModalConfirm"),
     studentFormError: $("#studentFormError"),
     toast: $("#toast"),
   };
@@ -1238,10 +1240,11 @@
     els.preventSkipToggle.checked = state.preventSkip;
     state.status = "in_progress";
     state.results = null;
-    if (saved.student?.name && saved.student?.phone) {
+    if (saved.student?.name && saved.student?.phone && saved.student?.nationalId) {
       state.student = {
         name: String(saved.student.name),
         phone: String(saved.student.phone),
+        nationalId: String(saved.student.nationalId),
       };
     }
   }
@@ -1269,6 +1272,9 @@
     }
     if (els.studentPhone && !els.studentPhone.value && state.student?.phone) {
       els.studentPhone.value = state.student.phone;
+    }
+    if (els.studentNationalId && !els.studentNationalId.value && state.student?.nationalId) {
+      els.studentNationalId.value = state.student.nationalId;
     }
     els.studentModal.hidden = false;
     els.studentName?.focus();
@@ -1306,7 +1312,7 @@
     if (resume && saved && hasResumableAttempt()) {
       restoreExam(saved);
     } else {
-      if (!state.student?.name || !state.student?.phone) {
+      if (!state.student?.name || !state.student?.phone || !state.student?.nationalId) {
         openStudentModal();
         return;
       }
@@ -1333,6 +1339,7 @@
       await api.saveSubmission({
         name: state.student.name,
         phone: state.student.phone,
+        nationalId: state.student.nationalId,
         levelId: state.levelId,
         levelName: level?.name || "",
         level,
@@ -1606,16 +1613,17 @@
     els.btnBackHome.addEventListener("click", resetToHome);
 
     if (els.studentForm) {
-      els.studentForm.addEventListener("submit", (e) => {
+      els.studentForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const api = globalThis.AscoltoExamSubmissions;
         const raw = {
           name: els.studentName?.value || "",
           phone: els.studentPhone?.value || "",
+          nationalId: els.studentNationalId?.value || "",
         };
         const checked = api?.validateStudent
           ? api.validateStudent(raw)
-          : { ok: true, name: raw.name.trim(), phone: raw.phone.trim() };
+          : { ok: false, error: "Modulo di verifica non caricato." };
         if (!checked.ok) {
           if (els.studentFormError) {
             els.studentFormError.hidden = false;
@@ -1623,9 +1631,43 @@
           }
           return;
         }
-        state.student = { name: checked.name, phone: checked.phone };
-        closeStudentModal();
-        beginExam(false);
+        if (!globalThis.AscoltoContent?.findRegisteredStudent) {
+          if (els.studentFormError) {
+            els.studentFormError.hidden = false;
+            els.studentFormError.textContent = "Impossibile verificare la registrazione.";
+          }
+          return;
+        }
+        const confirmBtn = els.studentModalConfirm;
+        if (confirmBtn) confirmBtn.disabled = true;
+        try {
+          const registered = await globalThis.AscoltoContent.findRegisteredStudent({
+            phone: checked.phone,
+            nationalId: checked.nationalId,
+          });
+          if (!registered) {
+            if (els.studentFormError) {
+              els.studentFormError.hidden = false;
+              els.studentFormError.textContent = "مش متسجل. Non sei registrato.";
+            }
+            return;
+          }
+          state.student = {
+            name: checked.name,
+            phone: checked.phone,
+            nationalId: checked.nationalId,
+          };
+          closeStudentModal();
+          beginExam(false);
+        } catch (err) {
+          console.error(err);
+          if (els.studentFormError) {
+            els.studentFormError.hidden = false;
+            els.studentFormError.textContent = err.message || "Impossibile verificare la registrazione.";
+          }
+        } finally {
+          if (confirmBtn) confirmBtn.disabled = false;
+        }
       });
     }
     $$("[data-close-student-modal]").forEach((el) => {

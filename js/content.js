@@ -1013,6 +1013,42 @@
     }
   }
 
+  function normalizeStudentPhone(raw) {
+    let digits = String(raw || "").replace(/\D/g, "");
+    if (digits.startsWith("0020")) digits = "0" + digits.slice(4);
+    else if (digits.startsWith("20") && digits.length >= 12) digits = "0" + digits.slice(2);
+    return digits;
+  }
+
+  function normalizeNationalId(raw) {
+    return String(raw || "").replace(/\D/g, "");
+  }
+
+  /**
+   * Registered students are stored by the admin in Firestore `users`.
+   * Phone and national ID must belong to the same record.
+   */
+  async function findRegisteredStudent({ phone, nationalId } = {}) {
+    const cleanPhone = normalizeStudentPhone(phone);
+    const cleanId = normalizeNationalId(nationalId);
+    if (!cleanPhone || cleanId.length !== 14) return null;
+    const firebase = await ensureFirestore();
+    try {
+      const snap = await firebase
+        .firestore()
+        .collection(USERS_COLLECTION)
+        .where("nationalId", "==", cleanId)
+        .limit(5)
+        .get();
+      const match = snap.docs.find(
+        (doc) => normalizeStudentPhone((doc.data() || {}).phone) === cleanPhone
+      );
+      return match ? userFromDoc(match) : null;
+    } catch (err) {
+      throw new Error(firestoreErrorMessage(err, "Impossibile verificare la registrazione."));
+    }
+  }
+
   /**
    * Upload a podcast episode file to Firebase Storage.
    * Returns a public HTTPS download URL stored as episode.audio.
@@ -1934,6 +1970,9 @@
     listFirestoreUsers,
     addFirestoreUser,
     deleteFirestoreUser,
+    findRegisteredStudent,
+    normalizeStudentPhone,
+    normalizeNationalId,
     sanitizeGithubToken,
     looksLikeGithubToken,
     validateGithubToken,
