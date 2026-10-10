@@ -814,11 +814,14 @@
 
   let firebaseAppName = null;
 
-  async function ensureFirebaseApp() {
+  async function ensureFirebaseApp(options = {}) {
+    const requireBucket = options.requireBucket !== false;
     const settings = getFirebaseSettings();
-    if (!settings.apiKey || !settings.bucket || !settings.projectId) {
+    if (!settings.apiKey || !settings.projectId || (requireBucket && !settings.bucket)) {
       throw new Error(
-        "Configura Firebase (API Key, Project ID e Storage Bucket) nel pannello admin."
+        requireBucket
+          ? "Configura Firebase (API Key, Project ID e Storage Bucket) nel pannello admin."
+          : "Configura Firebase (API Key e Project ID) nel pannello admin, sezione Livelli."
       );
     }
     if (!isLikelyGoogleApiKey(settings.apiKey)) {
@@ -841,16 +844,109 @@
     }
 
     if (!firebaseAppName) {
-      firebase.initializeApp({
+      const config = {
         apiKey: settings.apiKey,
         authDomain: `${settings.projectId}.firebaseapp.com`,
         projectId: settings.projectId,
-        storageBucket: settings.bucket,
-      });
+      };
+      if (settings.bucket) config.storageBucket = settings.bucket;
+      firebase.initializeApp(config);
       firebaseAppName = signature;
     }
 
     return firebase;
+  }
+
+  const USERS_COLLECTION = "users";
+
+  function firestoreErrorMessage(err, fallback) {
+    const code = err && err.code ? String(err.code) : "";
+    if (code === "permission-denied") {
+      return "Firestore ha rifiutato l’operazione. Nelle regole consenti lettura e scrittura sulla collection users.";
+    }
+    if (code === "unavailable" || code === "failed-precondition") {
+      return "Firestore non è attivo su questo progetto. Creane uno dalla console Firebase.";
+    }
+    return (err && err.message) || fallback;
+  }
+
+  async function ensureFirestore() {
+    const firebase = await ensureFirebaseApp({ requireBucket: false });
+    await loadScriptOnce("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js");
+    if (!firebase.firestore) {
+      throw new Error("SDK Firestore non disponibile.");
+    }
+    return firebase;
+  }
+
+  function userFromDoc(doc) {
+    const data = doc.data() || {};
+    const created = data.createdAt && typeof data.createdAt.toDate === "function"
+      ? data.createdAt.toDate().toISOString()
+      : null;
+    return {
+      id: doc.id,
+      name: String(data.name || ""),
+      phone: String(data.phone || ""),
+      nationalId: String(data.nationalId || ""),
+      createdAt: created,
+    };
+  }
+
+  async function listFirestoreUsers() {
+    const firebase = await ensureFirestore();
+    try {
+      const snap = await firebase
+        .firestore()
+        .collection(USERS_COLLECTION)
+        .orderBy("createdAt", "desc")
+        .limit(300)
+        .get();
+      return snap.docs.map(userFromDoc);
+    } catch (err) {
+      throw new Error(firestoreErrorMessage(err, "Impossibile leggere gli utenti."));
+    }
+  }
+
+  async function addFirestoreUser({ name, phone, nationalId }) {
+    const firebase = await ensureFirestore();
+    const db = firebase.firestore();
+    const payload = {
+      name: String(name || "").trim(),
+      phone: String(phone || "").trim(),
+      nationalId: String(nationalId || "").trim(),
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    if (!payload.name || !payload.phone || !payload.nationalId) {
+      throw new Error("Nome, telefono e numero di identità sono obbligatori.");
+    }
+    try {
+      const existing = await db
+        .collection(USERS_COLLECTION)
+        .where("nationalId", "==", payload.nationalId)
+        .limit(1)
+        .get();
+      if (!existing.empty) {
+        throw new Error("Questo numero di identità è già registrato.");
+      }
+      const ref = await db.collection(USERS_COLLECTION).add(payload);
+      return { id: ref.id, ...payload, createdAt: new Date().toISOString() };
+    } catch (err) {
+      if (err && /già registrato|obbligatori/.test(String(err.message || ""))) throw err;
+      throw new Error(firestoreErrorMessage(err, "Impossibile salvare l’utente."));
+    }
+  }
+
+  async function deleteFirestoreUser(id) {
+    const userId = String(id || "").trim();
+    if (!userId) throw new Error("Utente non trovato.");
+    const firebase = await ensureFirestore();
+    try {
+      await firebase.firestore().collection(USERS_COLLECTION).doc(userId).delete();
+      return { ok: true };
+    } catch (err) {
+      throw new Error(firestoreErrorMessage(err, "Impossibile eliminare l’utente."));
+    }
   }
 
   /**
@@ -1768,6 +1864,9 @@
     getFirebaseSettings,
     saveFirebaseSettings,
     uploadPodcastAudioToFirebase,
+    listFirestoreUsers,
+    addFirestoreUser,
+    deleteFirestoreUser,
     sanitizeGithubToken,
     looksLikeGithubToken,
     validateGithubToken,

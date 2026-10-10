@@ -192,6 +192,8 @@
     const podcastShowView = document.getElementById("viewPodcastShow");
     if (podcastView) podcastView.hidden = name !== "podcast";
     if (podcastShowView) podcastShowView.hidden = name !== "podcastShow";
+    const usersView = document.getElementById("viewUsers");
+    if (usersView) usersView.hidden = name !== "users";
     if (window.LibraryAdmin) LibraryAdmin.setContent(content);
     if (window.CoursesAdmin) CoursesAdmin.setContent(content);
     if (window.PodcastAdmin) PodcastAdmin.setContent(content);
@@ -1484,9 +1486,21 @@
     } else if (target === "podcast" && window.PodcastAdmin) {
       PodcastAdmin.setContent(content);
       PodcastAdmin.renderList();
+    } else if (target === "users" && window.UsersAdmin) {
+      showView("users");
+      UsersAdmin.renderList();
     } else {
       renderLevels();
     }
+  }
+
+  function initUsersAdmin() {
+    if (!window.UsersAdmin) return;
+    UsersAdmin.init({
+      showToast,
+      openConfirm,
+      showView,
+    });
   }
 
   async function enterDashboard() {
@@ -1495,6 +1509,7 @@
     initLibraryAdmin();
     initCoursesAdmin();
     initPodcastAdmin();
+    initUsersAdmin();
     try {
       await loadData();
       if (window.LibraryAdmin) LibraryAdmin.setContent(content);
@@ -1655,6 +1670,7 @@
     });
 
     initLibraryAdmin();
+    initUsersAdmin();
     $$("[data-admin-nav]").forEach((btn) => {
       btn.addEventListener("click", () => {
         switchAdminNav(btn.getAttribute("data-admin-nav"));

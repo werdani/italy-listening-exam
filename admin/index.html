@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/style.css?v=duration2" />
-  <link rel="stylesheet" href="css/admin.css?v=savefix6" />
+  <link rel="stylesheet" href="css/admin.css?v=users2" />
   <link rel="stylesheet" href="../css/library.css?v=1" />
   <link rel="stylesheet" href="../css/courses.css?v=4" />
 </head>
@@ -86,6 +86,7 @@
         <button type="button" class="admin-nav-btn" data-admin-nav="library">Biblioteca libri</button>
         <button type="button" class="admin-nav-btn" data-admin-nav="courses">Corsi video</button>
         <button type="button" class="admin-nav-btn" data-admin-nav="podcast">Podcast</button>
+        <button type="button" class="admin-nav-btn" data-admin-nav="users">Utenti</button>
       </nav>
 
       <!-- Levels list -->
@@ -212,9 +213,10 @@
               </div>
             </div>
             <p class="field-hint">
-              Da Firebase Console → Impostazioni progetto → Le tue app. Nelle
+              Da Firebase Console → Impostazioni progetto → Le tue app.             Nelle
               <strong>Storage Rules</strong> consenti lettura pubblica e scrittura solo su
               <code>podcasts/</code> per file <code>audio/*</code>.
+              Gli utenti della sezione <strong>Utenti</strong> vanno su Firestore (collection <code>users</code>).
             </p>
             <div class="page-actions">
               <button type="submit" class="btn btn-secondary" id="btnSaveFirebase">Salva impostazioni Firebase</button>
@@ -416,6 +418,54 @@
         </div>
         <div class="questions-list" id="podcastEpisodesList"></div>
         <p class="empty-state" id="podcastEpisodesEmpty" hidden>Nessun episodio. Carica il primo audio.</p>
+      </section>
+
+      <!-- Users stored in Firestore -->
+      <section id="viewUsers" class="admin-view" hidden>
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Anagrafica</p>
+            <h1>Utenti</h1>
+            <p class="lead">
+              Nome, telefono e numero di identità nazionale. I dati restano su Firebase
+              (Firestore, collection <code>users</code>) per usarli in seguito.
+            </p>
+          </div>
+          <div class="page-actions">
+            <button type="button" class="btn btn-secondary" id="btnRefreshUsers">Aggiorna</button>
+          </div>
+        </div>
+
+        <section class="card publish-card" aria-labelledby="usersFormTitle">
+          <h2 id="usersFormTitle">Nuovo utente</h2>
+          <form id="userForm" class="admin-form branding-form" novalidate>
+            <div class="form-row-3">
+              <div class="form-field">
+                <label class="field-label" for="userName">Nome</label>
+                <input type="text" id="userName" name="name" maxlength="80" required autocomplete="name" placeholder="Nome e cognome" />
+              </div>
+              <div class="form-field">
+                <label class="field-label" for="userPhone">Telefono</label>
+                <input type="tel" id="userPhone" name="phone" inputmode="tel" required autocomplete="tel" placeholder="01xxxxxxxxx" />
+              </div>
+              <div class="form-field">
+                <label class="field-label" for="userNationalId">Numero di identità</label>
+                <input type="text" id="userNationalId" name="nationalId" inputmode="numeric" maxlength="14" required autocomplete="off" placeholder="14 cifre" />
+              </div>
+            </div>
+            <p class="field-hint">
+              Il numero di identità è di 14 cifre. Nella console Firebase attiva
+              <strong>Firestore</strong> e consenti lettura/scrittura sulla collection <code>users</code>.
+            </p>
+            <div class="page-actions">
+              <button type="submit" class="btn btn-primary" id="btnAddUser">Aggiungi utente</button>
+            </div>
+            <p class="form-error" id="userFormError" hidden role="alert"></p>
+          </form>
+        </section>
+
+        <div class="questions-list" id="usersList"></div>
+        <p class="empty-state" id="usersEmpty" hidden>Nessun utente. Aggiungi il primo.</p>
       </section>
     </main>
   </div>
@@ -803,7 +853,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-  <script src="../js/content.js?v=firebase1" defer></script>
+  <script src="../js/content.js?v=users1" defer></script>
   <script src="../js/library.js?v=1" defer></script>
   <script src="../js/courses.js?v=2" defer></script>
   <script src="../js/podcast.js?v=2" defer></script>
@@ -812,6 +862,7 @@
   <script src="js/library-admin.js?v=1" defer></script>
   <script src="js/courses-admin.js?v=5" defer></script>
   <script src="js/podcast-admin.js?v=firebase1" defer></script>
-  <script src="js/admin.js?v=firebase1" defer></script>
+  <script src="js/users-admin.js?v=users1" defer></script>
+  <script src="js/admin.js?v=users1" defer></script>
 </body>
 </html>
