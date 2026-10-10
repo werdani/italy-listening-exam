@@ -84,7 +84,7 @@
       card.innerHTML = `
         <span class="library-level-badge">${escapeHtml(level.name)}</span>
         <strong class="library-level-name">${escapeHtml(level.name)}</strong>
-        <span class="library-level-meta">${count} libri</span>
+        <span class="library-level-meta">${count} ${count === 1 ? "libro" : "libri"}</span>
         ${level.description ? `<span class="library-level-desc">${escapeHtml(level.description)}</span>` : ""}
       `;
       card.addEventListener("click", () => renderLevel(level.id));
@@ -105,7 +105,7 @@
     if (els.libraryLevelDescription) {
       els.libraryLevelDescription.textContent =
         (level.description ? `${level.description} · ` : "") +
-        `${(level.books || []).length} libri PDF.`;
+        `${(level.books || []).length} ${(level.books || []).length === 1 ? "libro PDF" : "libri PDF"}.`;
     }
 
     const books = level.books || [];

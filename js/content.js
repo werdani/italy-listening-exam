@@ -53,6 +53,13 @@
       // Keep browser API keys (AIza...) for GitHub Pages visitors; drop invalid/oauth values
       const key = sanitizeApiKey(clone.site.googleApiKey);
       clone.site.googleApiKey = isLikelyGoogleApiKey(key) ? key : "";
+      // Firebase web config is public by design (needed on GH Pages for exam + Storage)
+      if (clone.site.firebase && typeof clone.site.firebase === "object") {
+        const fbKey = sanitizeApiKey(clone.site.firebase.apiKey);
+        clone.site.firebase.apiKey = isLikelyGoogleApiKey(fbKey) ? fbKey : "";
+        clone.site.firebase.projectId = String(clone.site.firebase.projectId || "").trim();
+        clone.site.firebase.bucket = normalizeFirebaseBucket(clone.site.firebase.bucket || "");
+      }
     }
     return clone;
   }
@@ -100,6 +107,12 @@
     );
 
     const siteIn = data.site || {};
+    const fbIn = siteIn.firebase && typeof siteIn.firebase === "object" ? siteIn.firebase : {};
+    const fbBucket = normalizeFirebaseBucket(fbIn.bucket || siteIn.firebaseBucket || "");
+    const fbProject =
+      String(fbIn.projectId || siteIn.firebaseProjectId || "").trim() ||
+      inferFirebaseProjectId(fbBucket);
+    const fbKey = sanitizeApiKey(fbIn.apiKey || siteIn.firebaseApiKey || "");
     data.site = {
       ownerName: String(siteIn.ownerName || "Signora Reham Ramadan").trim() || "Signora Reham Ramadan",
       ownerTagline:
@@ -109,6 +122,11 @@
         siteIn.ownerPhoto || "assets/images/reham.jpeg"
       ),
       googleApiKey: sanitizeApiKey(siteIn.googleApiKey || readStoredApiKey() || ""),
+      firebase: {
+        apiKey: isLikelyGoogleApiKey(fbKey) ? fbKey : "",
+        projectId: fbProject,
+        bucket: fbBucket,
+      },
     };
 
     // Migrate legacy flat questions → Level 1
@@ -746,7 +764,7 @@
     return match ? match[1] : "";
   }
 
-  function getFirebaseSettings() {
+  function readFirebaseSettingsFromLocalStorage() {
     try {
       const bucket = normalizeFirebaseBucket(localStorage.getItem(FB_BUCKET_KEY) || "");
       const projectId =
@@ -760,6 +778,22 @@
     } catch {
       return { apiKey: "", bucket: "", projectId: "" };
     }
+  }
+
+  function getFirebaseSettings() {
+    const fromLs = readFirebaseSettingsFromLocalStorage();
+    const fromSite =
+      siteConfigRef && siteConfigRef.firebase && typeof siteConfigRef.firebase === "object"
+        ? siteConfigRef.firebase
+        : {};
+    const bucket =
+      fromLs.bucket || normalizeFirebaseBucket(fromSite.bucket || "");
+    const projectId =
+      fromLs.projectId ||
+      String(fromSite.projectId || "").trim() ||
+      inferFirebaseProjectId(bucket);
+    const apiKey = sanitizeApiKey(fromLs.apiKey || fromSite.apiKey || "");
+    return { apiKey, bucket, projectId };
   }
 
   function saveFirebaseSettings({ apiKey, bucket, projectId } = {}) {
@@ -782,7 +816,29 @@
     } catch {
       /* ignore */
     }
-    return getFirebaseSettings();
+    const next = getFirebaseSettings();
+    if (siteConfigRef) {
+      siteConfigRef.firebase = {
+        apiKey: next.apiKey,
+        projectId: next.projectId,
+        bucket: next.bucket,
+      };
+    }
+    return next;
+  }
+
+  /** Copy Firebase settings into content.site so publish reaches GitHub Pages. */
+  function applyFirebaseSettingsToContent(data, settings) {
+    const fb = settings || getFirebaseSettings();
+    const target = data && typeof data === "object" ? data : {};
+    target.site = target.site && typeof target.site === "object" ? target.site : {};
+    target.site.firebase = {
+      apiKey: sanitizeApiKey(fb.apiKey || ""),
+      projectId: String(fb.projectId || "").trim(),
+      bucket: normalizeFirebaseBucket(fb.bucket || ""),
+    };
+    setSiteConfig(target.site);
+    return target;
   }
 
   function loadScriptOnce(src) {
@@ -1863,6 +1919,9 @@
     saveGithubSettings,
     getFirebaseSettings,
     saveFirebaseSettings,
+    applyFirebaseSettingsToContent,
+    loadScriptOnce,
+    ensureFirebaseApp,
     uploadPodcastAudioToFirebase,
     listFirestoreUsers,
     addFirestoreUser,

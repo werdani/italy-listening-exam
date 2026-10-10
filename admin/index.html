@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../css/style.css?v=duration2" />
-  <link rel="stylesheet" href="css/admin.css?v=users2" />
+  <link rel="stylesheet" href="../css/style.css?v=exam-gold5" />
+  <link rel="stylesheet" href="css/admin.css?v=users3" />
   <link rel="stylesheet" href="../css/library.css?v=1" />
   <link rel="stylesheet" href="../css/courses.css?v=4" />
 </head>
@@ -83,11 +83,52 @@
     <main id="main" class="admin-main" tabindex="-1">
       <nav class="admin-nav" aria-label="Sezioni admin">
         <button type="button" class="admin-nav-btn is-active" data-admin-nav="levels">Livelli esame</button>
+        <button type="button" class="admin-nav-btn" data-admin-nav="results">Risultati esame</button>
         <button type="button" class="admin-nav-btn" data-admin-nav="library">Biblioteca libri</button>
         <button type="button" class="admin-nav-btn" data-admin-nav="courses">Corsi video</button>
         <button type="button" class="admin-nav-btn" data-admin-nav="podcast">Podcast</button>
         <button type="button" class="admin-nav-btn" data-admin-nav="users">Utenti</button>
       </nav>
+
+      <!-- Exam results -->
+      <section id="viewResults" class="admin-view" hidden>
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Studenti</p>
+            <h1>Risultati esame</h1>
+            <p class="lead">Nome, telefono e punteggio di chi ha completato un esame.</p>
+          </div>
+          <div class="page-actions">
+            <button type="button" class="btn btn-secondary" id="btnRefreshExamResults">Aggiorna</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table class="admin-table" id="examResultsTable">
+              <thead>
+                <tr>
+                  <th>Inizio</th>
+                  <th>Fine</th>
+                  <th>Nome</th>
+                  <th>Telefono</th>
+                  <th>Livello</th>
+                  <th>Punteggio</th>
+                  <th>%</th>
+                  <th>Esito</th>
+                </tr>
+              </thead>
+              <tbody id="examResultsBody"></tbody>
+            </table>
+          </div>
+          <p class="empty-state" id="examResultsEmpty" hidden>Nessun risultato ancora.</p>
+          <div class="results-pager" id="examResultsPager" hidden>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnExamResultsPrev">← Precedente</button>
+            <p class="results-pager-meta" id="examResultsPageMeta">Pagina 1</p>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnExamResultsNext">Successiva →</button>
+          </div>
+          <p class="field-hint" id="examResultsHint"></p>
+        </div>
+      </section>
 
       <!-- Levels list -->
       <section id="viewLevels" class="admin-view" hidden>
@@ -180,11 +221,12 @@
         </section>
 
         <section class="card publish-card" aria-labelledby="firebaseTitle">
-          <p class="eyebrow">Firebase Storage</p>
-          <h2 id="firebaseTitle">Audio del podcast</h2>
+          <p class="eyebrow">Firebase</p>
+          <h2 id="firebaseTitle">Storage e risultati esame</h2>
           <p class="lead branding-lead">
-            I file audio delle puntate vanno su <strong>Firebase Storage</strong>, non in
-            <code>assets/audio/</code>. Le impostazioni restano solo in questo browser.
+            Audio podcast su <strong>Firebase Storage</strong>. Risultati esame su
+            <strong>Firestore</strong>. Dopo «Salva», pubblica online così GitHub Pages
+            può scrivere i risultati.
           </p>
           <form id="firebaseForm" class="admin-form branding-form">
             <div class="form-field">
@@ -213,10 +255,13 @@
               </div>
             </div>
             <p class="field-hint">
-              Da Firebase Console → Impostazioni progetto → Le tue app.             Nelle
+              Da Firebase Console → Impostazioni progetto → Le tue app. Nelle
               <strong>Storage Rules</strong> consenti lettura pubblica e scrittura solo su
               <code>podcasts/</code> per file <code>audio/*</code>.
-              Gli utenti della sezione <strong>Utenti</strong> vanno su Firestore (collection <code>users</code>).
+              In <strong>Firestore</strong> consenti lettura/scrittura su
+              <code>users</code> (sezione Utenti), create/read su
+              <code>examSubmissions</code>, e read/write su
+              <code>siteStats</code> + <code>visitorDevices</code> (visitatori unici).
             </p>
             <div class="page-actions">
               <button type="submit" class="btn btn-secondary" id="btnSaveFirebase">Salva impostazioni Firebase</button>
@@ -853,16 +898,17 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-  <script src="../js/content.js?v=users1" defer></script>
+  <script src="../js/content.js?v=users2" defer></script>
   <script src="../js/library.js?v=1" defer></script>
-  <script src="../js/courses.js?v=2" defer></script>
+  <script src="../js/courses.js?v=3" defer></script>
   <script src="../js/podcast.js?v=2" defer></script>
-  <script src="../js/visitors.js?v=perf1" defer></script>
+  <script src="../js/visitors.js?v=firestore3" defer></script>
+  <script src="../js/exam-submissions.js?v=4" defer></script>
   <script src="js/auth.js?v=duration3" defer></script>
   <script src="js/library-admin.js?v=1" defer></script>
   <script src="js/courses-admin.js?v=5" defer></script>
   <script src="js/podcast-admin.js?v=firebase1" defer></script>
   <script src="js/users-admin.js?v=users1" defer></script>
-  <script src="js/admin.js?v=users1" defer></script>
+  <script src="js/admin.js?v=users2" defer></script>
 </body>
 </html>

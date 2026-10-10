@@ -1,7 +1,7 @@
 /**
  * Unique visitor tracking — one count per device (localStorage id).
  * Local: POST /api/visit → data/visitors.json
- * GitHub Pages: Abacus public counter (countapi-compatible), still once per device.
+ * Online: Firebase Firestore (siteStats/visitors + visitorDevices/{deviceId})
  */
 (() => {
   "use strict";
@@ -9,11 +9,26 @@
   const DEVICE_KEY = "ascolto-device-id";
   const COUNTED_KEY = "ascolto-visit-counted";
   const STATS_CACHE_KEY = "ascolto-visitor-stats";
+  const DEVICES_COLLECTION = "visitorDevices";
+  const STATS_COLLECTION = "siteStats";
+  const STATS_DOC = "visitors";
+  // One-time seed if Firestore stats doc is missing.
+  // data/visitors.json is local test only — production baseline was the public counter (~162).
   const COUNTER_NS = "werdani-italy-listening";
   const COUNTER_NAME = "unique-devices";
-  // countapi.xyz successor — no API key required (CounterAPI v1 was retired Aug 2026)
   const ABACUS_BASE = "https://abacus.jasoncameron.dev";
+  const LEGACY_UNIQUE_FLOOR = 162;
   const FETCH_TIMEOUT_MS = 3500;
+
+  const global = window;
+
+  function isGitHubPagesHost() {
+    if (global.AscoltoContent?.isGitHubPagesHost) {
+      return global.AscoltoContent.isGitHubPagesHost();
+    }
+    const host = (global.location && global.location.hostname) || "";
+    return /\.github\.io$/i.test(host);
+  }
 
   function uuid() {
     if (crypto && typeof crypto.randomUUID === "function") {
@@ -111,102 +126,255 @@
     return res.json();
   }
 
-  async function registerWithPublicCounter() {
-    const url = `${ABACUS_BASE}/hit/${encodeURIComponent(COUNTER_NS)}/${encodeURIComponent(COUNTER_NAME)}`;
-    const res = await fetchWithTimeout(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`public counter ${res.status}`);
-    const data = await res.json();
-    return { ok: true, count: parseCountPayload(data), source: "counterapi", isNew: true };
-  }
-
   async function fetchLocalStats() {
     const res = await fetchWithTimeout("/api/visitors", { cache: "no-store" }, 2500);
     if (!res.ok) throw new Error(`visitors api ${res.status}`);
     return res.json();
   }
 
-  async function fetchPublicCounterStats() {
+  async function fetchLegacyCounterSeed() {
     const url = `${ABACUS_BASE}/get/${encodeURIComponent(COUNTER_NS)}/${encodeURIComponent(COUNTER_NAME)}`;
-    const res = await fetchWithTimeout(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`public counter get ${res.status}`);
+    const res = await fetchWithTimeout(url, { cache: "no-store" }, 2500);
+    if (!res.ok) throw new Error(`legacy counter ${res.status}`);
     const data = await res.json();
+    return parseCountPayload(data);
+  }
+
+  async function ensureFirestore() {
+    const settings = global.AscoltoContent?.getFirebaseSettings?.();
+    if (!settings?.apiKey || !settings?.projectId || !settings?.bucket) {
+      throw new Error(
+        "Firebase non configurato. Salva Firebase nell'admin e pubblica online."
+      );
+    }
+
+    await global.AscoltoContent.loadScriptOnce?.(
+      "https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"
+    );
+    await global.AscoltoContent.loadScriptOnce?.(
+      "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"
+    );
+
+    if (global.AscoltoContent.ensureFirebaseApp) {
+      await global.AscoltoContent.ensureFirebaseApp();
+    } else if (!global.firebase?.apps?.length) {
+      global.firebase.initializeApp({
+        apiKey: settings.apiKey,
+        authDomain: `${settings.projectId}.firebaseapp.com`,
+        projectId: settings.projectId,
+        storageBucket: settings.bucket,
+      });
+    }
+
+    if (!global.firebase?.firestore) {
+      throw new Error("Firestore non disponibile.");
+    }
+    return global.firebase.firestore();
+  }
+
+  async function seedStatsIfMissing(db, statsRef) {
+    const snap = await statsRef.get();
+    if (snap.exists) {
+      const data = snap.data() || {};
+      return {
+        count: Number(data.count) || 0,
+        updatedAt: data.updatedAt || null,
+        existed: true,
+      };
+    }
+
+    // Never seed from local visitors.json (test devices). Prefer live legacy
+    // counter, and never go below the last known production total.
+    let remote = 0;
+    try {
+      remote = await fetchLegacyCounterSeed();
+    } catch {
+      remote = 0;
+    }
+    const seed = Math.max(LEGACY_UNIQUE_FLOOR, remote || 0);
+
+    const payload = {
+      count: seed,
+      updatedAt: new Date().toISOString(),
+      seededFrom: remote > 0 ? "counterapi" : "legacy-floor",
+      legacyFloor: LEGACY_UNIQUE_FLOOR,
+    };
+    await statsRef.set(payload);
+    return { count: seed, updatedAt: payload.updatedAt, existed: false };
+  }
+
+  function hasFirebaseConfig() {
+    const settings = global.AscoltoContent?.getFirebaseSettings?.();
+    return !!(settings?.apiKey && settings?.projectId && settings?.bucket);
+  }
+
+  /**
+   * @param {string} deviceId
+   * @param {{ allowIncrement?: boolean }} [options]
+   * allowIncrement=false → create device doc + seed stats without bumping
+   * (migration for browsers already counted via the old public counter).
+   */
+  async function registerWithFirestore(deviceId, options = {}) {
+    const allowIncrement = options.allowIncrement !== false;
+    const db = await ensureFirestore();
+    const deviceRef = db.collection(DEVICES_COLLECTION).doc(deviceId);
+    const statsRef = db.collection(STATS_COLLECTION).doc(STATS_DOC);
+
+    await seedStatsIfMissing(db, statsRef);
+
+    const result = await db.runTransaction(async (tx) => {
+      const deviceSnap = await tx.get(deviceRef);
+      const statsSnap = await tx.get(statsRef);
+      const current = statsSnap.exists ? Number(statsSnap.data().count) || 0 : 0;
+      const updatedAt = new Date().toISOString();
+
+      if (deviceSnap.exists) {
+        return {
+          ok: true,
+          isNew: false,
+          count: current,
+          updatedAt: statsSnap.data()?.updatedAt || null,
+        };
+      }
+
+      tx.set(deviceRef, {
+        deviceId,
+        createdAt: updatedAt,
+        serverCreatedAt: global.firebase.firestore.FieldValue.serverTimestamp(),
+        migrated: !allowIncrement,
+      });
+
+      if (!allowIncrement) {
+        return { ok: true, isNew: false, count: current, updatedAt: statsSnap.data()?.updatedAt || updatedAt };
+      }
+
+      const next = current + 1;
+      tx.set(
+        statsRef,
+        {
+          count: next,
+          updatedAt,
+        },
+        { merge: true }
+      );
+      return { ok: true, isNew: true, count: next, updatedAt };
+    });
+
+    return { ...result, source: "firestore" };
+  }
+
+  async function fetchFirestoreStats() {
+    const db = await ensureFirestore();
+    const statsRef = db.collection(STATS_COLLECTION).doc(STATS_DOC);
+    const seeded = await seedStatsIfMissing(db, statsRef);
+    // Re-read in case another client incremented after seed
+    const snap = await statsRef.get();
+    const data = snap.exists ? snap.data() || {} : {};
     return {
       ok: true,
-      count: parseCountPayload(data),
-      source: "counterapi",
-      updatedAt: null,
+      count: Number(data.count) || seeded.count || 0,
+      source: "firestore",
+      updatedAt: data.updatedAt || seeded.updatedAt || null,
     };
   }
 
   /**
    * Register this device once. Safe to call on every page load.
+   * Always syncs to Firestore when configured (even if already counted locally),
+   * so siteStats / visitorDevices appear after migration.
    */
   async function registerVisit() {
     const deviceId = getDeviceId();
-    if (alreadyCountedLocally()) {
+    const already = alreadyCountedLocally();
+
+    // Prefer Firestore whenever Firebase is configured (GitHub Pages + admin online)
+    if (hasFirebaseConfig()) {
+      try {
+        const result = await registerWithFirestore(deviceId, {
+          allowIncrement: !already,
+        });
+        markCountedLocally();
+        writeCachedStats({
+          count: result.count,
+          source: "firestore",
+          updatedAt: result.updatedAt || null,
+        });
+        return { ...result, deviceId, counted: !!result.isNew };
+      } catch (err) {
+        console.warn("[visitors] firestore register failed", err);
+        if (already) {
+          return { ok: true, counted: false, deviceId, reason: "already-local" };
+        }
+        /* fall through to local API when offline/dev */
+      }
+    }
+
+    if (already) {
       return { ok: true, counted: false, deviceId, reason: "already-local" };
     }
 
-    try {
-      const result = await registerWithLocalApi(deviceId);
-      markCountedLocally();
-      if (typeof result.count === "number") {
-        writeCachedStats({ count: result.count, source: "api", updatedAt: null });
+    if (!isGitHubPagesHost()) {
+      try {
+        const result = await registerWithLocalApi(deviceId);
+        markCountedLocally();
+        if (typeof result.count === "number") {
+          writeCachedStats({ count: result.count, source: "api", updatedAt: null });
+        }
+        return { ...result, deviceId, counted: !!result.isNew };
+      } catch (err) {
+        console.warn("[visitors] register failed", err);
+        return { ok: false, deviceId, counted: false, error: String(err && err.message) };
       }
-      return { ...result, deviceId, counted: !!result.isNew };
-    } catch {
-      /* GitHub Pages or API unavailable — try public counter once */
     }
 
-    try {
-      const result = await registerWithPublicCounter();
-      markCountedLocally();
-      writeCachedStats({ count: result.count, source: "counterapi", updatedAt: null });
-      return { ...result, deviceId, counted: true };
-    } catch (err) {
-      console.warn("[visitors] register failed", err);
-      return { ok: false, deviceId, counted: false, error: String(err && err.message) };
-    }
+    return { ok: false, deviceId, counted: false, error: "Firebase non configurato." };
   }
 
   /**
-   * Stats for admin dashboard.
+   * Stats for admin dashboard — prefer Firestore when configured.
    */
   async function getVisitorStats() {
-    try {
-      const local = await fetchLocalStats();
-      const stats = {
-        count: Number(local.count) || 0,
-        source: "api",
-        updatedAt: local.updatedAt || null,
-      };
-      writeCachedStats(stats);
-      return stats;
-    } catch {
-      /* fall through */
+    if (hasFirebaseConfig()) {
+      try {
+        const remote = await fetchFirestoreStats();
+        writeCachedStats(remote);
+        return remote;
+      } catch (err) {
+        console.warn("[visitors] firestore stats failed", err);
+        /* fall through */
+      }
     }
 
-    try {
-      const remote = await fetchPublicCounterStats();
-      writeCachedStats(remote);
-      return remote;
-    } catch (err) {
-      const cached = readCachedStats();
-      if (cached) {
-        return {
-          count: cached.count,
-          source: cached.source || "cache",
-          updatedAt: cached.updatedAt || null,
-          fromCache: true,
+    if (!isGitHubPagesHost()) {
+      try {
+        const local = await fetchLocalStats();
+        const stats = {
+          count: Number(local.count) || 0,
+          source: "api",
+          updatedAt: local.updatedAt || null,
         };
+        writeCachedStats(stats);
+        return stats;
+      } catch {
+        /* fall through */
       }
+    }
+
+    const cached = readCachedStats();
+    if (cached) {
       return {
-        count: 0,
-        source: "none",
-        updatedAt: null,
-        error: String(err && err.message),
+        count: cached.count,
+        source: cached.source || "cache",
+        updatedAt: cached.updatedAt || null,
+        fromCache: true,
       };
     }
+    return {
+      count: 0,
+      source: "none",
+      updatedAt: null,
+      error: "Firebase non configurato o regole Firestore bloccano la lettura.",
+    };
   }
 
   globalThis.AscoltoVisitors = {

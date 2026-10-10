@@ -607,7 +607,7 @@
         <span class="podcast-show-card-body">
           <strong class="podcast-show-card-title">${escapeHtml(show.title)}</strong>
           ${show.author ? `<span class="podcast-show-card-author">${escapeHtml(show.author)}</span>` : ""}
-          <span class="podcast-show-card-meta">${count} episodi</span>
+          <span class="podcast-show-card-meta">${count} ${count === 1 ? "episodio" : "episodi"}</span>
         </span>
       `;
       btn.addEventListener("click", () => renderShow(show.id));

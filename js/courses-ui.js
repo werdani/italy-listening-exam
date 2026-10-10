@@ -94,7 +94,7 @@
           els.coursePlayerEmpty.hidden = false;
           els.coursePlayerEmpty.textContent = video
             ? "Anteprima non disponibile per questo link."
-            : "Seleziona un video dalla playlist.";
+            : "Seleziona un video dall’elenco.";
         }
       }
     }
@@ -117,7 +117,7 @@
     if (els.coursesTitle) els.coursesTitle.textContent = courses.title || "Corsi video";
     if (els.coursesDescription) {
       els.coursesDescription.textContent =
-        courses.description || "Scegli un corso e guarda i video della playlist.";
+        courses.description || "Scegli un corso e guarda i video.";
     }
 
     const items = courses.items || [];
@@ -158,7 +158,7 @@
     if (els.courseDescription) {
       els.courseDescription.textContent =
         (course.description ? `${course.description} · ` : "") +
-        `${(course.videos || []).length} video nella playlist.`;
+        `${(course.videos || []).length} video in elenco.`;
     }
 
     const videos = course.videos || [];
@@ -191,7 +191,7 @@
       clearPlayer();
       if (els.coursePlayerEmpty) {
         els.coursePlayerEmpty.hidden = false;
-        els.coursePlayerEmpty.textContent = "Nessun video in questa playlist.";
+        els.coursePlayerEmpty.textContent = "Nessun video in questo corso.";
       }
     }
   }

@@ -180,6 +180,8 @@
   function showView(name) {
     els.viewLevels.hidden = name !== "levels";
     els.viewLevel.hidden = name !== "level";
+    const resultsView = document.getElementById("viewResults");
+    if (resultsView) resultsView.hidden = name !== "results";
     const libView = document.getElementById("viewLibrary");
     const libLevelView = document.getElementById("viewLibraryLevel");
     if (libView) libView.hidden = name !== "library";
@@ -197,6 +199,117 @@
     if (window.LibraryAdmin) LibraryAdmin.setContent(content);
     if (window.CoursesAdmin) CoursesAdmin.setContent(content);
     if (window.PodcastAdmin) PodcastAdmin.setContent(content);
+  }
+
+  const EXAM_RESULTS_PAGE_SIZE = 10;
+  let examResultsItems = [];
+  let examResultsPage = 1;
+
+  function formatResultDate(value) {
+    if (!value) return "—";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value);
+    return d.toLocaleString("it-IT", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  function examResultsTotalPages() {
+    return Math.max(1, Math.ceil(examResultsItems.length / EXAM_RESULTS_PAGE_SIZE));
+  }
+
+  function paintExamResultsPage() {
+    const body = document.getElementById("examResultsBody");
+    const empty = document.getElementById("examResultsEmpty");
+    const hint = document.getElementById("examResultsHint");
+    const pager = document.getElementById("examResultsPager");
+    const meta = document.getElementById("examResultsPageMeta");
+    const prevBtn = document.getElementById("btnExamResultsPrev");
+    const nextBtn = document.getElementById("btnExamResultsNext");
+    if (!body) return;
+
+    body.innerHTML = "";
+    const total = examResultsItems.length;
+    if (!total) {
+      if (empty) empty.hidden = false;
+      if (pager) pager.hidden = true;
+      if (hint) hint.textContent = "";
+      return;
+    }
+
+    if (empty) empty.hidden = true;
+    const totalPages = examResultsTotalPages();
+    examResultsPage = Math.min(Math.max(1, examResultsPage), totalPages);
+    const start = (examResultsPage - 1) * EXAM_RESULTS_PAGE_SIZE;
+    const pageItems = examResultsItems.slice(start, start + EXAM_RESULTS_PAGE_SIZE);
+
+    pageItems.forEach((item) => {
+      const tr = document.createElement("tr");
+      const passed = !!item.passed;
+      const startedAt = item.startedAt || item.createdAt;
+      const endedAt = item.endedAt || item.createdAt;
+      tr.innerHTML =
+        `<td>${escapeHtml(formatResultDate(startedAt))}</td>` +
+        `<td>${escapeHtml(formatResultDate(endedAt))}</td>` +
+        `<td>${escapeHtml(item.name || "—")}</td>` +
+        `<td>${escapeHtml(item.phone || "—")}</td>` +
+        `<td>${escapeHtml(item.levelName || "—")}</td>` +
+        `<td>${escapeHtml(`${item.score ?? 0} / ${item.maxScore ?? 0}`)}</td>` +
+        `<td>${escapeHtml(`${item.percentage ?? 0}%`)}</td>` +
+        `<td><span class="result-pill ${passed ? "is-pass" : "is-fail"}">${
+          passed ? "Superato" : "Non superato"
+        }</span></td>`;
+      body.appendChild(tr);
+    });
+
+    if (pager) pager.hidden = total <= EXAM_RESULTS_PAGE_SIZE;
+    if (meta) {
+      meta.textContent = `Pagina ${examResultsPage} di ${totalPages}`;
+    }
+    if (prevBtn) prevBtn.disabled = examResultsPage <= 1;
+    if (nextBtn) nextBtn.disabled = examResultsPage >= totalPages;
+    if (hint) {
+      const from = start + 1;
+      const to = start + pageItems.length;
+      hint.textContent = `${total} risultat${total === 1 ? "o" : "i"} · mostro ${from}–${to}`;
+    }
+  }
+
+  async function renderExamResults() {
+    const body = document.getElementById("examResultsBody");
+    const empty = document.getElementById("examResultsEmpty");
+    const hint = document.getElementById("examResultsHint");
+    const pager = document.getElementById("examResultsPager");
+    if (!body) return;
+    body.innerHTML = "";
+    if (empty) empty.hidden = true;
+    if (pager) pager.hidden = true;
+    if (hint) hint.textContent = "Caricamento…";
+    examResultsItems = [];
+    examResultsPage = 1;
+
+    try {
+      const api = window.AscoltoExamSubmissions;
+      if (!api?.listSubmissions) throw new Error("Modulo risultati non disponibile.");
+      examResultsItems = await api.listSubmissions();
+      paintExamResultsPage();
+    } catch (err) {
+      console.error(err);
+      examResultsItems = [];
+      if (empty) {
+        empty.hidden = false;
+        empty.textContent = err.message || "Errore nel caricamento dei risultati.";
+      }
+      if (pager) pager.hidden = true;
+      if (hint) {
+        hint.textContent =
+          "Configura Firebase (Firestore) oppure avvia python3 server.py per i risultati locali.";
+      }
+    }
   }
 
   function closeAllModals() {
@@ -419,14 +532,20 @@
     }
     if (els.fbProjectId) els.fbProjectId.value = fb.projectId || "";
     if (els.fbBucket) els.fbBucket.value = fb.bucket || "";
+    const inPublished = !!(content?.site?.firebase?.apiKey && content?.site?.firebase?.projectId);
     if (fb.apiKey && fb.bucket && fb.projectId) {
-      setFirebaseStatus("Firebase configurato. I nuovi audio del podcast andranno su Storage.", "ok");
+      setFirebaseStatus(
+        inPublished
+          ? "Firebase pronto (Storage + risultati esame). Già nel contenuto da pubblicare."
+          : "Firebase nel browser. Premi «Salva» poi pubblica online per i risultati su GitHub Pages.",
+        inPublished ? "ok" : "warn"
+      );
     } else {
-      setFirebaseStatus("Inserisci API Key, Project ID e bucket prima di caricare un episodio.", "warn");
+      setFirebaseStatus("Inserisci API Key, Project ID e bucket.", "warn");
     }
   }
 
-  function onFirebaseFormSubmit(e) {
+  async function onFirebaseFormSubmit(e) {
     e.preventDefault();
     const current = AscoltoContent.getFirebaseSettings();
     const apiKey = els.fbApiKey && els.fbApiKey.value.trim() ? els.fbApiKey.value.trim() : current.apiKey;
@@ -442,8 +561,35 @@
       return;
     }
     AscoltoContent.saveFirebaseSettings({ apiKey, projectId, bucket });
+    if (AscoltoContent.applyFirebaseSettingsToContent) {
+      content = AscoltoContent.applyFirebaseSettingsToContent(content, {
+        apiKey,
+        projectId,
+        bucket,
+      });
+    } else {
+      content.site = content.site || {};
+      content.site.firebase = { apiKey, projectId, bucket };
+      AscoltoContent.setSiteConfig(content.site);
+    }
     fillFirebaseForm();
-    showToast("Impostazioni Firebase salvate in questo browser.");
+    showToast("Firebase salvato. Pubblicazione…");
+    setFirebaseStatus("Salvataggio e pubblicazione in corso…", "warn");
+    try {
+      await persist({ publish: true });
+      setFirebaseStatus(
+        "Firebase salvato e pubblicato. I risultati esame ora funzionano sul sito online.",
+        "ok"
+      );
+      showToast("Firebase pubblicato. Rifai un esame di prova.");
+    } catch (err) {
+      console.error(err);
+      setFirebaseStatus(
+        "Salvato in locale. Pubblica online manualmente (GitHub) per abilitare i risultati.",
+        "warn"
+      );
+      showToast(friendlySaveError(err) || "Pubblicazione fallita — riprova da Pubblica online.");
+    }
   }
 
   async function onGithubFormSubmit(e) {
@@ -678,13 +824,14 @@
           els.visitorStatsHint.textContent = stats.updatedAt
             ? `Aggiornato: ${stats.updatedAt}`
             : "Dati dal server locale.";
-        } else if (stats.source === "counterapi") {
-          els.visitorStatsHint.textContent =
-            "Dati dal contatore online (GitHub Pages). Ogni dispositivo conta una volta.";
+        } else if (stats.source === "firestore") {
+          els.visitorStatsHint.textContent = stats.updatedAt
+            ? `Firestore · aggiornato: ${stats.updatedAt}`
+            : "Dati da Firestore. Ogni dispositivo conta una volta.";
         } else {
           els.visitorStatsHint.textContent =
             stats.error ||
-            "Impossibile leggere le statistiche. Avvia python3 server.py oppure pubblica il sito e riprova.";
+            "Impossibile leggere le statistiche. Configura Firebase e pubblica, oppure avvia python3 server.py.";
         }
       }
     } catch (err) {
@@ -1419,6 +1566,17 @@
     content = data;
     contentSource = source === "local" ? "local" : "file";
     AscoltoContent.setSiteConfig(content.site);
+    // If Firebase was saved only in this browser, mirror into content for publish
+    const fb = AscoltoContent.getFirebaseSettings?.();
+    if (
+      fb?.apiKey &&
+      fb?.projectId &&
+      fb?.bucket &&
+      !content.site?.firebase?.apiKey &&
+      AscoltoContent.applyFirebaseSettingsToContent
+    ) {
+      content = AscoltoContent.applyFirebaseSettingsToContent(content, fb);
+    }
     // Health check is tiny; keep it but never block UI longer than needed.
     if (AscoltoContent.detectDriveProxy) {
       AscoltoContent.detectDriveProxy().catch(() => {});
@@ -1477,7 +1635,10 @@
     $$("[data-admin-nav]").forEach((b) => {
       b.classList.toggle("is-active", b.getAttribute("data-admin-nav") === target);
     });
-    if (target === "library" && window.LibraryAdmin) {
+    if (target === "results") {
+      showView("results");
+      renderExamResults();
+    } else if (target === "library" && window.LibraryAdmin) {
       LibraryAdmin.setContent(content);
       LibraryAdmin.renderList();
     } else if (target === "courses" && window.CoursesAdmin) {
@@ -1556,6 +1717,29 @@
       els.btnRefreshVisitors.addEventListener("click", () => {
         refreshVisitorStats();
         showToast("Statistiche aggiornate.");
+      });
+    }
+    const btnRefreshExamResults = $("#btnRefreshExamResults");
+    if (btnRefreshExamResults) {
+      btnRefreshExamResults.addEventListener("click", () => {
+        renderExamResults();
+        showToast("Risultati aggiornati.");
+      });
+    }
+    const btnExamResultsPrev = $("#btnExamResultsPrev");
+    const btnExamResultsNext = $("#btnExamResultsNext");
+    if (btnExamResultsPrev) {
+      btnExamResultsPrev.addEventListener("click", () => {
+        if (examResultsPage <= 1) return;
+        examResultsPage -= 1;
+        paintExamResultsPage();
+      });
+    }
+    if (btnExamResultsNext) {
+      btnExamResultsNext.addEventListener("click", () => {
+        if (examResultsPage >= examResultsTotalPages()) return;
+        examResultsPage += 1;
+        paintExamResultsPage();
       });
     }
     els.btnBackLevels.addEventListener("click", renderLevels);

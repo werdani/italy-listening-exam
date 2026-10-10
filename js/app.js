@@ -6,7 +6,7 @@
   "use strict";
 
   const STORAGE_KEY = "ascoltoit-exam-state";
-  const STORAGE_VERSION = 4;
+  const STORAGE_VERSION = 5;
   const THEME_KEY = "listenlab-theme";
   const LEVEL_KEY = "ascoltoit-selected-level";
 
@@ -27,6 +27,7 @@
     preventSkip: true,
     status: "idle", // idle | in_progress | completed
     results: null,
+    student: /** @type {{ name: string, phone: string }|null} */ (null),
   };
 
   let timerId = null;
@@ -50,6 +51,15 @@
     teacherCreditName: $("#teacherCreditName"),
     teacherCreditTagline: $("#teacherCreditTagline"),
     levelSelect: $("#levelSelect"),
+    levelDropdown: $("#levelDropdown"),
+    levelTrigger: $("#levelTrigger"),
+    levelTriggerText: $("#levelTriggerText"),
+    levelMenu: $("#levelMenu"),
+    homeLevelSelect: $("#homeLevelSelect"),
+    homeLevelDropdown: $("#homeLevelDropdown"),
+    homeLevelTrigger: $("#homeLevelTrigger"),
+    homeLevelTriggerText: $("#homeLevelTriggerText"),
+    homeLevelMenu: $("#homeLevelMenu"),
     levelDescription: $("#levelDescription"),
     metaQuestions: $("#metaQuestions"),
     metaMarks: $("#metaMarks"),
@@ -96,6 +106,11 @@
     modalTitle: $("#modalTitle"),
     modalMessage: $("#modalMessage"),
     modalConfirm: $("#modalConfirm"),
+    studentModal: $("#studentModal"),
+    studentForm: $("#studentForm"),
+    studentName: $("#studentName"),
+    studentPhone: $("#studentPhone"),
+    studentFormError: $("#studentFormError"),
     toast: $("#toast"),
   };
 
@@ -136,6 +151,7 @@
       startedAt: state.startedAt,
       preventSkip: state.preventSkip,
       status: state.status,
+      student: state.student,
       savedAt: Date.now(),
     };
     try {
@@ -195,11 +211,14 @@
       return saved;
     }
 
-    // 3) Current <select> value (only if options already exist)
-    if (els.levelSelect && els.levelSelect.options.length > 0) {
-      const fromSelect = Number(els.levelSelect.value);
-      if (!Number.isNaN(fromSelect) && AscoltoContent.getLevel(contentData, fromSelect)) {
-        return fromSelect;
+    // 3) Current <select> value (home card or details)
+    const selectCandidates = [els.homeLevelSelect, els.levelSelect];
+    for (const select of selectCandidates) {
+      if (select && select.options.length > 0) {
+        const fromSelect = Number(select.value);
+        if (!Number.isNaN(fromSelect) && AscoltoContent.getLevel(contentData, fromSelect)) {
+          return fromSelect;
+        }
       }
     }
 
@@ -319,10 +338,181 @@
     if (els.teacherCreditTagline) {
       els.teacherCreditTagline.textContent = tagline ? ` — ${tagline}` : "";
     }
+    const aboutPhoto = $("#aboutPhoto");
+    const aboutName = $("#aboutName");
+    const aboutTagline = $("#aboutTagline");
+    if (aboutPhoto) {
+      aboutPhoto.src = photo;
+      aboutPhoto.alt = name;
+      aboutPhoto.onerror = () => {
+        aboutPhoto.onerror = null;
+        aboutPhoto.src = "assets/images/reham.jpeg";
+      };
+    }
+    if (aboutName) aboutName.textContent = name;
+    if (aboutTagline) aboutTagline.textContent = tagline;
     document.title = `${name} — Esame di Ascolto`;
   }
 
   /* ---------- Home ---------- */
+
+  function closeHomeLevelMenu() {
+    if (!els.homeLevelDropdown || !els.homeLevelMenu || !els.homeLevelTrigger) return;
+    els.homeLevelDropdown.classList.remove("is-open");
+    els.homeLevelMenu.hidden = true;
+    els.homeLevelTrigger.setAttribute("aria-expanded", "false");
+  }
+
+  function closeExamLevelMenu() {
+    if (!els.levelDropdown || !els.levelMenu || !els.levelTrigger) return;
+    els.levelDropdown.classList.remove("is-open");
+    els.levelMenu.hidden = true;
+    els.levelTrigger.setAttribute("aria-expanded", "false");
+  }
+
+  function openExamLevelMenu() {
+    if (!els.levelDropdown || !els.levelMenu || !els.levelTrigger) return;
+    closeHomeLevelMenu();
+    els.levelDropdown.classList.add("is-open");
+    els.levelMenu.hidden = false;
+    els.levelTrigger.setAttribute("aria-expanded", "true");
+    const selected = els.levelMenu.querySelector(".level-select-option.is-selected");
+    if (selected) selected.focus();
+  }
+
+  function syncExamLevelMenu() {
+    if (!els.levelSelect) return;
+    const value = String(els.levelSelect.value || "");
+    const selectedOpt = els.levelSelect.selectedOptions?.[0];
+    if (els.levelTriggerText) {
+      els.levelTriggerText.textContent = selectedOpt ? selectedOpt.textContent : "Livello";
+    }
+    if (els.levelMenu) {
+      $$(".level-select-option", els.levelMenu).forEach((btn) => {
+        const isSelected = btn.dataset.levelId === value;
+        btn.classList.toggle("is-selected", isSelected);
+        btn.setAttribute("aria-selected", isSelected ? "true" : "false");
+      });
+    }
+  }
+
+  function rebuildExamLevelMenu() {
+    if (!els.levelMenu || !els.levelSelect) return;
+    els.levelMenu.innerHTML = "";
+    [...els.levelSelect.options].forEach((opt) => {
+      const li = document.createElement("li");
+      li.setAttribute("role", "presentation");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "level-select-option";
+      btn.dataset.levelId = opt.value;
+      btn.setAttribute("role", "option");
+      btn.textContent = opt.textContent;
+      const isSelected = opt.value === els.levelSelect.value;
+      btn.classList.toggle("is-selected", isSelected);
+      btn.setAttribute("aria-selected", isSelected ? "true" : "false");
+      btn.addEventListener("click", () => {
+        els.levelSelect.value = opt.value;
+        els.levelSelect.dispatchEvent(new Event("change", { bubbles: true }));
+        closeExamLevelMenu();
+        els.levelTrigger?.focus();
+      });
+      li.appendChild(btn);
+      els.levelMenu.appendChild(li);
+    });
+    syncExamLevelMenu();
+  }
+
+  function openHomeLevelMenu() {
+    if (!els.homeLevelDropdown || !els.homeLevelMenu || !els.homeLevelTrigger) return;
+    els.homeLevelDropdown.classList.add("is-open");
+    els.homeLevelMenu.hidden = false;
+    els.homeLevelTrigger.setAttribute("aria-expanded", "true");
+    const selected = els.homeLevelMenu.querySelector(".feature-level-option.is-selected");
+    if (selected) selected.focus();
+  }
+
+  function syncHomeLevelSelect(activeId) {
+    if (!els.homeLevelSelect || activeId == null) return;
+    const value = String(activeId);
+    if (els.homeLevelSelect.value !== value) {
+      els.homeLevelSelect.value = value;
+    }
+    const selectedOpt = els.homeLevelSelect.selectedOptions?.[0];
+    if (els.homeLevelTriggerText) {
+      els.homeLevelTriggerText.textContent = selectedOpt
+        ? selectedOpt.textContent
+        : "Livello";
+    }
+    if (els.homeLevelMenu) {
+      $$(".feature-level-option", els.homeLevelMenu).forEach((btn) => {
+        const isSelected = btn.dataset.levelId === value;
+        btn.classList.toggle("is-selected", isSelected);
+        btn.setAttribute("aria-selected", isSelected ? "true" : "false");
+      });
+    }
+  }
+
+  function rebuildHomeLevelMenu(levels, selectedId) {
+    if (!els.homeLevelMenu) return;
+    els.homeLevelMenu.innerHTML = "";
+    levels.forEach((level) => {
+      const li = document.createElement("li");
+      li.setAttribute("role", "presentation");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "feature-level-option";
+      btn.dataset.levelId = String(level.id);
+      btn.setAttribute("role", "option");
+      btn.textContent = level.name;
+      const isSelected = Number(level.id) === Number(selectedId);
+      btn.classList.toggle("is-selected", isSelected);
+      btn.setAttribute("aria-selected", isSelected ? "true" : "false");
+      btn.addEventListener("click", () => {
+        if (els.homeLevelSelect) {
+          els.homeLevelSelect.value = String(level.id);
+          els.homeLevelSelect.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+        closeHomeLevelMenu();
+        els.homeLevelTrigger?.focus();
+      });
+      li.appendChild(btn);
+      els.homeLevelMenu.appendChild(li);
+    });
+  }
+
+  function scrollToExamLevels() {
+    const card = document.querySelector(".feature-card--exams");
+    if (card) {
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
+
+  function showLandingView() {
+    const landing = document.getElementById("landingView");
+    const panel = document.getElementById("examPanel");
+    if (landing) landing.hidden = false;
+    if (panel) panel.hidden = true;
+  }
+
+  function showExamDetails(levelId) {
+    const preferred =
+      levelId != null ? Number(levelId) : getSelectedLevelId();
+    if (preferred != null && !Number.isNaN(preferred)) {
+      if (els.levelSelect) els.levelSelect.value = String(preferred);
+      setActiveLevel(preferred);
+    }
+    renderHome({ levelId: preferred });
+    showScreen("home");
+
+    const landing = document.getElementById("landingView");
+    const panel = document.getElementById("examPanel");
+    if (landing) landing.hidden = true;
+    if (panel) {
+      panel.hidden = false;
+      panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
 
   function populateLevelSelect(preferredId) {
     if (!els.levelSelect || !contentData) return;
@@ -334,22 +524,37 @@
           ? Number(state.levelId)
           : getSelectedLevelId();
 
-    els.levelSelect.innerHTML = "";
-    levels.forEach((level) => {
-      const opt = document.createElement("option");
-      opt.value = String(level.id);
-      const mins = AscoltoContent.getLevelDurationMinutes
-        ? AscoltoContent.getLevelDurationMinutes(level, contentData.exam)
-        : contentData.exam?.durationMinutes || 15;
-      opt.textContent = `${level.name} (${level.questions.length} domande · ${mins} min)`;
-      els.levelSelect.appendChild(opt);
-    });
+    const fillSelect = (select, withMeta) => {
+      if (!select) return;
+      select.innerHTML = "";
+      levels.forEach((level) => {
+        const opt = document.createElement("option");
+        opt.value = String(level.id);
+        if (withMeta) {
+          const mins = AscoltoContent.getLevelDurationMinutes
+            ? AscoltoContent.getLevelDurationMinutes(level, contentData.exam)
+            : contentData.exam?.durationMinutes || 15;
+          opt.textContent = `${level.name} (${level.questions.length} domande · ${mins} min)`;
+        } else {
+          opt.textContent = level.name;
+        }
+        select.appendChild(opt);
+      });
+    };
+
+    fillSelect(els.levelSelect, true);
+    fillSelect(els.homeLevelSelect, false);
 
     const exists = keepId != null && AscoltoContent.getLevel(contentData, keepId);
     const value = exists ? keepId : levels[0] ? levels[0].id : "";
     if (value !== "" && value != null) {
-      els.levelSelect.value = String(value);
+      const str = String(value);
+      if (els.levelSelect) els.levelSelect.value = str;
+      if (els.homeLevelSelect) els.homeLevelSelect.value = str;
     }
+    rebuildHomeLevelMenu(levels, value);
+    syncHomeLevelSelect(value);
+    rebuildExamLevelMenu();
   }
 
   function renderHome(options = {}) {
@@ -361,6 +566,7 @@
       options.levelId != null ? Number(options.levelId) : getSelectedLevelId();
     setActiveLevel(preferred);
     populateLevelSelect(state.levelId);
+    syncHomeLevelSelect(state.levelId);
 
     const levelId = state.levelId;
     const level = AscoltoContent.getLevel(contentData, levelId);
@@ -397,8 +603,9 @@
         : "Inizia l'esame";
   }
 
-  function onLevelChange() {
-    const levelId = Number(els.levelSelect.value);
+  function onLevelChange(event) {
+    const source = event?.currentTarget || els.levelSelect;
+    const levelId = Number(source?.value);
     if (Number.isNaN(levelId)) return;
     setActiveLevel(levelId);
     // Re-render meta for the chosen level without resetting the dropdown
@@ -892,6 +1099,7 @@
     clearSavedState();
     renderResults(auto);
     showScreen("results");
+    persistExamSubmission(auto);
   }
 
   function renderResults(autoSubmitted) {
@@ -1012,6 +1220,7 @@
     if (saved.levelId != null) {
       setActiveLevel(saved.levelId);
       if (els.levelSelect) els.levelSelect.value = String(saved.levelId);
+      syncExamLevelMenu();
     }
     state.levelId = saved.levelId != null ? saved.levelId : state.levelId;
     state.currentIndex = Math.min(saved.currentIndex || 0, examData.questions.length - 1);
@@ -1029,6 +1238,61 @@
     els.preventSkipToggle.checked = state.preventSkip;
     state.status = "in_progress";
     state.results = null;
+    if (saved.student?.name && saved.student?.phone) {
+      state.student = {
+        name: String(saved.student.name),
+        phone: String(saved.student.phone),
+      };
+    }
+  }
+
+  function closeStudentModal() {
+    if (!els.studentModal) return;
+    els.studentModal.hidden = true;
+    if (els.studentFormError) {
+      els.studentFormError.hidden = true;
+      els.studentFormError.textContent = "";
+    }
+  }
+
+  function openStudentModal() {
+    if (!els.studentModal) {
+      beginExam(false);
+      return;
+    }
+    if (els.studentFormError) {
+      els.studentFormError.hidden = true;
+      els.studentFormError.textContent = "";
+    }
+    if (els.studentName && !els.studentName.value && state.student?.name) {
+      els.studentName.value = state.student.name;
+    }
+    if (els.studentPhone && !els.studentPhone.value && state.student?.phone) {
+      els.studentPhone.value = state.student.phone;
+    }
+    els.studentModal.hidden = false;
+    els.studentName?.focus();
+  }
+
+  function requestStartExam() {
+    if (!examData || !examData.questions.length) {
+      showToast("Questo livello non ha domande.");
+      return;
+    }
+    if (hasResumableAttempt()) {
+      openModal({
+        title: "Iniziare un nuovo esame?",
+        message: "Il progresso salvato verrà eliminato e ripartirai dall'inizio.",
+        confirmLabel: "Ricomincia",
+        onConfirm: () => {
+          clearSavedState();
+          closeModal();
+          openStudentModal();
+        },
+      });
+      return;
+    }
+    openStudentModal();
   }
 
   function beginExam(resume = false) {
@@ -1042,8 +1306,9 @@
     if (resume && saved && hasResumableAttempt()) {
       restoreExam(saved);
     } else {
-      if (resume === false && saved) {
-        // Start over
+      if (!state.student?.name || !state.student?.phone) {
+        openStudentModal();
+        return;
       }
       initFreshExam();
     }
@@ -1055,12 +1320,48 @@
     showToast(resume ? "Esame ripreso." : "Esame iniziato. Buona fortuna!");
   }
 
+  async function persistExamSubmission(autoSubmitted) {
+    const api = globalThis.AscoltoExamSubmissions;
+    if (!api || !state.results || !state.student) return;
+
+    const level = contentData
+      ? AscoltoContent.getLevel(contentData, state.levelId)
+      : null;
+
+    try {
+      const endedAt = Date.now();
+      await api.saveSubmission({
+        name: state.student.name,
+        phone: state.student.phone,
+        levelId: state.levelId,
+        levelName: level?.name || "",
+        level,
+        examTitle: examData?.exam?.title || contentData?.exam?.title || "",
+        score: state.results.score,
+        maxScore: state.results.maxScore,
+        percentage: state.results.percentage,
+        passed: state.results.passed,
+        correct: state.results.correct,
+        wrong: state.results.wrong,
+        elapsedSeconds: state.results.elapsed,
+        autoSubmitted: Boolean(autoSubmitted),
+        startedAt: state.startedAt || endedAt,
+        endedAt,
+      });
+    } catch (err) {
+      console.error(err);
+      showToast("Esame inviato, ma il salvataggio dei dati non è riuscito.");
+    }
+  }
+
   function resetToHome() {
     stopTimer();
     stopExamAudio();
     state.status = "idle";
     state.results = null;
     showScreen("home");
+    showLandingView();
+    document.body.classList.remove("nav-about", "nav-developer");
     refreshContentFromStore({ silent: true });
   }
 
@@ -1183,22 +1484,116 @@
     if (els.levelSelect) {
       els.levelSelect.addEventListener("change", onLevelChange);
     }
-    els.btnStart.addEventListener("click", () => {
-      if (hasResumableAttempt()) {
-        openModal({
-          title: "Iniziare un nuovo esame?",
-          message: "Il progresso salvato verrà eliminato e ripartirai dall'inizio.",
-          confirmLabel: "Ricomincia",
-          onConfirm: () => {
-            clearSavedState();
-            closeModal();
-            beginExam(false);
-          },
-        });
-      } else {
-        beginExam(false);
+    if (els.homeLevelSelect) {
+      els.homeLevelSelect.addEventListener("change", onLevelChange);
+    }
+    if (els.homeLevelTrigger && els.homeLevelDropdown) {
+      els.homeLevelTrigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        closeExamLevelMenu();
+        if (els.homeLevelDropdown.classList.contains("is-open")) {
+          closeHomeLevelMenu();
+        } else {
+          openHomeLevelMenu();
+        }
+      });
+    }
+    if (els.levelTrigger && els.levelDropdown) {
+      els.levelTrigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        closeHomeLevelMenu();
+        if (els.levelDropdown.classList.contains("is-open")) {
+          closeExamLevelMenu();
+        } else {
+          openExamLevelMenu();
+        }
+      });
+    }
+    document.addEventListener("click", (e) => {
+      if (els.homeLevelDropdown && !els.homeLevelDropdown.contains(e.target)) {
+        closeHomeLevelMenu();
+      }
+      if (els.levelDropdown && !els.levelDropdown.contains(e.target)) {
+        closeExamLevelMenu();
       }
     });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeHomeLevelMenu();
+        closeExamLevelMenu();
+      }
+    });
+
+    const goLanding = () => {
+      document.body.classList.remove("nav-about", "nav-developer");
+      renderHome();
+      showScreen("home");
+      showLandingView();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const goAbout = () => {
+      renderHome();
+      showScreen("home");
+      showLandingView();
+      document.body.classList.remove("nav-developer");
+      document.body.classList.add("nav-about");
+      const about = document.getElementById("about");
+      if (about) {
+        requestAnimationFrame(() => {
+          about.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
+    };
+
+    const btnEsami = $("#btnEsami");
+    if (btnEsami) btnEsami.addEventListener("click", goLanding);
+
+    const btnNavAbout = $("#btnNavAbout");
+    if (btnNavAbout) btnNavAbout.addEventListener("click", goAbout);
+
+    const goExamLevels = () => {
+      document.body.classList.remove("nav-about", "nav-developer");
+      renderHome();
+      showScreen("home");
+      showLandingView();
+      scrollToExamLevels();
+    };
+    const startTestFromHome = () => {
+      document.body.classList.remove("nav-about", "nav-developer");
+      const fromHome = els.homeLevelSelect ? Number(els.homeLevelSelect.value) : null;
+      const levelId =
+        fromHome != null && !Number.isNaN(fromHome) ? fromHome : getSelectedLevelId();
+      showExamDetails(levelId);
+    };
+    const btnNavExams = $("#btnNavExams");
+    if (btnNavExams) btnNavExams.addEventListener("click", goExamLevels);
+    const btnTakeTest = $("#btnTakeTest");
+    if (btnTakeTest) btnTakeTest.addEventListener("click", startTestFromHome);
+    const btnAboutExam = $("#btnAboutExam");
+    if (btnAboutExam) btnAboutExam.addEventListener("click", startTestFromHome);
+    const btnLogoHome = $("#btnLogoHome");
+    if (btnLogoHome) {
+      btnLogoHome.addEventListener("click", (e) => {
+        e.preventDefault();
+        goLanding();
+      });
+    }
+    const btnBackFromExamDetails = $("#btnBackFromExamDetails");
+    if (btnBackFromExamDetails) {
+      btnBackFromExamDetails.addEventListener("click", goLanding);
+    }
+
+    $$(".landing-nav-link[data-trigger]").forEach((link) => {
+      link.addEventListener("click", () => {
+        document.body.classList.remove("nav-about", "nav-developer");
+        const id = link.getAttribute("data-trigger");
+        const target = id ? document.getElementById(id) : null;
+        if (target) target.click();
+      });
+    });
+
+    els.btnStart.addEventListener("click", requestStartExam);
     els.btnResume.addEventListener("click", () => beginExam(true));
     els.btnPrev.addEventListener("click", goPrev);
     els.btnNext.addEventListener("click", goNext);
@@ -1206,9 +1601,36 @@
     els.btnReview.addEventListener("click", renderReview);
     els.btnRetake.addEventListener("click", () => {
       clearSavedState();
-      beginExam(false);
+      openStudentModal();
     });
     els.btnBackHome.addEventListener("click", resetToHome);
+
+    if (els.studentForm) {
+      els.studentForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const api = globalThis.AscoltoExamSubmissions;
+        const raw = {
+          name: els.studentName?.value || "",
+          phone: els.studentPhone?.value || "",
+        };
+        const checked = api?.validateStudent
+          ? api.validateStudent(raw)
+          : { ok: true, name: raw.name.trim(), phone: raw.phone.trim() };
+        if (!checked.ok) {
+          if (els.studentFormError) {
+            els.studentFormError.hidden = false;
+            els.studentFormError.textContent = checked.error;
+          }
+          return;
+        }
+        state.student = { name: checked.name, phone: checked.phone };
+        closeStudentModal();
+        beginExam(false);
+      });
+    }
+    $$("[data-close-student-modal]").forEach((el) => {
+      el.addEventListener("click", closeStudentModal);
+    });
     els.preventSkipToggle.addEventListener("change", () => {
       state.preventSkip = els.preventSkipToggle.checked;
       if (state.status === "in_progress") saveState();
@@ -1280,6 +1702,7 @@
 
       renderHome();
       showScreen("home");
+      showLandingView();
 
       // Probe Drive proxy in the background — must not delay the home screen.
       if (AscoltoContent.detectDriveProxy) {
@@ -1295,6 +1718,7 @@
       }
     } catch (err) {
       console.error(err);
+      els.loading.classList.remove("logo-loader");
       els.loading.innerHTML = `
         <div class="card card-narrow">
           <h1>Impossibile caricare l'esame</h1>

@@ -86,8 +86,8 @@
       title: String(coursesIn.title || "Corsi video").trim() || "Corsi video",
       description:
         String(
-          coursesIn.description || "Scegli un corso e guarda i video della playlist."
-        ).trim() || "Scegli un corso e guarda i video della playlist.",
+          coursesIn.description || "Scegli un corso e guarda i video."
+        ).trim() || "Scegli un corso e guarda i video.",
       items,
     };
     return data;

@@ -13,6 +13,8 @@ POST     /api/audio        → saves uploaded audio to assets/audio/
 POST     /api/pdf          → saves uploaded PDF to assets/pdf/
 POST     /api/visit       → register unique device visit
 GET      /api/visitors    → unique visitor stats
+POST     /api/exam-submissions → save exam result (name, phone, score)
+GET      /api/exam-submissions → list exam results
 """
 
 from __future__ import annotations
@@ -36,6 +38,7 @@ from urllib.request import HTTPCookieProcessor, Request, build_opener
 ROOT = Path(__file__).resolve().parent
 DATA_FILE = ROOT / "data" / "questions.json"
 VISITORS_FILE = ROOT / "data" / "visitors.json"
+EXAM_SUBMISSIONS_FILE = ROOT / "data" / "exam-submissions.json"
 HOST = os.environ.get("HOST", "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8080"))
 UA = (
@@ -44,6 +47,7 @@ UA = (
 )
 DRIVE_ID_RE = re.compile(r"^[a-zA-Z0-9_-]{10,}$")
 DEVICE_ID_RE = re.compile(r"^[a-zA-Z0-9_-]{8,80}$")
+PHONE_RE = re.compile(r"^\+?[\d\s().-]{8,20}$")
 PDF_NAME_RE = re.compile(r"^[a-zA-Z0-9_.-]{1,80}\.pdf$", re.I)
 AUDIO_NAME_RE = re.compile(r"^[a-zA-Z0-9_.-]{1,80}\.(mp3|wav|ogg|m4a|aac|webm|flac)$", re.I)
 IMAGE_NAME_RE = re.compile(r"^[a-zA-Z0-9_.-]{1,80}\.(jpe?g|png|webp|gif|svg)$", re.I)
@@ -51,10 +55,12 @@ AUDIO_DIR = ROOT / "assets" / "audio"
 PDF_DIR = ROOT / "assets" / "pdf"
 IMAGE_DIR = ROOT / "assets" / "images"
 _visitors_lock = threading.Lock()
+_exam_submissions_lock = threading.Lock()
 _content_lock = threading.Lock()
 # In-memory cache for the large questions.json (avoids re-reading ~5MB from disk)
 _content_cache: dict = {"mtime_ns": None, "raw": None, "gzip": None, "etag": None}
 _visitors_mem: dict | None = None
+_exam_submissions_mem: dict | None = None
 
 
 def sanitize_audio_filename(name: str) -> str:
@@ -140,6 +146,38 @@ def load_visitors() -> dict:
             pass
     _visitors_mem = {"count": 0, "updatedAt": None, "devices": {}}
     return _visitors_mem
+
+
+def load_exam_submissions() -> dict:
+    global _exam_submissions_mem
+    if _exam_submissions_mem is not None:
+        return _exam_submissions_mem
+    if EXAM_SUBMISSIONS_FILE.exists():
+        try:
+            raw = json.loads(EXAM_SUBMISSIONS_FILE.read_text(encoding="utf-8"))
+            items = raw.get("items") if isinstance(raw, dict) else raw
+            if not isinstance(items, list):
+                items = []
+            _exam_submissions_mem = {"items": items}
+            return _exam_submissions_mem
+        except (OSError, json.JSONDecodeError, TypeError, ValueError):
+            pass
+    _exam_submissions_mem = {"items": []}
+    return _exam_submissions_mem
+
+
+def save_exam_submissions(data: dict) -> None:
+    global _exam_submissions_mem
+    items = data.get("items") if isinstance(data, dict) else []
+    if not isinstance(items, list):
+        items = []
+    payload = {"items": items}
+    EXAM_SUBMISSIONS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    EXAM_SUBMISSIONS_FILE.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    _exam_submissions_mem = payload
 
 
 def save_visitors(data: dict) -> None:
@@ -507,6 +545,10 @@ class Handler(SimpleHTTPRequestHandler):
             self._send_visitors()
             return
 
+        if path == "/api/exam-submissions":
+            self._send_exam_submissions()
+            return
+
         if path == "/data/questions.json":
             self._send_content_file()
             return
@@ -527,6 +569,9 @@ class Handler(SimpleHTTPRequestHandler):
         path = parsed.path.rstrip("/") or "/"
         if path == "/api/visit":
             self._handle_visit()
+            return
+        if path == "/api/exam-submissions":
+            self._handle_exam_submission()
             return
         if path == "/api/audio":
             self._handle_audio_save()
@@ -573,6 +618,79 @@ class Handler(SimpleHTTPRequestHandler):
                 "source": "api",
             },
         )
+
+    def _send_exam_submissions(self) -> None:
+        with _exam_submissions_lock:
+            data = load_exam_submissions()
+            items = list(data.get("items") or [])
+        items.sort(key=lambda x: str(x.get("createdAt") or ""), reverse=True)
+        self._json_response(HTTPStatus.OK, {"ok": True, "items": items, "source": "api"})
+
+    def _handle_exam_submission(self) -> None:
+        length = int(self.headers.get("Content-Length", "0") or 0)
+        if length <= 0 or length > 32_000:
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid body")
+            return
+        try:
+            body = self.rfile.read(length)
+            payload = json.loads(body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid JSON")
+            return
+        if not isinstance(payload, dict):
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid payload")
+            return
+
+        name = str(payload.get("name") or "").strip()
+        phone = str(payload.get("phone") or "").strip()
+        if len(name) < 2 or len(name) > 80:
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid name")
+            return
+        if not PHONE_RE.match(phone):
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid phone")
+            return
+        digits = re.sub(r"\D", "", phone)
+        if len(digits) < 8 or len(digits) > 15:
+            self.send_error(HTTPStatus.BAD_REQUEST, "Invalid phone")
+            return
+
+        now = utc_now_iso()
+        item = {
+            "id": f"local-{int(datetime.now(timezone.utc).timestamp() * 1000)}",
+            "name": name,
+            "phone": phone,
+            "levelId": payload.get("levelId"),
+            "levelName": str(payload.get("levelName") or "").strip()[:80],
+            "examTitle": str(payload.get("examTitle") or "").strip()[:120],
+            "score": int(payload.get("score") or 0),
+            "maxScore": int(payload.get("maxScore") or 0),
+            "percentage": int(payload.get("percentage") or 0),
+            "passed": bool(payload.get("passed")),
+            "correct": int(payload.get("correct") or 0),
+            "wrong": int(payload.get("wrong") or 0),
+            "elapsedSeconds": int(payload.get("elapsedSeconds") or 0),
+            "autoSubmitted": bool(payload.get("autoSubmitted")),
+            "startedAt": str(payload.get("startedAt") or payload.get("createdAt") or now),
+            "endedAt": str(payload.get("endedAt") or payload.get("createdAt") or now),
+            "createdAt": str(payload.get("createdAt") or now),
+        }
+
+        with _exam_submissions_lock:
+            data = load_exam_submissions()
+            items = list(data.get("items") or [])
+            items.append(item)
+            # Keep last 1000 locally
+            if len(items) > 1000:
+                items = items[-1000:]
+            data["items"] = items
+            save_exam_submissions(data)
+
+        print(
+            f"[exam] saved name={name!r} phone={phone!r} "
+            f"score={item['score']}/{item['maxScore']} ({item['percentage']}%)",
+            flush=True,
+        )
+        self._json_response(HTTPStatus.OK, {"ok": True, "id": item["id"], "source": "api"})
 
     def _handle_visit(self) -> None:
         length = int(self.headers.get("Content-Length", "0") or 0)
@@ -1008,6 +1126,7 @@ def main() -> None:
     print("GET  /api/health lightweight ping")
     print("POST /api/visit registers unique devices")
     print("GET  /api/visitors returns unique visitor count")
+    print("GET/POST /api/exam-submissions stores exam student results")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

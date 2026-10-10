@@ -1,0 +1,38 @@
+{
+  "items": [
+    {
+      "id": "local-1791059504075",
+      "name": "Test Student",
+      "phone": "+201156568723",
+      "levelId": null,
+      "levelName": "Livello 1",
+      "examTitle": "",
+      "score": 20,
+      "maxScore": 30,
+      "percentage": 67,
+      "passed": true,
+      "correct": 20,
+      "wrong": 10,
+      "elapsedSeconds": 120,
+      "autoSubmitted": false,
+      "createdAt": "2026-10-03T20:31:44+00:00"
+    },
+    {
+      "id": "local-1791059679801",
+      "name": "Ammar Yasser",
+      "phone": "01156568723",
+      "levelId": 2,
+      "levelName": "Livello 2",
+      "examTitle": "Esame di Ascolto — Italiano — Livello 2",
+      "score": 7,
+      "maxScore": 30,
+      "percentage": 23,
+      "passed": false,
+      "correct": 7,
+      "wrong": 23,
+      "elapsedSeconds": 120,
+      "autoSubmitted": false,
+      "createdAt": "2026-10-03T20:34:39.796Z"
+    }
+  ]
+}

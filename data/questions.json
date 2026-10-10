@@ -11,7 +11,12 @@
     "ownerName": "Signora Reham Ramadan",
     "ownerTagline": "Insegnante di italiano in Italia",
     "ownerPhoto": "assets/images/reham.jpeg",
-    "googleApiKey": ""
+    "googleApiKey": "",
+    "firebase": {
+      "apiKey": "AIzaSyBzYdWTSQyjKTl0OuIMGo_aqtRKrhEZ0Ww",
+      "projectId": "podcast-d4c4a",
+      "bucket": "podcast-d4c4a.firebasestorage.app"
+    }
   },
   "levels": [
     {
@@ -3949,6 +3954,16 @@
             "id": 15,
             "name": "Esercizi condizionale composto",
             "file": "assets/pdf/a2-2-new-esercizi-condizionale-composto-mtg5wvlq.pdf"
+          },
+          {
+            "id": 16,
+            "name": "Cinema",
+            "file": "assets/pdf/a2-2-new-cinema-muv4r8nu.pdf"
+          },
+          {
+            "id": 17,
+            "name": "Strumenti musicali",
+            "file": "assets/pdf/a2-2-new-musica-muv4rpgk.pdf"
           }
         ]
       },
@@ -4075,6 +4090,48 @@
             "id": 3,
             "name": "Conversazione",
             "file": "assets/pdf/conversazione-new-domande-per-conversazione-mtygai.pdf"
+          },
+          {
+            "id": 4,
+            "name": "Conversazione (2)",
+            "file": "assets/pdf/conversazione-new-conversazione-muk1662n.pdf"
+          },
+          {
+            "id": 5,
+            "name": "Giochi",
+            "file": "assets/pdf/conversazione-new-giochi-mupfapxq.pdf"
+          },
+          {
+            "id": 6,
+            "name": "Vita quotidiana",
+            "file": "assets/pdf/conversazione-new-espressioni-nella-vita-quotidian.pdf"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "name": "Letteratura",
+        "description": "Leggi libri",
+        "books": [
+          {
+            "id": 1,
+            "name": "Leggi",
+            "file": "assets/pdf/letteratura-new-ascolto_avanzato_libro_del_profess.pdf"
+          },
+          {
+            "id": 2,
+            "name": "Leggi (2)",
+            "file": "assets/pdf/letteratura-new-italian_reading_a1-mujsqq4x.pdf"
+          },
+          {
+            "id": 3,
+            "name": "Leggi (3)",
+            "file": "assets/pdf/letteratura-new-brani-mujsrlug.pdf"
+          },
+          {
+            "id": 4,
+            "name": "I sette piani",
+            "file": "assets/pdf/letteratura-new-i-sette-piani-muphyaby.pdf"
           }
         ]
       }
@@ -4250,7 +4307,7 @@
           },
           {
             "id": 6,
-            "title": "6. Il condizionale composto.mp4",
+            "title": "6. Il condizionale composto",
             "url": "https://youtu.be/WXX7s0DR1hA",
             "provider": "youtube"
           }
@@ -4263,13 +4320,13 @@
         "videos": [
           {
             "id": 1,
-            "title": "1. Pronomi combinati.mp4",
+            "title": "1. Pronomi combinati",
             "url": "https://youtu.be/oAXChh1WsLI",
             "provider": "youtube"
           },
           {
             "id": 2,
-            "title": "2. Facoltà.mp4",
+            "title": "2. Facoltà",
             "url": "https://youtu.be/ekYVrhLkN8s",
             "provider": "youtube"
           },
@@ -4278,8 +4335,32 @@
             "title": "3. Pronomi relativi",
             "url": "https://youtu.be/0_sdwOVBTnM",
             "provider": "youtube"
+          },
+          {
+            "id": 4,
+            "title": "4. Economia italiana",
+            "url": "https://youtu.be/LfoLP71VP9k",
+            "provider": "youtube"
+          },
+          {
+            "id": 5,
+            "title": "5. Comparazione",
+            "url": "https://youtu.be/WPeYX_XMncw",
+            "provider": "youtube"
+          },
+          {
+            "id": 6,
+            "title": "6. Città italiane",
+            "url": "https://youtu.be/Qlgs9kcksVA",
+            "provider": "youtube"
           }
         ]
+      },
+      {
+        "id": 6,
+        "name": "Corso B1.2",
+        "description": "Corso B1.2",
+        "videos": []
       }
     ]
   },
