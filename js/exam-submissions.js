@@ -195,6 +195,50 @@
     }
   }
 
+  function matchesPriorAttempt(item, { phone, nationalId, levelId }) {
+    if (!item) return false;
+    return (
+      normalizeNationalId(item.nationalId) === nationalId &&
+      normalizePhone(item.phone) === phone &&
+      Number(item.levelId) === Number(levelId)
+    );
+  }
+
+  async function findPriorViaFirestore(phone, nationalId, levelId) {
+    const db = await ensureFirestore();
+    const snap = await db
+      .collection(COLLECTION)
+      .where("nationalId", "==", nationalId)
+      .limit(40)
+      .get();
+    const match = snap.docs.find((doc) => {
+      const data = doc.data() || {};
+      return matchesPriorAttempt(data, { phone, nationalId, levelId });
+    });
+    return match ? { id: match.id, ...match.data() } : null;
+  }
+
+  async function findPriorAttempt({ phone, nationalId, levelId } = {}) {
+    const cleanPhone = normalizePhone(phone);
+    const cleanId = normalizeNationalId(nationalId);
+    const level = Number(levelId);
+    if (!cleanPhone || cleanId.length !== 14 || !Number.isFinite(level)) return null;
+
+    if (isGitHubPagesHost()) {
+      return findPriorViaFirestore(cleanPhone, cleanId, level);
+    }
+    try {
+      const items = await listViaLocalApi();
+      return (
+        items.find((item) =>
+          matchesPriorAttempt(item, { phone: cleanPhone, nationalId: cleanId, levelId: level })
+        ) || null
+      );
+    } catch (_) {
+      return findPriorViaFirestore(cleanPhone, cleanId, level);
+    }
+  }
+
   global.AscoltoExamSubmissions = {
     validateStudent,
     normalizeName,
@@ -202,5 +246,6 @@
     normalizeNationalId,
     saveSubmission,
     listSubmissions,
+    findPriorAttempt,
   };
 })();

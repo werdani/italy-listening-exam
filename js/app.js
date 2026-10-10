@@ -1652,6 +1652,35 @@
             }
             return;
           }
+          const levelId =
+            examData?.exam?.levelId != null ? examData.exam.levelId : state.levelId;
+          if (api?.findPriorAttempt) {
+            const prior = await api.findPriorAttempt({
+              phone: checked.phone,
+              nationalId: checked.nationalId,
+              levelId,
+            });
+            if (prior) {
+              const level = contentData
+                ? AscoltoContent.getLevel(contentData, levelId)
+                : null;
+              const label =
+                level?.name ||
+                prior.levelName ||
+                (levelId != null ? `Livello ${levelId}` : "questo livello");
+              if (els.studentFormError) {
+                const ar = document.createElement("span");
+                ar.dir = "rtl";
+                ar.textContent = "امتحنت قبل كدا";
+                const it = document.createElement("span");
+                it.dir = "ltr";
+                it.textContent = `Hai già sostenuto ${label}.`;
+                els.studentFormError.hidden = false;
+                els.studentFormError.replaceChildren(ar, document.createElement("br"), it);
+              }
+              return;
+            }
+          }
           state.student = {
             name: checked.name,
             phone: checked.phone,
