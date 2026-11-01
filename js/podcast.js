@@ -1,6 +1,6 @@
 /**
- * Podcast — multiple shows, each with cover + episodes.
- * Schema: content.podcast.items[].episodes[]
+ * Podcast — multiple shows, each with a YouTube playlist (+ optional legacy episodes).
+ * Schema: content.podcast.items[] with playlistUrl
  * Migrates legacy flat podcast { title, cover, episodes } → items[0].
  */
 (function (global) {
@@ -26,6 +26,42 @@
       return global.AscoltoContent.normalizeAudioUrl(src || "");
     }
     return String(src || "").trim();
+  }
+
+  function extractYouTubePlaylistId(input) {
+    const s = String(input || "").trim();
+    if (!s) return null;
+
+    let match = s.match(/[?&]list=([a-zA-Z0-9_-]+)/i);
+    if (match) return match[1];
+
+    match = s.match(/youtube\.com\/playlist\/([a-zA-Z0-9_-]+)/i);
+    if (match) return match[1];
+
+    match = s.match(/^(PL|UU|LL|FL|OLAK5uy_|RD)[a-zA-Z0-9_-]+$/i);
+    if (match) return match[0];
+
+    return null;
+  }
+
+  function normalizePlaylistUrl(input) {
+    const raw = String(input || "").trim();
+    if (!raw) return "";
+    const id = extractYouTubePlaylistId(raw);
+    if (id) return `https://www.youtube.com/playlist?list=${encodeURIComponent(id)}`;
+    return raw;
+  }
+
+  function getPlaylistEmbedUrl(input) {
+    const id = extractYouTubePlaylistId(input);
+    if (!id) return "";
+    return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(id)}`;
+  }
+
+  function getPlaylistWatchUrl(input) {
+    const id = extractYouTubePlaylistId(input);
+    if (!id) return String(input || "").trim();
+    return `https://www.youtube.com/playlist?list=${encodeURIComponent(id)}`;
   }
 
   function normalizeEpisode(episode, index) {
@@ -61,6 +97,9 @@
       author: String(show.author || "").trim(),
       description: String(show.description || "").trim(),
       cover: normalizeImage(show.cover || show.artwork || DEFAULT_COVER),
+      playlistUrl: normalizePlaylistUrl(
+        show.playlistUrl || show.youtubePlaylist || show.playlist || ""
+      ),
       episodes,
     };
   }
@@ -100,8 +139,8 @@
       description:
         String(
           podcastIn.description ||
-            "Scegli un podcast e ascolta gli episodi in italiano."
-        ).trim() || "Scegli un podcast e ascolta gli episodi in italiano.",
+            "Scegli un podcast e ascolta la playlist YouTube."
+        ).trim() || "Scegli un podcast e ascolta la playlist YouTube.",
       items,
     };
     return data;
@@ -117,7 +156,7 @@
     return ensurePodcast(data).items.find((s) => Number(s.id) === Number(showId)) || null;
   }
 
-  function createShow(data, { title, author, description, cover } = {}) {
+  function createShow(data, { title, author, description, cover, playlistUrl } = {}) {
     const podcast = ensurePodcast(data);
     const id = nextId(podcast.items);
     const show = normalizeShow(
@@ -127,6 +166,7 @@
         author: author || data.site?.ownerName || "Signora Reham Ramadan",
         description: description || "",
         cover: cover || DEFAULT_COVER,
+        playlistUrl: playlistUrl || "",
         episodes: [],
       },
       podcast.items.length
@@ -143,6 +183,7 @@
     if (patch.author != null) show.author = String(patch.author).trim();
     if (patch.description != null) show.description = String(patch.description).trim();
     if (patch.cover != null) show.cover = normalizeImage(patch.cover);
+    if (patch.playlistUrl != null) show.playlistUrl = normalizePlaylistUrl(patch.playlistUrl);
     return show;
   }
 
@@ -255,6 +296,10 @@
     createEpisode,
     updateEpisode,
     deleteEpisode,
+    extractYouTubePlaylistId,
+    normalizePlaylistUrl,
+    getPlaylistEmbedUrl,
+    getPlaylistWatchUrl,
     formatDate,
     formatDuration,
     formatDurationLabel,

@@ -1,5 +1,5 @@
 /**
- * Admin UI — multiple podcasts (cover per show) + episode audio upload
+ * Admin UI — multiple podcasts, each with a YouTube playlist (+ legacy episode helpers)
  */
 (function (global) {
   "use strict";
@@ -41,11 +41,17 @@
     podcastTitle: $("#podcastTitle"),
     podcastAuthor: $("#podcastAuthor"),
     podcastDesc: $("#podcastDesc"),
+    podcastPlaylistUrl: $("#podcastPlaylistUrl"),
     podcastCover: $("#podcastCoverInput"),
     podcastCoverFile: $("#podcastCoverFile"),
     podcastCoverHint: $("#podcastCoverHint"),
     podcastCoverPreview: $("#podcastCoverPreview"),
     podcastShowFormSubmit: $("#podcastShowFormSubmit"),
+    btnOpenPodcastPlaylist: $("#btnOpenPodcastPlaylist"),
+    podcastPlaylistPreviewCard: $("#podcastPlaylistPreviewCard"),
+    podcastPlaylistUrlLabel: $("#podcastPlaylistUrlLabel"),
+    adminPodcastPlaylistFrame: $("#adminPodcastPlaylistFrame"),
+    adminPodcastPlaylistEmpty: $("#adminPodcastPlaylistEmpty"),
     episodeModal: $("#episodeModal"),
     episodeModalTitle: $("#episodeModalTitle"),
     episodeForm: $("#episodeForm"),
@@ -113,9 +119,21 @@
     return content?.podcast?.items || [];
   }
 
+  function clearAdminPlaylistPreview() {
+    if (els.adminPodcastPlaylistFrame) {
+      els.adminPodcastPlaylistFrame.hidden = true;
+      els.adminPodcastPlaylistFrame.removeAttribute("src");
+    }
+    if (els.btnOpenPodcastPlaylist) {
+      els.btnOpenPodcastPlaylist.hidden = true;
+      els.btnOpenPodcastPlaylist.removeAttribute("href");
+    }
+  }
+
   function renderList() {
     if (!api || !content) return;
     activeShowId = null;
+    clearAdminPlaylistPreview();
     api.showView("podcast");
 
     const list = shows();
@@ -123,7 +141,7 @@
     if (els.podcastAdminEmpty) els.podcastAdminEmpty.hidden = list.length > 0;
 
     list.forEach((show) => {
-      const count = (show.episodes || []).length;
+      const hasPlaylist = !!global.AscoltoPodcast.extractYouTubePlaylistId(show.playlistUrl);
       const cover = resolveCover(show.cover);
       const card = document.createElement("article");
       card.className = "level-card";
@@ -136,9 +154,9 @@
           </div>
         </div>
         <p class="level-card-desc">${escapeHtml(show.author || show.description || "—")}</p>
-        <p class="level-card-meta">${count} episodi</p>
+        <p class="level-card-meta">${hasPlaylist ? "Playlist YouTube collegata" : "Senza playlist YouTube"}</p>
         <div class="level-card-actions">
-          <button type="button" class="btn btn-primary btn-sm" data-open-show="${show.id}">Gestisci episodi</button>
+          <button type="button" class="btn btn-primary btn-sm" data-open-show="${show.id}">Apri</button>
           <button type="button" class="btn btn-secondary btn-sm" data-edit-show="${show.id}">Modifica</button>
           <button type="button" class="btn btn-danger-outline btn-sm" data-delete-show="${show.id}">Elimina</button>
         </div>
@@ -156,42 +174,48 @@
     activeShowId = Number(show.id);
     api.showView("podcastShow");
 
+    const playlistUrl = show.playlistUrl || "";
+    const embedUrl = global.AscoltoPodcast.getPlaylistEmbedUrl(playlistUrl);
+    const watchUrl = global.AscoltoPodcast.getPlaylistWatchUrl(playlistUrl);
+
     if (els.adminPodcastShowTitle) els.adminPodcastShowTitle.textContent = show.title;
     if (els.adminPodcastShowLead) {
       els.adminPodcastShowLead.textContent =
-        (show.author ? `${show.author} · ` : "") + `${(show.episodes || []).length} episodi`;
+        (show.author ? `${show.author} · ` : "") +
+        (embedUrl ? "Playlist YouTube" : "Nessuna playlist collegata");
     }
 
-    const episodes = show.episodes || [];
-    if (els.episodesList) els.episodesList.innerHTML = "";
-    if (els.episodesEmpty) els.episodesEmpty.hidden = episodes.length > 0;
+    if (els.podcastPlaylistPreviewCard) els.podcastPlaylistPreviewCard.hidden = false;
+    if (els.podcastPlaylistUrlLabel) {
+      els.podcastPlaylistUrlLabel.textContent = playlistUrl || "—";
+    }
+    if (els.adminPodcastPlaylistFrame) {
+      if (embedUrl) {
+        els.adminPodcastPlaylistFrame.hidden = false;
+        els.adminPodcastPlaylistFrame.src = embedUrl;
+      } else {
+        els.adminPodcastPlaylistFrame.hidden = true;
+        els.adminPodcastPlaylistFrame.removeAttribute("src");
+      }
+    }
+    if (els.adminPodcastPlaylistEmpty) {
+      els.adminPodcastPlaylistEmpty.hidden = !!embedUrl;
+    }
+    if (els.btnOpenPodcastPlaylist) {
+      if (embedUrl && watchUrl) {
+        els.btnOpenPodcastPlaylist.hidden = false;
+        els.btnOpenPodcastPlaylist.href = watchUrl;
+      } else {
+        els.btnOpenPodcastPlaylist.hidden = true;
+        els.btnOpenPodcastPlaylist.removeAttribute("href");
+      }
+    }
 
-    episodes.forEach((ep, index) => {
-      const dateLabel = global.AscoltoPodcast.formatDate(ep.date) || "—";
-      const audioLabel =
-        global.AscoltoContent?.describeAudioSource?.(ep.audio) || ep.audio || "Nessun audio";
-      const card = document.createElement("article");
-      card.className = "question-admin-card";
-      card.innerHTML = `
-        <div class="question-admin-head">
-          <span class="question-badge">E${index + 1}</span>
-          <div class="question-admin-title">
-            <h2>${escapeHtml(ep.title)}</h2>
-            <p class="muted audio-path-label">${escapeHtml(dateLabel)} · ${escapeHtml(audioLabel)}</p>
-          </div>
-          <div class="question-admin-actions">
-            <button type="button" class="btn btn-secondary btn-sm" data-edit-episode="${ep.id}">Modifica</button>
-            <button type="button" class="btn btn-danger-outline btn-sm" data-delete-episode="${ep.id}">Elimina</button>
-          </div>
-        </div>
-        ${
-          ep.description
-            ? `<p class="level-card-desc" style="margin:0.5rem 0 0">${escapeHtml(ep.description)}</p>`
-            : ""
-        }
-      `;
-      els.episodesList.appendChild(card);
-    });
+    if (els.episodesList) {
+      els.episodesList.innerHTML = "";
+      els.episodesList.hidden = true;
+    }
+    if (els.episodesEmpty) els.episodesEmpty.hidden = true;
   }
 
   function setCoverPreview(src) {
@@ -212,12 +236,15 @@
         "Immagine quadrata consigliata. Percorso, link Drive, oppure carica un file.";
     }
 
+    if (els.podcastPlaylistUrl) els.podcastPlaylistUrl.value = "";
+
     if (show) {
       els.podcastShowModalTitle.textContent = "Modifica podcast";
       els.podcastShowFormId.value = String(show.id);
       els.podcastTitle.value = show.title || "";
       els.podcastAuthor.value = show.author || "";
       els.podcastDesc.value = show.description || "";
+      if (els.podcastPlaylistUrl) els.podcastPlaylistUrl.value = show.playlistUrl || "";
       els.podcastCover.value = show.cover || "";
       setCoverPreview(show.cover);
     } else {
@@ -257,6 +284,13 @@
     const title = els.podcastTitle.value.trim();
     if (!title) return;
 
+    const playlistUrl = (els.podcastPlaylistUrl?.value || "").trim();
+    if (!global.AscoltoPodcast.extractYouTubePlaylistId(playlistUrl)) {
+      api.showToast("Incolla un link valido di playlist YouTube (deve contenere list=…).", 4500);
+      els.podcastPlaylistUrl?.focus();
+      return;
+    }
+
     const showId = els.podcastShowFormId.value;
     const btn = els.podcastShowFormSubmit;
     setButtonLoading(btn, true, pendingCoverDataUrl ? "Caricamento copertina…" : "Salvataggio…");
@@ -282,6 +316,7 @@
         author: els.podcastAuthor.value.trim(),
         description: els.podcastDesc.value.trim(),
         cover,
+        playlistUrl,
       };
 
       if (showId) {
@@ -569,7 +604,7 @@
       if (!show) return;
       api.openConfirm({
         title: "Eliminare il podcast?",
-        message: `«${show.title}» e tutti gli episodi verranno rimossi.`,
+        message: `«${show.title}» verrà rimosso dalla piattaforma.`,
         confirmLabel: "Elimina",
         onConfirm: async () => {
           global.AscoltoPodcast.deleteShow(content, show.id);

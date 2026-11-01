@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="css/landing.css?v=48" />
   <link rel="stylesheet" href="css/library.css?v=3" />
   <link rel="stylesheet" href="css/courses.css?v=5" />
-  <link rel="stylesheet" href="css/podcast.css?v=13" />
+  <link rel="stylesheet" href="css/podcast.css?v=14" />
   <!-- Critical: full-page loader before CSS arrives (Rome palette = landing) -->
   <style>
     #screenLoading.screen-active:not([hidden]) {
@@ -590,7 +590,7 @@
           <button type="button" class="btn-back" id="btnBackFromPodcastList">← Torna alla home</button>
           <p class="eyebrow">Ascolto</p>
           <h1 id="podcastListTitle">Podcast</h1>
-          <p class="lead" id="podcastListDescription">Scegli un podcast e ascolta gli episodi.</p>
+          <p class="lead" id="podcastListDescription">Scegli un podcast e ascolta la playlist YouTube.</p>
         </div>
         <div class="podcast-shows-grid" id="podcastShowsGrid"></div>
         <p class="empty-state" id="podcastShowsEmpty" hidden>Nessun podcast disponibile.</p>
@@ -621,15 +621,41 @@
             <p class="podcast-show-author" id="podcastShowAuthor"></p>
             <p class="podcast-show-desc" id="podcastShowDesc"></p>
             <div class="podcast-hero-actions">
-              <button type="button" class="podcast-play-latest" id="btnPlayLatest">
+              <button type="button" class="podcast-play-latest" id="btnPlayLatest" hidden>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86A1 1 0 0 0 8 5.14z"/>
                 </svg>
                 Riproduci
               </button>
+              <a
+                class="podcast-play-latest podcast-open-youtube"
+                id="btnOpenYoutubePlaylist"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                hidden
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.8zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/>
+                </svg>
+                Apri su YouTube
+              </a>
             </div>
           </div>
-          <div class="podcast-episodes">
+          <div class="podcast-playlist" id="podcastPlaylistSection" hidden>
+            <div class="podcast-playlist-frame-wrap">
+              <iframe
+                id="podcastPlaylistFrame"
+                class="podcast-playlist-frame"
+                title="Playlist YouTube"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+                referrerpolicy="strict-origin-when-cross-origin"
+              ></iframe>
+            </div>
+            <p class="podcast-empty" id="podcastPlaylistEmpty" hidden>Nessuna playlist YouTube collegata.</p>
+          </div>
+          <div class="podcast-episodes" id="podcastEpisodesSection" hidden>
             <div class="podcast-episodes-head">
               <h2 class="podcast-episodes-title" id="podcastEpisodesTitle">Episodi</h2>
               <span class="podcast-episodes-count" id="podcastEpisodesCount"></span>
@@ -882,12 +908,12 @@
   <script src="js/content.js?v=gate1" defer></script>
   <script src="js/library.js?v=1" defer></script>
   <script src="js/courses.js?v=3" defer></script>
-  <script src="js/podcast.js?v=2" defer></script>
+  <script src="js/podcast.js?v=3" defer></script>
   <script src="js/visitors.js?v=firestore3" defer></script>
   <script src="js/exam-submissions.js?v=gate4" defer></script>
   <script src="js/library-ui.js?v=4" defer></script>
   <script src="js/courses-ui.js?v=8" defer></script>
-  <script src="js/podcast-ui.js?v=15" defer></script>
+  <script src="js/podcast-ui.js?v=16" defer></script>
   <script src="js/testimonials.js?v=2" defer></script>
   <script src="js/app.js?v=gate5" defer></script>
 </body>

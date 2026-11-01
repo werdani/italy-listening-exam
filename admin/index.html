@@ -439,7 +439,7 @@
           <div>
             <p class="eyebrow">Ascolto libero</p>
             <h1>Podcast</h1>
-            <p class="lead">Crea più podcast, ognuno con la propria copertina e gli episodi audio.</p>
+            <p class="lead">Crea più podcast e collega a ciascuno una playlist YouTube.</p>
           </div>
           <div class="page-actions">
             <button type="button" class="btn btn-primary" id="btnAddPodcastShow">+ Nuovo podcast</button>
@@ -458,11 +458,27 @@
           </div>
           <div class="page-actions">
             <button type="button" class="btn btn-secondary" id="btnEditPodcastShow">Modifica podcast</button>
-            <button type="button" class="btn btn-primary" id="btnAddEpisode">+ Nuovo episodio</button>
+            <a class="btn btn-primary" id="btnOpenPodcastPlaylist" href="#" target="_blank" rel="noopener noreferrer" hidden>Apri su YouTube</a>
           </div>
         </div>
-        <div class="questions-list" id="podcastEpisodesList"></div>
-        <p class="empty-state" id="podcastEpisodesEmpty" hidden>Nessun episodio. Carica il primo audio.</p>
+        <div class="card" id="podcastPlaylistPreviewCard" hidden>
+          <h2 class="section-title" style="margin-top:0">Playlist YouTube</h2>
+          <p class="muted" id="podcastPlaylistUrlLabel" style="word-break:break-all"></p>
+          <div class="course-player-frame-wrap" style="margin-top:1rem">
+            <iframe
+              id="adminPodcastPlaylistFrame"
+              class="course-player-frame"
+              title="Anteprima playlist YouTube"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              hidden
+            ></iframe>
+            <p class="course-player-empty" id="adminPodcastPlaylistEmpty">Nessuna playlist collegata. Modifica il podcast e aggiungi il link YouTube.</p>
+          </div>
+        </div>
+        <div class="questions-list" id="podcastEpisodesList" hidden></div>
+        <p class="empty-state" id="podcastEpisodesEmpty" hidden></p>
+        <button type="button" id="btnAddEpisode" hidden aria-hidden="true"></button>
       </section>
 
       <!-- Users stored in Firestore -->
@@ -803,6 +819,17 @@
           <textarea id="podcastDesc" class="admin-control" rows="3" maxlength="500" placeholder="Breve descrizione del podcast"></textarea>
         </div>
         <div class="form-field">
+          <label class="field-label" for="podcastPlaylistUrl">Link playlist YouTube</label>
+          <input
+            type="url"
+            id="podcastPlaylistUrl"
+            maxlength="500"
+            required
+            placeholder="https://www.youtube.com/playlist?list=…"
+          />
+          <p class="field-hint">Incolla il link della playlist (o solo l’ID che inizia con PL…). Ogni podcast ha la sua playlist.</p>
+        </div>
+        <div class="form-field">
           <label class="field-label" for="podcastCoverInput">Copertina (percorso o URL)</label>
           <input
             type="text"
@@ -906,13 +933,13 @@
   <script src="../js/content.js?v=users2" defer></script>
   <script src="../js/library.js?v=1" defer></script>
   <script src="../js/courses.js?v=3" defer></script>
-  <script src="../js/podcast.js?v=2" defer></script>
+  <script src="../js/podcast.js?v=3" defer></script>
   <script src="../js/visitors.js?v=firestore3" defer></script>
   <script src="../js/exam-submissions.js?v=4" defer></script>
   <script src="js/auth.js?v=duration3" defer></script>
   <script src="js/library-admin.js?v=1" defer></script>
   <script src="js/courses-admin.js?v=5" defer></script>
-  <script src="js/podcast-admin.js?v=firebase1" defer></script>
+  <script src="js/podcast-admin.js?v=yt-playlist1" defer></script>
   <script src="js/users-admin.js?v=users2" defer></script>
   <script src="js/admin.js?v=users2" defer></script>
 </body>

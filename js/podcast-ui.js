@@ -1,5 +1,5 @@
 /**
- * Public UI — Podcast library + Apple Podcasts–style show page
+ * Public UI — Podcast library + YouTube playlist show page
  */
 (function (global) {
   "use strict";
@@ -43,6 +43,11 @@
     podcastShowAuthor: $("#podcastShowAuthor"),
     podcastShowDesc: $("#podcastShowDesc"),
     btnPlayLatest: $("#btnPlayLatest"),
+    btnOpenYoutubePlaylist: $("#btnOpenYoutubePlaylist"),
+    podcastPlaylistSection: $("#podcastPlaylistSection"),
+    podcastPlaylistFrame: $("#podcastPlaylistFrame"),
+    podcastPlaylistEmpty: $("#podcastPlaylistEmpty"),
+    podcastEpisodesSection: $("#podcastEpisodesSection"),
     podcastEpisodesCount: $("#podcastEpisodesCount"),
     podcastEpisodeList: $("#podcastEpisodeList"),
     podcastEmpty: $("#podcastEmpty"),
@@ -587,7 +592,7 @@
     if (els.podcastListTitle) els.podcastListTitle.textContent = podcast.title || "Podcast";
     if (els.podcastListDescription) {
       els.podcastListDescription.textContent =
-        podcast.description || "Scegli un podcast e ascolta gli episodi.";
+        podcast.description || "Scegli un podcast e ascolta la playlist YouTube.";
     }
 
     const items = podcast.items || [];
@@ -595,8 +600,14 @@
     if (els.podcastShowsEmpty) els.podcastShowsEmpty.hidden = items.length > 0;
 
     items.forEach((show) => {
-      const count = (show.episodes || []).length;
+      const hasPlaylist = !!global.AscoltoPodcast.extractYouTubePlaylistId(show.playlistUrl);
+      const episodeCount = (show.episodes || []).length;
       const cover = resolveCover(show.cover);
+      const meta = hasPlaylist
+        ? "Playlist YouTube"
+        : episodeCount === 1
+          ? "1 episodio"
+          : `${episodeCount} episodi`;
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "podcast-show-card";
@@ -607,7 +618,7 @@
         <span class="podcast-show-card-body">
           <strong class="podcast-show-card-title">${escapeHtml(show.title)}</strong>
           ${show.author ? `<span class="podcast-show-card-author">${escapeHtml(show.author)}</span>` : ""}
-          <span class="podcast-show-card-meta">${count} ${count === 1 ? "episodio" : "episodi"}</span>
+          <span class="podcast-show-card-meta">${escapeHtml(meta)}</span>
         </span>
       `;
       btn.addEventListener("click", () => renderShow(show.id));
@@ -617,6 +628,12 @@
     showScreen("podcastList");
   }
 
+  function clearPlaylistEmbed() {
+    if (els.podcastPlaylistFrame) {
+      els.podcastPlaylistFrame.removeAttribute("src");
+    }
+  }
+
   function renderShow(showId) {
     const show = global.AscoltoPodcast.getShow(content, showId);
     if (!show) {
@@ -624,8 +641,17 @@
       return;
     }
 
+    stopPlayer();
+    clearPlaylistEmbed();
+
     activeShowId = Number(show.id);
     const cover = resolveCover(show.cover);
+    const playlistUrl = show.playlistUrl || "";
+    const embedUrl = global.AscoltoPodcast.getPlaylistEmbedUrl(playlistUrl);
+    const watchUrl = global.AscoltoPodcast.getPlaylistWatchUrl(playlistUrl);
+    const hasPlaylist = !!embedUrl;
+    const episodes = show.episodes || [];
+    const useLegacyEpisodes = !hasPlaylist && episodes.length > 0;
 
     if (els.podcastCover) {
       els.podcastCover.src = cover;
@@ -638,57 +664,84 @@
       els.podcastShowDesc.hidden = !show.description;
     }
 
-    const episodes = show.episodes || [];
+    if (els.btnOpenYoutubePlaylist) {
+      if (hasPlaylist) {
+        els.btnOpenYoutubePlaylist.hidden = false;
+        els.btnOpenYoutubePlaylist.href = watchUrl;
+      } else {
+        els.btnOpenYoutubePlaylist.hidden = true;
+        els.btnOpenYoutubePlaylist.removeAttribute("href");
+      }
+    }
+
+    if (els.btnPlayLatest) {
+      els.btnPlayLatest.hidden = !useLegacyEpisodes;
+      els.btnPlayLatest.disabled = !useLegacyEpisodes || !episodes[0]?.audio;
+    }
+
+    if (els.podcastPlaylistSection) els.podcastPlaylistSection.hidden = false;
+    if (els.podcastPlaylistFrame) {
+      if (hasPlaylist) {
+        els.podcastPlaylistFrame.hidden = false;
+        els.podcastPlaylistFrame.src = embedUrl;
+      } else {
+        els.podcastPlaylistFrame.hidden = true;
+        els.podcastPlaylistFrame.removeAttribute("src");
+      }
+    }
+    if (els.podcastPlaylistEmpty) {
+      els.podcastPlaylistEmpty.hidden = hasPlaylist || useLegacyEpisodes;
+    }
+
+    if (els.podcastEpisodesSection) els.podcastEpisodesSection.hidden = !useLegacyEpisodes;
     if (els.podcastEpisodesCount) {
       els.podcastEpisodesCount.textContent =
         episodes.length === 1 ? "1 episodio" : `${episodes.length} episodi`;
     }
-    if (els.btnPlayLatest) {
-      els.btnPlayLatest.disabled = episodes.length === 0 || !episodes[0]?.audio;
-    }
 
     if (els.podcastEpisodeList) els.podcastEpisodeList.innerHTML = "";
-    if (els.podcastEmpty) els.podcastEmpty.hidden = episodes.length > 0;
+    if (els.podcastEmpty) els.podcastEmpty.hidden = !useLegacyEpisodes || episodes.length > 0;
 
-    episodes.forEach((ep, index) => {
-      const li = document.createElement("li");
-      li.className = "podcast-episode";
-      li.setAttribute("data-episode-id", String(ep.id));
-      li.style.animationDelay = `${Math.min(index, 12) * 40}ms`;
+    if (useLegacyEpisodes) {
+      episodes.forEach((ep, index) => {
+        const li = document.createElement("li");
+        li.className = "podcast-episode";
+        li.setAttribute("data-episode-id", String(ep.id));
+        li.style.animationDelay = `${Math.min(index, 12) * 40}ms`;
 
-      const dateLabel = global.AscoltoPodcast.formatDate(ep.date);
-      const durationLabel = global.AscoltoPodcast.formatDurationLabel(ep.duration);
-      const isActive = Number(ep.id) === activeEpisodeId && activeShowId === Number(show.id);
-      const isPlaying = isActive && (usingDriveEmbed || (audioEl && !audioEl.paused));
+        const dateLabel = global.AscoltoPodcast.formatDate(ep.date);
+        const durationLabel = global.AscoltoPodcast.formatDurationLabel(ep.duration);
+        const isActive = Number(ep.id) === activeEpisodeId && activeShowId === Number(show.id);
+        const isPlaying = isActive && (usingDriveEmbed || (audioEl && !audioEl.paused));
 
-      li.innerHTML = `
-        <div class="podcast-episode-body">
-          <div class="podcast-episode-meta">
-            ${dateLabel ? `<span class="podcast-episode-date">${escapeHtml(dateLabel)}</span>` : ""}
-            <span class="podcast-episode-duration"${durationLabel ? "" : " hidden"}>${escapeHtml(
-              durationLabel || ""
-            )}</span>
+        li.innerHTML = `
+          <div class="podcast-episode-body">
+            <div class="podcast-episode-meta">
+              ${dateLabel ? `<span class="podcast-episode-date">${escapeHtml(dateLabel)}</span>` : ""}
+              <span class="podcast-episode-duration"${durationLabel ? "" : " hidden"}>${escapeHtml(
+                durationLabel || ""
+              )}</span>
+            </div>
+            <h3 class="podcast-episode-title">${escapeHtml(ep.title)}</h3>
+            ${
+              ep.description
+                ? `<p class="podcast-episode-desc">${escapeHtml(ep.description)}</p>`
+                : ""
+            }
           </div>
-          <h3 class="podcast-episode-title">${escapeHtml(ep.title)}</h3>
-          ${
-            ep.description
-              ? `<p class="podcast-episode-desc">${escapeHtml(ep.description)}</p>`
-              : ""
-          }
-        </div>
-        <button type="button" class="podcast-episode-play" data-play-episode="${ep.id}" aria-label="Riproduci episodio">
-          ${isPlaying ? ICON_PAUSE : ICON_PLAY}
-        </button>
-        <div class="podcast-episode-player-host"></div>
-      `;
-      if (isActive) li.classList.add("is-playing");
-      if (isActive && usingDriveEmbed) li.classList.add("is-expanded");
-      els.podcastEpisodeList.appendChild(li);
-    });
+          <button type="button" class="podcast-episode-play" data-play-episode="${ep.id}" aria-label="Riproduci episodio">
+            ${isPlaying ? ICON_PAUSE : ICON_PLAY}
+          </button>
+          <div class="podcast-episode-player-host"></div>
+        `;
+        if (isActive) li.classList.add("is-playing");
+        if (isActive && usingDriveEmbed) li.classList.add("is-expanded");
+        els.podcastEpisodeList.appendChild(li);
+      });
 
-    // Re-attach inline player under the active episode after re-render
-    if (activeEpisodeId && usingDriveEmbed) {
-      mountInlineUnderEpisode(activeEpisodeId);
+      if (activeEpisodeId && usingDriveEmbed) {
+        mountInlineUnderEpisode(activeEpisodeId);
+      }
     }
 
     showScreen("podcast");
@@ -700,7 +753,10 @@
       els.btnBackFromPodcastList.addEventListener("click", () => showScreen("home"));
     }
     if (els.btnBackFromPodcast) {
-      els.btnBackFromPodcast.addEventListener("click", renderList);
+      els.btnBackFromPodcast.addEventListener("click", () => {
+        clearPlaylistEmbed();
+        renderList();
+      });
     }
     if (els.btnPlayLatest) {
       els.btnPlayLatest.addEventListener("click", () => {
