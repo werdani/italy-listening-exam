@@ -4372,6 +4372,16 @@
   "podcast": {
     "title": "Podcast",
     "description": "Scegli un podcast e ascolta la playlist YouTube.",
-    "items": []
+    "items": [
+      {
+        "id": 1,
+        "title": "Podcast in Italiano",
+        "author": "Signora Reham Ramadan",
+        "description": "Un podcast dedicato alla lingua italiana, pensato per aiutarti a migliorare le tue competenze linguistiche attraverso conversazioni interessanti, spiegazioni semplici ed esempi pratici. Ascolta, impara e migliora il tuo italiano un episodio alla volta! 🇮🇹🎙️",
+        "cover": "assets/images/podcast-cover-new-podcast-cover-1-podcast.jpg",
+        "playlistUrl": "https://www.youtube.com/playlist?list=PLJd_71FMZNjxv4cT2c_g_ttIiVkJiojT8",
+        "episodes": []
+      }
+    ]
   }
 }
