@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="css/landing.css?v=48" />
   <link rel="stylesheet" href="css/library.css?v=3" />
   <link rel="stylesheet" href="css/courses.css?v=5" />
-  <link rel="stylesheet" href="css/podcast.css?v=14" />
+  <link rel="stylesheet" href="css/podcast.css?v=15" />
   <!-- Critical: full-page loader before CSS arrives (Rome palette = landing) -->
   <style>
     #screenLoading.screen-active:not([hidden]) {
@@ -590,80 +590,77 @@
           <button type="button" class="btn-back" id="btnBackFromPodcastList">← Torna alla home</button>
           <p class="eyebrow">Ascolto</p>
           <h1 id="podcastListTitle">Podcast</h1>
-          <p class="lead" id="podcastListDescription">Scegli un podcast e ascolta la playlist YouTube.</p>
+          <p class="lead" id="podcastListDescription">Scegli un podcast, apri un episodio e leggi il testo.</p>
         </div>
         <div class="podcast-shows-grid" id="podcastShowsGrid"></div>
         <p class="empty-state" id="podcastShowsEmpty" hidden>Nessun podcast disponibile.</p>
       </div>
     </section>
 
-    <!-- Podcast — Apple Podcasts–style show page -->
+    <!-- Podcast — episode list + YouTube player + text -->
     <section id="screenPodcast" class="screen" hidden aria-labelledby="podcastShowTitle">
-      <div class="card home-card podcast-card fade-in">
-        <div class="library-head" style="padding: 1.25rem 1.25rem 0">
+      <div class="card home-card podcast-card fade-in course-detail-card">
+        <div class="library-head">
           <button type="button" class="btn-back" id="btnBackFromPodcast">← Tutti i podcast</button>
-        </div>
-        <div class="podcast-shell">
-          <div class="podcast-atmosphere" id="podcastAtmosphere" aria-hidden="true"></div>
-          <div class="podcast-hero">
-            <div class="podcast-cover-wrap">
-              <img
-                id="podcastCover"
-                class="podcast-cover"
-                src="assets/images/reham.jpeg"
-                alt=""
-                width="220"
-                height="220"
-                decoding="async"
-              />
-            </div>
-            <h1 class="podcast-show-title" id="podcastShowTitle">Podcast</h1>
-            <p class="podcast-show-author" id="podcastShowAuthor"></p>
-            <p class="podcast-show-desc" id="podcastShowDesc"></p>
-            <div class="podcast-hero-actions">
-              <button type="button" class="podcast-play-latest" id="btnPlayLatest" hidden>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86A1 1 0 0 0 8 5.14z"/>
-                </svg>
-                Riproduci
-              </button>
-              <a
-                class="podcast-play-latest podcast-open-youtube"
-                id="btnOpenYoutubePlaylist"
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                hidden
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.8zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/>
-                </svg>
-                Apri su YouTube
-              </a>
+          <div class="podcast-show-heading">
+            <img
+              id="podcastCover"
+              class="podcast-show-heading-cover"
+              src="assets/images/reham.jpeg"
+              alt=""
+              width="64"
+              height="64"
+              decoding="async"
+            />
+            <div>
+              <p class="eyebrow" id="podcastShowAuthor">Ascolto</p>
+              <h1 id="podcastShowTitle">Podcast</h1>
+              <p class="lead" id="podcastShowDesc"></p>
             </div>
           </div>
-          <div class="podcast-playlist" id="podcastPlaylistSection" hidden>
-            <div class="podcast-playlist-frame-wrap">
+        </div>
+
+        <div class="course-layout podcast-watch-layout">
+          <div class="course-player-panel" id="podcastPlayerWrap">
+            <div class="course-player-frame-wrap podcast-playlist-frame-wrap">
               <iframe
                 id="podcastPlaylistFrame"
-                class="podcast-playlist-frame"
-                title="Playlist YouTube"
+                class="course-player-frame podcast-playlist-frame"
+                title="Episodio podcast"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowfullscreen
                 referrerpolicy="strict-origin-when-cross-origin"
+                hidden
               ></iframe>
+              <p class="course-player-empty" id="podcastPlaylistEmpty">Seleziona un episodio dall’elenco.</p>
             </div>
-            <p class="podcast-empty" id="podcastPlaylistEmpty" hidden>Nessuna playlist YouTube collegata.</p>
+            <section class="podcast-episode-text-panel" id="podcastEpisodeTextPanel" aria-labelledby="podcastEpisodeTextTitle" hidden>
+              <h2 class="podcast-episode-text-title" id="podcastEpisodeTextTitle">Testo dell’episodio</h2>
+              <div class="podcast-episode-text-body" id="podcastEpisodeTextBody"></div>
+            </section>
           </div>
-          <div class="podcast-episodes" id="podcastEpisodesSection" hidden>
+          <div class="course-playlist-panel">
             <div class="podcast-episodes-head">
-              <h2 class="podcast-episodes-title" id="podcastEpisodesTitle">Episodi</h2>
+              <h2 class="course-playlist-heading" id="podcastEpisodesTitle">Episodi</h2>
               <span class="podcast-episodes-count" id="podcastEpisodesCount"></span>
             </div>
-            <ul class="podcast-episode-list" id="podcastEpisodeList"></ul>
-            <p class="podcast-empty" id="podcastEmpty" hidden>Nessun episodio disponibile.</p>
+            <div class="playlist-list" id="podcastEpisodeList" role="list"></div>
+            <p class="empty-state" id="podcastEmpty" hidden>Nessun episodio disponibile.</p>
+            <a
+              class="btn btn-secondary btn-sm podcast-open-youtube"
+              id="btnOpenYoutubePlaylist"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              hidden
+              style="margin-top:0.85rem"
+            >Apri playlist su YouTube</a>
           </div>
         </div>
+
+        <button type="button" id="btnPlayLatest" hidden aria-hidden="true" tabindex="-1"></button>
+        <div id="podcastPlaylistSection" hidden></div>
+        <div id="podcastEpisodesSection" hidden></div>
       </div>
     </section>
       </div><!-- /.app-content -->
@@ -908,12 +905,12 @@
   <script src="js/content.js?v=gate1" defer></script>
   <script src="js/library.js?v=1" defer></script>
   <script src="js/courses.js?v=3" defer></script>
-  <script src="js/podcast.js?v=3" defer></script>
+  <script src="js/podcast.js?v=4" defer></script>
   <script src="js/visitors.js?v=firestore3" defer></script>
   <script src="js/exam-submissions.js?v=gate4" defer></script>
   <script src="js/library-ui.js?v=4" defer></script>
   <script src="js/courses-ui.js?v=8" defer></script>
-  <script src="js/podcast-ui.js?v=16" defer></script>
+  <script src="js/podcast-ui.js?v=17" defer></script>
   <script src="js/testimonials.js?v=2" defer></script>
   <script src="js/app.js?v=gate5" defer></script>
 </body>

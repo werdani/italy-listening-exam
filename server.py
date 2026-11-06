@@ -9,6 +9,7 @@ Local static server with APIs for content + Google Drive media proxy.
 POST/PUT /api/content     → writes data/questions.json
 GET      /api/content     → returns data/questions.json
 GET      /api/drive/<id>  → streams a public Google Drive file (audio/images)
+GET      /api/youtube/playlist?list=<id>[&key=] → playlist videos (API or RSS)
 POST     /api/audio        → saves uploaded audio to assets/audio/
 POST     /api/pdf          → saves uploaded PDF to assets/pdf/
 POST     /api/visit       → register unique device visit
@@ -26,13 +27,14 @@ import os
 import re
 import sys
 import threading
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from http import HTTPStatus
 from http.cookiejar import CookieJar
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import parse_qs, unquote, urlparse
+from urllib.parse import parse_qs, quote, unquote, urlencode, urlparse
 from urllib.request import HTTPCookieProcessor, Request, build_opener
 
 ROOT = Path(__file__).resolve().parent
@@ -46,8 +48,11 @@ UA = (
     "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 )
 DRIVE_ID_RE = re.compile(r"^[a-zA-Z0-9_-]{10,}$")
+YOUTUBE_PLAYLIST_ID_RE = re.compile(r"^(PL|UU|LL|FL|OLAK5uy_|RD)[a-zA-Z0-9_-]+$", re.I)
 DEVICE_ID_RE = re.compile(r"^[a-zA-Z0-9_-]{8,80}$")
 PHONE_RE = re.compile(r"^\+?[\d\s().-]{8,20}$")
+ATOM_NS = {"atom": "http://www.w3.org/2005/Atom"}
+YT_NS = {"yt": "http://www.youtube.com/xml/schemas/2015"}
 PDF_NAME_RE = re.compile(r"^[a-zA-Z0-9_.-]{1,80}\.pdf$", re.I)
 AUDIO_NAME_RE = re.compile(r"^[a-zA-Z0-9_.-]{1,80}\.(mp3|wav|ogg|m4a|aac|webm|flac)$", re.I)
 IMAGE_NAME_RE = re.compile(r"^[a-zA-Z0-9_.-]{1,80}\.(jpe?g|png|webp|gif|svg)$", re.I)
@@ -123,6 +128,118 @@ def save_pdf_file(filename: str, raw: bytes) -> Path:
 
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def read_site_google_api_key() -> str:
+    try:
+        data = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+        key = str((data.get("site") or {}).get("googleApiKey") or "").strip()
+        return key
+    except Exception:
+        return ""
+
+
+def http_get_bytes(url: str, timeout: int = 30) -> bytes:
+    req = Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
+    with build_opener().open(req, timeout=timeout) as resp:
+        return resp.read()
+
+
+def fetch_youtube_playlist_via_api(playlist_id: str, api_key: str) -> list[dict]:
+    videos: list[dict] = []
+    page_token = ""
+    while True:
+        params = {
+            "part": "snippet,contentDetails",
+            "playlistId": playlist_id,
+            "maxResults": "50",
+            "key": api_key,
+        }
+        if page_token:
+            params["pageToken"] = page_token
+        url = "https://www.googleapis.com/youtube/v3/playlistItems?" + urlencode(params)
+        raw = http_get_bytes(url)
+        payload = json.loads(raw.decode("utf-8"))
+        if payload.get("error"):
+            message = (
+                ((payload.get("error") or {}).get("message"))
+                or "YouTube Data API error"
+            )
+            raise ValueError(message)
+        for item in payload.get("items") or []:
+            snippet = item.get("snippet") or {}
+            resource = snippet.get("resourceId") or {}
+            video_id = str(resource.get("videoId") or "").strip()
+            if not video_id:
+                continue
+            published = str(snippet.get("publishedAt") or "")[:10]
+            videos.append(
+                {
+                    "videoId": video_id,
+                    "title": str(snippet.get("title") or f"Video {video_id}").strip(),
+                    "date": published,
+                    "videoUrl": f"https://www.youtube.com/watch?v={quote(video_id)}",
+                }
+            )
+        page_token = str(payload.get("nextPageToken") or "").strip()
+        if not page_token:
+            break
+        if len(videos) > 500:
+            break
+    return videos
+
+
+def fetch_youtube_playlist_via_rss(playlist_id: str) -> list[dict]:
+    url = (
+        "https://www.youtube.com/feeds/videos.xml?playlist_id="
+        + quote(playlist_id)
+    )
+    raw = http_get_bytes(url)
+    root = ET.fromstring(raw)
+    videos: list[dict] = []
+    for entry in root.findall("atom:entry", ATOM_NS):
+        video_id = ""
+        video_el = entry.find("yt:videoId", YT_NS)
+        if video_el is not None and video_el.text:
+            video_id = video_el.text.strip()
+        if not video_id:
+            link = entry.find("atom:link[@rel='alternate']", ATOM_NS)
+            href = link.get("href") if link is not None else ""
+            match = re.search(r"[?&]v=([a-zA-Z0-9_-]{6,})", href or "")
+            if match:
+                video_id = match.group(1)
+        if not video_id:
+            continue
+        title_el = entry.find("atom:title", ATOM_NS)
+        published_el = entry.find("atom:published", ATOM_NS)
+        published = (published_el.text or "")[:10] if published_el is not None else ""
+        videos.append(
+            {
+                "videoId": video_id,
+                "title": (title_el.text or f"Video {video_id}").strip()
+                if title_el is not None
+                else f"Video {video_id}",
+                "date": published,
+                "videoUrl": f"https://www.youtube.com/watch?v={quote(video_id)}",
+            }
+        )
+    # RSS is newest-first; reverse to approximate playlist order for podcasts
+    videos.reverse()
+    return videos
+
+
+def fetch_youtube_playlist_videos(playlist_id: str, api_key: str = "") -> tuple[list[dict], str]:
+    key = (api_key or "").strip() or read_site_google_api_key()
+    if key:
+        try:
+            return fetch_youtube_playlist_via_api(playlist_id, key), "youtube-api"
+        except Exception as err:
+            # Fall back to RSS if API key is missing scopes / quota / invalid
+            try:
+                return fetch_youtube_playlist_via_rss(playlist_id), f"rss-fallback:{err}"
+            except Exception:
+                raise err
+    return fetch_youtube_playlist_via_rss(playlist_id), "rss"
 
 
 def load_visitors() -> dict:
@@ -562,6 +679,10 @@ class Handler(SimpleHTTPRequestHandler):
             self._proxy_drive(file_id)
             return
 
+        if path == "/api/youtube/playlist":
+            self._send_youtube_playlist(parsed)
+            return
+
         super().do_GET()
 
     def do_POST(self) -> None:  # noqa: N802
@@ -625,6 +746,45 @@ class Handler(SimpleHTTPRequestHandler):
             items = list(data.get("items") or [])
         items.sort(key=lambda x: str(x.get("createdAt") or ""), reverse=True)
         self._json_response(HTTPStatus.OK, {"ok": True, "items": items, "source": "api"})
+
+    def _send_youtube_playlist(self, parsed) -> None:
+        qs = parse_qs(parsed.query)
+        playlist_id = (
+            (qs.get("list") or qs.get("id") or qs.get("playlistId") or [""])[0] or ""
+        ).strip()
+        api_key = ((qs.get("key") or [""])[0] or "").strip()
+        if not playlist_id:
+            match = re.search(r"[?&]list=([a-zA-Z0-9_-]+)", (qs.get("url") or [""])[0] or "")
+            if match:
+                playlist_id = match.group(1)
+        if not playlist_id or not YOUTUBE_PLAYLIST_ID_RE.match(playlist_id):
+            self._json_response(
+                HTTPStatus.BAD_REQUEST,
+                {"ok": False, "error": "Invalid YouTube playlist id"},
+            )
+            return
+        try:
+            videos, source = fetch_youtube_playlist_videos(playlist_id, api_key)
+            self._json_response(
+                HTTPStatus.OK,
+                {
+                    "ok": True,
+                    "playlistId": playlist_id,
+                    "source": source,
+                    "count": len(videos),
+                    "videos": videos,
+                },
+            )
+        except HTTPError as err:
+            self._json_response(
+                HTTPStatus.BAD_GATEWAY,
+                {"ok": False, "error": f"YouTube request failed ({err.code})"},
+            )
+        except Exception as err:
+            self._json_response(
+                HTTPStatus.BAD_GATEWAY,
+                {"ok": False, "error": str(err) or "Failed to load playlist"},
+            )
 
     def _handle_exam_submission(self) -> None:
         length = int(self.headers.get("Content-Length", "0") or 0)
@@ -1123,6 +1283,7 @@ def main() -> None:
     print("POST /api/pdf saves assets/pdf/*.pdf")
     print("POST /api/github/publish pushes questions.json to GitHub")
     print("GET  /api/drive/<fileId> proxies Google Drive media")
+    print("GET  /api/youtube/playlist?list=<id> loads playlist videos")
     print("GET  /api/health lightweight ping")
     print("POST /api/visit registers unique devices")
     print("GET  /api/visitors returns unique visitor count")

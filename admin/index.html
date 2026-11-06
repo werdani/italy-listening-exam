@@ -458,27 +458,20 @@
           </div>
           <div class="page-actions">
             <button type="button" class="btn btn-secondary" id="btnEditPodcastShow">Modifica podcast</button>
-            <a class="btn btn-primary" id="btnOpenPodcastPlaylist" href="#" target="_blank" rel="noopener noreferrer" hidden>Apri su YouTube</a>
+            <button type="button" class="btn btn-secondary" id="btnSyncPodcastPlaylist">Sincronizza playlist</button>
+            <button type="button" class="btn btn-primary" id="btnAddEpisode">+ Episodio</button>
+            <a class="btn btn-secondary" id="btnOpenPodcastPlaylist" href="#" target="_blank" rel="noopener noreferrer" hidden>Apri su YouTube</a>
           </div>
         </div>
         <div class="card" id="podcastPlaylistPreviewCard" hidden>
           <h2 class="section-title" style="margin-top:0">Playlist YouTube</h2>
           <p class="muted" id="podcastPlaylistUrlLabel" style="word-break:break-all"></p>
-          <div class="course-player-frame-wrap" style="margin-top:1rem">
-            <iframe
-              id="adminPodcastPlaylistFrame"
-              class="course-player-frame"
-              title="Anteprima playlist YouTube"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen
-              hidden
-            ></iframe>
-            <p class="course-player-empty" id="adminPodcastPlaylistEmpty">Nessuna playlist collegata. Modifica il podcast e aggiungi il link YouTube.</p>
-          </div>
+          <p class="field-hint" style="margin-top:0.5rem">
+            Sincronizza per importare le puntate. Poi apri ogni episodio e aggiungi il testo per gli studenti.
+          </p>
         </div>
-        <div class="questions-list" id="podcastEpisodesList" hidden></div>
-        <p class="empty-state" id="podcastEpisodesEmpty" hidden></p>
-        <button type="button" id="btnAddEpisode" hidden aria-hidden="true"></button>
+        <div class="questions-list" id="podcastEpisodesList"></div>
+        <p class="empty-state" id="podcastEpisodesEmpty" hidden>Nessun episodio. Sincronizza la playlist o aggiungine uno.</p>
       </section>
 
       <!-- Users stored in Firestore -->
@@ -863,7 +856,7 @@
   <div class="modal" id="episodeModal" hidden role="dialog" aria-modal="true" aria-labelledby="episodeModalTitle">
     <div class="modal-backdrop" data-close-modal></div>
     <div class="modal-card modal-card-wide" role="document">
-      <h2 id="episodeModalTitle">Nuovo episodio</h2>
+      <h2 id="episodeModalTitle">Episodio</h2>
       <form id="episodeForm" class="admin-form">
         <input type="hidden" id="episodeFormId" />
         <div class="form-field">
@@ -871,39 +864,40 @@
           <input type="text" id="episodeTitle" required maxlength="160" placeholder="es. Cosa mangiano gli italiani a colazione?" />
         </div>
         <div class="form-field">
-          <label class="field-label" for="episodeDesc">Descrizione (opzionale)</label>
-          <textarea id="episodeDesc" class="admin-control" rows="3" maxlength="600" placeholder="Breve testo dell’episodio"></textarea>
-        </div>
-        <div class="form-field">
-          <label class="field-label" for="episodeDate">Data</label>
-          <input type="date" id="episodeDate" />
-        </div>
-        <div class="form-field">
-          <label class="field-label" for="episodeAudioPath">Link Drive / percorso / URL</label>
+          <label class="field-label" for="episodeVideoUrl">Link video YouTube</label>
           <input
-            type="text"
-            id="episodeAudioPath"
+            type="url"
+            id="episodeVideoUrl"
             maxlength="500"
-            placeholder="https://drive.google.com/file/d/…/view oppure assets/audio/ep1.mp3"
+            required
+            placeholder="https://www.youtube.com/watch?v=…"
           />
         </div>
         <div class="form-field">
-          <label class="field-label" for="episodeAudioFile">Oppure carica file audio</label>
-          <input type="file" id="episodeAudioFile" accept="audio/*,.mp3,.wav,.ogg,.m4a" />
-          <p class="field-hint" id="episodeAudioHint">Il file viene caricato su <code>Firebase Storage</code> (cartella podcasts/).</p>
+          <label class="field-label" for="episodeDesc">Descrizione breve (opzionale)</label>
+          <textarea id="episodeDesc" class="admin-control" rows="2" maxlength="600" placeholder="Riassunto breve"></textarea>
         </div>
+        <div class="form-field">
+          <label class="field-label" for="episodeText">Testo per lo studente</label>
+          <textarea
+            id="episodeText"
+            class="admin-control"
+            rows="10"
+            maxlength="20000"
+            placeholder="Trascrizione, note, vocabolario… questo testo compare sotto il video."
+          ></textarea>
+          <p class="field-hint">Visibile nella pagina podcast sotto il player dell’episodio selezionato.</p>
+        </div>
+        <div class="form-field">
+          <label class="field-label" for="episodeDate">Data (opzionale)</label>
+          <input type="date" id="episodeDate" />
+        </div>
+        <input type="hidden" id="episodeAudioPath" />
+        <input type="file" id="episodeAudioFile" hidden aria-hidden="true" tabindex="-1" />
         <div class="audio-preview" id="episodeAudioPreviewWrap" hidden>
-          <label class="field-label">Anteprima</label>
-          <audio id="episodeAudioPreview" class="audio-player" controls preload="metadata"></audio>
+          <audio id="episodeAudioPreview" class="audio-player" controls preload="metadata" hidden></audio>
           <div id="episodeDrivePreviewWrap" class="drive-audio-wrap" hidden>
-            <iframe
-              id="episodeDrivePreviewFrame"
-              class="drive-audio-frame"
-              title="Anteprima Google Drive"
-              allow="autoplay"
-              allowfullscreen
-            ></iframe>
-            <p class="field-hint">Anteprima tramite player Google Drive (il link diretto non funziona nel browser).</p>
+            <iframe id="episodeDrivePreviewFrame" class="drive-audio-frame" title="Anteprima" allow="autoplay"></iframe>
           </div>
         </div>
         <p class="form-error" id="episodeFormError" hidden role="alert"></p>
@@ -933,13 +927,13 @@
   <script src="../js/content.js?v=users2" defer></script>
   <script src="../js/library.js?v=1" defer></script>
   <script src="../js/courses.js?v=3" defer></script>
-  <script src="../js/podcast.js?v=3" defer></script>
+  <script src="../js/podcast.js?v=4" defer></script>
   <script src="../js/visitors.js?v=firestore3" defer></script>
   <script src="../js/exam-submissions.js?v=4" defer></script>
   <script src="js/auth.js?v=duration3" defer></script>
   <script src="js/library-admin.js?v=1" defer></script>
   <script src="js/courses-admin.js?v=5" defer></script>
-  <script src="js/podcast-admin.js?v=yt-playlist1" defer></script>
+  <script src="js/podcast-admin.js?v=yt-episodes1" defer></script>
   <script src="js/users-admin.js?v=users2" defer></script>
   <script src="js/admin.js?v=users2" defer></script>
 </body>

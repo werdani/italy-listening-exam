@@ -1,7 +1,6 @@
 /**
- * Podcast — multiple shows, each with a YouTube playlist (+ optional legacy episodes).
- * Schema: content.podcast.items[] with playlistUrl
- * Migrates legacy flat podcast { title, cover, episodes } → items[0].
+ * Podcast — shows with YouTube playlist + selectable episodes (video + text).
+ * Schema: content.podcast.items[] { playlistUrl, episodes[{ videoUrl, text, ... }] }
  */
 (function (global) {
   "use strict";
@@ -44,11 +43,36 @@
     return null;
   }
 
+  function extractYouTubeVideoId(input) {
+    if (global.AscoltoCourses && typeof global.AscoltoCourses.extractYouTubeId === "function") {
+      return global.AscoltoCourses.extractYouTubeId(input);
+    }
+    const s = String(input || "").trim();
+    if (!s) return null;
+    let match = s.match(/[?&]v=([a-zA-Z0-9_-]{6,})/i);
+    if (match) return match[1];
+    match = s.match(/youtu\.be\/([a-zA-Z0-9_-]{6,})/i);
+    if (match) return match[1];
+    match = s.match(/youtube\.com\/(?:embed|shorts|live)\/([a-zA-Z0-9_-]{6,})/i);
+    if (match) return match[1];
+    match = s.match(/^[a-zA-Z0-9_-]{11}$/);
+    if (match) return match[0];
+    return null;
+  }
+
   function normalizePlaylistUrl(input) {
     const raw = String(input || "").trim();
     if (!raw) return "";
     const id = extractYouTubePlaylistId(raw);
     if (id) return `https://www.youtube.com/playlist?list=${encodeURIComponent(id)}`;
+    return raw;
+  }
+
+  function normalizeVideoUrl(input) {
+    const raw = String(input || "").trim();
+    if (!raw) return "";
+    const id = extractYouTubeVideoId(raw);
+    if (id) return `https://www.youtube.com/watch?v=${encodeURIComponent(id)}`;
     return raw;
   }
 
@@ -64,25 +88,46 @@
     return `https://www.youtube.com/playlist?list=${encodeURIComponent(id)}`;
   }
 
+  function getVideoEmbedUrl(input, playlistUrl) {
+    const videoId = extractYouTubeVideoId(input);
+    if (!videoId) return "";
+    const listId = extractYouTubePlaylistId(playlistUrl);
+    let url = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?rel=0`;
+    if (listId) url += `&list=${encodeURIComponent(listId)}`;
+    return url;
+  }
+
   function normalizeEpisode(episode, index) {
+    const videoUrl = normalizeVideoUrl(
+      episode.videoUrl || episode.youtubeUrl || episode.youtube || ""
+    );
+    const videoId =
+      String(episode.videoId || "").trim() || extractYouTubeVideoId(videoUrl) || "";
     return {
       id: episode.id != null ? Number(episode.id) : index + 1,
       title:
         String(episode.title || episode.name || `Episodio ${index + 1}`).trim() ||
         `Episodio ${index + 1}`,
       description: String(episode.description || "").trim(),
+      text: String(episode.text || episode.body || episode.content || "").trim(),
+      videoUrl: videoId ? normalizeVideoUrl(videoId) : videoUrl,
+      videoId,
       audio: normalizeAudio(episode.audio || episode.url || episode.src || ""),
       date: String(episode.date || "").trim(),
       duration: String(episode.duration || "").trim(),
+      order: episode.order != null && episode.order !== "" ? Number(episode.order) : index,
     };
   }
 
   function sortEpisodes(episodes) {
     episodes.sort((a, b) => {
+      const oa = Number.isFinite(Number(a.order)) ? Number(a.order) : null;
+      const ob = Number.isFinite(Number(b.order)) ? Number(b.order) : null;
+      if (oa != null && ob != null && oa !== ob) return oa - ob;
       const da = a.date || "";
       const db = b.date || "";
-      if (da && db && da !== db) return db.localeCompare(da);
-      return Number(b.id) - Number(a.id);
+      if (da && db && da !== db) return da.localeCompare(db);
+      return Number(a.id) - Number(b.id);
     });
     return episodes;
   }
@@ -116,7 +161,6 @@
       podcastIn.cover ||
       podcastIn.author
     ) {
-      // Legacy single-show shape → one item
       items = [
         normalizeShow(
           {
@@ -125,6 +169,7 @@
             author: podcastIn.author || data.site?.ownerName || "Signora Reham Ramadan",
             description: podcastIn.description || "",
             cover: podcastIn.cover || podcastIn.artwork || DEFAULT_COVER,
+            playlistUrl: podcastIn.playlistUrl || "",
             episodes: podcastIn.episodes || [],
           },
           0
@@ -138,9 +183,8 @@
       title: String(podcastIn.title || "Podcast").trim() || "Podcast",
       description:
         String(
-          podcastIn.description ||
-            "Scegli un podcast e ascolta la playlist YouTube."
-        ).trim() || "Scegli un podcast e ascolta la playlist YouTube.",
+          podcastIn.description || "Scegli un podcast, apri un episodio e leggi il testo."
+        ).trim() || "Scegli un podcast, apri un episodio e leggi il testo.",
       items,
     };
     return data;
@@ -201,7 +245,11 @@
     return show.episodes.find((ep) => Number(ep.id) === Number(episodeId)) || null;
   }
 
-  function createEpisode(data, showId, { title, description, audio, date, duration } = {}) {
+  function createEpisode(
+    data,
+    showId,
+    { title, description, text, videoUrl, audio, date, duration, order } = {}
+  ) {
     const show = getShow(data, showId);
     if (!show) return null;
     const id = nextId(show.episodes);
@@ -210,13 +258,17 @@
         id,
         title: title || `Episodio ${id}`,
         description: description || "",
+        text: text || "",
+        videoUrl: videoUrl || "",
         audio: audio || "",
-        date: date || new Date().toISOString().slice(0, 10),
+        date: date || "",
         duration: duration || "",
+        order: order != null ? order : show.episodes.length,
       },
       show.episodes.length
     );
-    show.episodes.unshift(episode);
+    show.episodes.push(episode);
+    sortEpisodes(show.episodes);
     return episode;
   }
 
@@ -225,9 +277,15 @@
     if (!episode) return null;
     if (patch.title != null) episode.title = String(patch.title).trim() || episode.title;
     if (patch.description != null) episode.description = String(patch.description).trim();
+    if (patch.text != null) episode.text = String(patch.text).trim();
+    if (patch.videoUrl != null) {
+      episode.videoUrl = normalizeVideoUrl(patch.videoUrl);
+      episode.videoId = extractYouTubeVideoId(episode.videoUrl) || "";
+    }
     if (patch.audio != null) episode.audio = normalizeAudio(patch.audio);
     if (patch.date != null) episode.date = String(patch.date).trim();
     if (patch.duration != null) episode.duration = String(patch.duration).trim();
+    if (patch.order != null && patch.order !== "") episode.order = Number(patch.order);
     return episode;
   }
 
@@ -238,6 +296,72 @@
     const before = show.episodes.length;
     show.episodes = show.episodes.filter((ep) => Number(ep.id) !== eid);
     return show.episodes.length < before;
+  }
+
+  /**
+   * Merge YouTube playlist videos into show.episodes.
+   * Preserves existing text/description for matching videoId.
+   * videos: [{ videoId, title, date, videoUrl? }]
+   */
+  function syncEpisodesFromPlaylist(data, showId, videos) {
+    const show = getShow(data, showId);
+    if (!show) return null;
+    const incoming = Array.isArray(videos) ? videos : [];
+    const byVideoId = new Map();
+    show.episodes.forEach((ep) => {
+      const vid = ep.videoId || extractYouTubeVideoId(ep.videoUrl);
+      if (vid) byVideoId.set(vid, ep);
+    });
+
+    const next = incoming
+      .map((item, index) => {
+        const videoId = String(item.videoId || extractYouTubeVideoId(item.videoUrl) || "").trim();
+        if (!videoId) return null;
+        const prev = byVideoId.get(videoId);
+        return normalizeEpisode(
+          {
+            id: prev?.id != null ? prev.id : undefined,
+            title: item.title || prev?.title || `Episodio ${index + 1}`,
+            description: prev?.description || item.description || "",
+            text: prev?.text || "",
+            videoUrl: item.videoUrl || videoId,
+            videoId,
+            date: item.date || prev?.date || "",
+            duration: prev?.duration || "",
+            audio: prev?.audio || "",
+            order: index,
+          },
+          index
+        );
+      })
+      .filter(Boolean);
+
+    // Keep orphan non-YouTube legacy audio episodes at the end
+    const syncedIds = new Set(next.map((ep) => ep.videoId).filter(Boolean));
+    show.episodes.forEach((ep, index) => {
+      const vid = ep.videoId || extractYouTubeVideoId(ep.videoUrl);
+      if (vid && syncedIds.has(vid)) return;
+      if (!vid && ep.audio) {
+        next.push(
+          normalizeEpisode(
+            { ...ep, order: next.length + index },
+            next.length
+          )
+        );
+      }
+    });
+
+    // Assign stable ids for new episodes
+    let maxId = next.reduce((m, ep) => Math.max(m, Number(ep.id) || 0), 0);
+    next.forEach((ep) => {
+      if (!ep.id) {
+        maxId += 1;
+        ep.id = maxId;
+      }
+    });
+
+    show.episodes = sortEpisodes(next);
+    return show.episodes;
   }
 
   function formatDate(iso) {
@@ -296,10 +420,14 @@
     createEpisode,
     updateEpisode,
     deleteEpisode,
+    syncEpisodesFromPlaylist,
     extractYouTubePlaylistId,
+    extractYouTubeVideoId,
     normalizePlaylistUrl,
+    normalizeVideoUrl,
     getPlaylistEmbedUrl,
     getPlaylistWatchUrl,
+    getVideoEmbedUrl,
     formatDate,
     formatDuration,
     formatDurationLabel,

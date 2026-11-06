@@ -4376,7 +4376,7 @@
   },
   "podcast": {
     "title": "Podcast",
-    "description": "Scegli un podcast e ascolta la playlist YouTube.",
+    "description": "Scegli un podcast, apri un episodio e leggi il testo.",
     "items": [
       {
         "id": 1,
