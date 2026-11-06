@@ -26,7 +26,7 @@
     if (match) return match[1];
 
     match = s.match(/^[a-zA-Z0-9_-]{11}$/);
-    if (match) return match[1];
+    if (match) return match[0];
 
     return null;
   }

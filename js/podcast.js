@@ -44,11 +44,10 @@
   }
 
   function extractYouTubeVideoId(input) {
-    if (global.AscoltoCourses && typeof global.AscoltoCourses.extractYouTubeId === "function") {
-      return global.AscoltoCourses.extractYouTubeId(input);
-    }
     const s = String(input || "").trim();
     if (!s) return null;
+
+    // Own parser first — bare 11-char IDs must work even if courses helper is outdated.
     let match = s.match(/[?&]v=([a-zA-Z0-9_-]{6,})/i);
     if (match) return match[1];
     match = s.match(/youtu\.be\/([a-zA-Z0-9_-]{6,})/i);
@@ -57,6 +56,10 @@
     if (match) return match[1];
     match = s.match(/^[a-zA-Z0-9_-]{11}$/);
     if (match) return match[0];
+
+    if (global.AscoltoCourses && typeof global.AscoltoCourses.extractYouTubeId === "function") {
+      return global.AscoltoCourses.extractYouTubeId(s);
+    }
     return null;
   }
 

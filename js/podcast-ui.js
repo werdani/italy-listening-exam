@@ -42,6 +42,8 @@
     podcastShowTitle: $("#podcastShowTitle"),
     podcastShowAuthor: $("#podcastShowAuthor"),
     podcastShowDesc: $("#podcastShowDesc"),
+    podcastDescWrap: $("#podcastDescWrap"),
+    podcastDescToggle: $("#podcastDescToggle"),
     btnPlayLatest: $("#btnPlayLatest"),
     btnOpenYoutubePlaylist: $("#btnOpenYoutubePlaylist"),
     podcastPlaylistSection: $("#podcastPlaylistSection"),
@@ -660,14 +662,43 @@
     els.podcastEpisodeTextBody.textContent = text;
   }
 
+  function setShowDescription(description) {
+    const text = String(description || "").trim();
+    if (!els.podcastShowDesc) return;
+
+    if (els.podcastDescWrap) els.podcastDescWrap.hidden = !text;
+    els.podcastShowDesc.textContent = text;
+    els.podcastShowDesc.hidden = !text;
+    els.podcastShowDesc.classList.remove("is-expanded");
+
+    const toggle = els.podcastDescToggle;
+    if (!toggle) return;
+
+    if (!text) {
+      toggle.hidden = true;
+      return;
+    }
+
+    // Measure overflow after paint
+    requestAnimationFrame(() => {
+      const overflows = els.podcastShowDesc.scrollHeight > els.podcastShowDesc.clientHeight + 1;
+      toggle.hidden = !overflows;
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.textContent = "Mostra di più";
+    });
+  }
+
   function playYoutubeEpisode(episode, show) {
     if (!episode) return;
     stopPlayer();
     activeEpisodeId = Number(episode.id);
-    const embed = global.AscoltoPodcast.getVideoEmbedUrl(
-      episode.videoUrl || episode.videoId,
-      show?.playlistUrl || ""
-    );
+    const rawVideo = episode.videoUrl || episode.videoId || "";
+    const embed =
+      global.AscoltoPodcast.getVideoEmbedUrl(rawVideo, show?.playlistUrl || "") ||
+      (() => {
+        const id = global.AscoltoPodcast.extractYouTubeVideoId(rawVideo);
+        return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}?rel=0` : "";
+      })();
 
     if (els.podcastPlaylistFrame) {
       if (embed) {
@@ -707,9 +738,6 @@
     activeShowId = Number(show.id);
     activeEpisodeId = null;
     const cover = resolveCover(show.cover);
-    const playlistUrl = show.playlistUrl || "";
-    const watchUrl = global.AscoltoPodcast.getPlaylistWatchUrl(playlistUrl);
-    const hasPlaylist = !!global.AscoltoPodcast.extractYouTubePlaylistId(playlistUrl);
     const episodes = show.episodes || [];
 
     if (els.podcastCover) {
@@ -720,19 +748,11 @@
     if (els.podcastShowAuthor) {
       els.podcastShowAuthor.textContent = show.author || "Ascolto";
     }
-    if (els.podcastShowDesc) {
-      els.podcastShowDesc.textContent = show.description || "";
-      els.podcastShowDesc.hidden = !show.description;
-    }
+    setShowDescription(show.description || "");
 
     if (els.btnOpenYoutubePlaylist) {
-      if (hasPlaylist) {
-        els.btnOpenYoutubePlaylist.hidden = false;
-        els.btnOpenYoutubePlaylist.href = watchUrl;
-      } else {
-        els.btnOpenYoutubePlaylist.hidden = true;
-        els.btnOpenYoutubePlaylist.removeAttribute("href");
-      }
+      els.btnOpenYoutubePlaylist.hidden = true;
+      els.btnOpenYoutubePlaylist.removeAttribute("href");
     }
 
     if (els.podcastEpisodesCount) {
@@ -797,6 +817,14 @@
       els.btnBackFromPodcast.addEventListener("click", () => {
         clearPlaylistEmbed();
         renderList();
+      });
+    }
+    if (els.podcastDescToggle) {
+      els.podcastDescToggle.addEventListener("click", () => {
+        if (!els.podcastShowDesc) return;
+        const expanded = els.podcastShowDesc.classList.toggle("is-expanded");
+        els.podcastDescToggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+        els.podcastDescToggle.textContent = expanded ? "Mostra meno" : "Mostra di più";
       });
     }
     if (els.btnPlayLatest) {

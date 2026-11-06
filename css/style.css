@@ -729,8 +729,16 @@ h1 {
   padding: 0.7rem 1.35rem;
   font-weight: 600;
   font-size: 0.95rem;
+  text-decoration: none;
   transition: background var(--transition), color var(--transition), border-color var(--transition),
     transform var(--transition), box-shadow var(--transition);
+}
+
+a.btn,
+a.btn:hover,
+a.btn:focus,
+a.btn:visited {
+  text-decoration: none;
 }
 
 .btn:hover:not(:disabled) {

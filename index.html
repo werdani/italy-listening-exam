@@ -11,11 +11,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" href="data/questions.json" as="fetch" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Great+Vibes&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=exam-gold5" />
+  <link rel="stylesheet" href="css/style.css?v=exam-gold6" />
   <link rel="stylesheet" href="css/landing.css?v=48" />
   <link rel="stylesheet" href="css/library.css?v=3" />
   <link rel="stylesheet" href="css/courses.css?v=5" />
-  <link rel="stylesheet" href="css/podcast.css?v=15" />
+  <link rel="stylesheet" href="css/podcast.css?v=17" />
   <!-- Critical: full-page loader before CSS arrives (Rome palette = landing) -->
   <style>
     #screenLoading.screen-active:not([hidden]) {
@@ -612,10 +612,13 @@
               height="64"
               decoding="async"
             />
-            <div>
+            <div class="podcast-show-heading-copy">
               <p class="eyebrow" id="podcastShowAuthor">Ascolto</p>
               <h1 id="podcastShowTitle">Podcast</h1>
-              <p class="lead" id="podcastShowDesc"></p>
+              <div class="podcast-desc-wrap" id="podcastDescWrap" hidden>
+                <p class="lead podcast-desc" id="podcastShowDesc"></p>
+                <button type="button" class="podcast-desc-toggle" id="podcastDescToggle" hidden>Mostra di più</button>
+              </div>
             </div>
           </div>
         </div>
@@ -634,31 +637,24 @@
               ></iframe>
               <p class="course-player-empty" id="podcastPlaylistEmpty">Seleziona un episodio dall’elenco.</p>
             </div>
-            <section class="podcast-episode-text-panel" id="podcastEpisodeTextPanel" aria-labelledby="podcastEpisodeTextTitle" hidden>
-              <h2 class="podcast-episode-text-title" id="podcastEpisodeTextTitle">Testo dell’episodio</h2>
-              <div class="podcast-episode-text-body" id="podcastEpisodeTextBody"></div>
-            </section>
           </div>
-          <div class="course-playlist-panel">
+          <div class="course-playlist-panel podcast-episodes-panel">
             <div class="podcast-episodes-head">
               <h2 class="course-playlist-heading" id="podcastEpisodesTitle">Episodi</h2>
               <span class="podcast-episodes-count" id="podcastEpisodesCount"></span>
             </div>
             <div class="playlist-list" id="podcastEpisodeList" role="list"></div>
             <p class="empty-state" id="podcastEmpty" hidden>Nessun episodio disponibile.</p>
-            <a
-              class="btn btn-secondary btn-sm podcast-open-youtube"
-              id="btnOpenYoutubePlaylist"
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              hidden
-              style="margin-top:0.85rem"
-            >Apri playlist su YouTube</a>
           </div>
         </div>
 
+        <section class="podcast-episode-text-panel" id="podcastEpisodeTextPanel" aria-labelledby="podcastEpisodeTextTitle" hidden>
+          <h2 class="podcast-episode-text-title" id="podcastEpisodeTextTitle">Testo dell’episodio</h2>
+          <div class="podcast-episode-text-body" id="podcastEpisodeTextBody"></div>
+        </section>
+
         <button type="button" id="btnPlayLatest" hidden aria-hidden="true" tabindex="-1"></button>
+        <a id="btnOpenYoutubePlaylist" hidden aria-hidden="true" tabindex="-1"></a>
         <div id="podcastPlaylistSection" hidden></div>
         <div id="podcastEpisodesSection" hidden></div>
       </div>
@@ -904,13 +900,13 @@
 
   <script src="js/content.js?v=publish-gitdata1" defer></script>
   <script src="js/library.js?v=1" defer></script>
-  <script src="js/courses.js?v=3" defer></script>
-  <script src="js/podcast.js?v=4" defer></script>
+  <script src="js/courses.js?v=4" defer></script>
+  <script src="js/podcast.js?v=5" defer></script>
   <script src="js/visitors.js?v=firestore3" defer></script>
   <script src="js/exam-submissions.js?v=gate4" defer></script>
   <script src="js/library-ui.js?v=4" defer></script>
   <script src="js/courses-ui.js?v=8" defer></script>
-  <script src="js/podcast-ui.js?v=17" defer></script>
+  <script src="js/podcast-ui.js?v=18" defer></script>
   <script src="js/testimonials.js?v=2" defer></script>
   <script src="js/app.js?v=gate5" defer></script>
 </body>
