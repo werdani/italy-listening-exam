@@ -1479,8 +1479,10 @@
     const check = await validateGithubToken(token, repoFull);
     const headers = githubAuthHeaders(token, check.authScheme);
 
-    // Contents API is unreliable above ~1 MB; this repo already embeds audio.
-    if (raw.length > 900 * 1024) {
+    // Prefer Git Data API on GitHub Pages and for larger payloads.
+    // Contents PUT + base64 often fails in the browser with a misleading 401.
+    const preferGitData = isGitHubPagesHost() || raw.length > 200 * 1024;
+    if (preferGitData) {
       const git = await publishViaGitDataApi(owner, repo, branch, path, raw, message, headers);
       return {
         ok: true,
@@ -1489,6 +1491,7 @@
         repo: repoFull,
         branch,
         path,
+        via: "git-data",
       };
     }
 
@@ -1503,6 +1506,19 @@
       sha = meta.sha;
     } else if (metaRes.status !== 404) {
       const err = await metaRes.json().catch(() => ({}));
+      // Fall back instead of hard-failing on flaky Contents GET
+      if (metaRes.status === 401 || metaRes.status === 403) {
+        const git = await publishViaGitDataApi(owner, repo, branch, path, raw, message, headers);
+        return {
+          ok: true,
+          commit: git.commit,
+          htmlUrl: `https://github.com/${owner}/${repo}/blob/${encodeURIComponent(branch)}/${path}`,
+          repo: repoFull,
+          branch,
+          path,
+          via: "git-data-fallback",
+        };
+      }
       throw new Error(explainGithubError(metaRes.status, err.message, "GET contents"));
     }
 
@@ -1525,20 +1541,35 @@
 
     if (!putRes.ok) {
       const err = await putRes.json().catch(() => ({}));
-      const tooLarge =
+      const retryGitData =
+        putRes.status === 401 ||
+        putRes.status === 403 ||
+        putRes.status === 409 ||
         putRes.status === 413 ||
         putRes.status === 422 ||
-        /too large|must be less than/i.test(String(err.message || ""));
-      if (tooLarge || putRes.status === 409) {
-        const git = await publishViaGitDataApi(owner, repo, branch, path, raw, message, headers);
-        return {
-          ok: true,
-          commit: git.commit,
-          htmlUrl: `https://github.com/${owner}/${repo}/blob/${encodeURIComponent(branch)}/${path}`,
-          repo: repoFull,
-          branch,
-          path,
-        };
+        /too large|must be less than|bad credentials/i.test(String(err.message || ""));
+      if (retryGitData) {
+        try {
+          const git = await publishViaGitDataApi(owner, repo, branch, path, raw, message, headers);
+          return {
+            ok: true,
+            commit: git.commit,
+            htmlUrl: `https://github.com/${owner}/${repo}/blob/${encodeURIComponent(branch)}/${path}`,
+            repo: repoFull,
+            branch,
+            path,
+            via: "git-data-fallback",
+          };
+        } catch (gitErr) {
+          // Keep the original Contents error if Git Data also fails with auth.
+          throw gitErr.status
+            ? gitErr
+            : new Error(
+                explainGithubError(putRes.status, err.message, "PUT contents") +
+                  " — " +
+                  (gitErr.message || "")
+              );
+        }
       }
       throw new Error(explainGithubError(putRes.status, err.message, "PUT contents"));
     }

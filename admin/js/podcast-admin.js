@@ -234,6 +234,60 @@
     });
   }
 
+  async function fetchPlaylistViaLocalApi(playlistId, apiKey) {
+    const params = new URLSearchParams({ list: playlistId });
+    if (apiKey) params.set("key", apiKey);
+    const res = await fetch(`/api/youtube/playlist?${params.toString()}`, { cache: "no-store" });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || `API locale fallita (${res.status})`);
+    }
+    return data.videos || [];
+  }
+
+  async function fetchPlaylistViaYoutubeApi(playlistId, apiKey) {
+    if (!apiKey) {
+      throw new Error(
+        "Manca la Google API Key (Branding) per leggere la playlist da GitHub Pages."
+      );
+    }
+    const videos = [];
+    let pageToken = "";
+    do {
+      const params = new URLSearchParams({
+        part: "snippet,contentDetails",
+        playlistId,
+        maxResults: "50",
+        key: apiKey,
+      });
+      if (pageToken) params.set("pageToken", pageToken);
+      const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/playlistItems?${params.toString()}`,
+        { cache: "no-store" }
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.error) {
+        const msg =
+          (data.error && data.error.message) ||
+          `YouTube API fallita (${res.status})`;
+        throw new Error(msg);
+      }
+      (data.items || []).forEach((item) => {
+        const snippet = item.snippet || {};
+        const videoId = String((snippet.resourceId && snippet.resourceId.videoId) || "").trim();
+        if (!videoId) return;
+        videos.push({
+          videoId,
+          title: String(snippet.title || `Video ${videoId}`).trim(),
+          date: String(snippet.publishedAt || "").slice(0, 10),
+          videoUrl: `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`,
+        });
+      });
+      pageToken = String(data.nextPageToken || "").trim();
+    } while (pageToken && videos.length < 500);
+    return videos;
+  }
+
   async function syncPlaylistFromYoutube() {
     const show = global.AscoltoPodcast.getShow(content, activeShowId);
     if (!show) return;
@@ -246,17 +300,17 @@
     const btn = els.btnSyncPodcastPlaylist;
     setButtonLoading(btn, true, "Sincronizzazione…");
     try {
-      const params = new URLSearchParams({ list: playlistId });
       const apiKey = content?.site?.googleApiKey || "";
-      if (apiKey) params.set("key", apiKey);
-      const res = await fetch(`/api/youtube/playlist?${params.toString()}`);
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Impossibile leggere la playlist YouTube.");
+      let videos = [];
+      let lastErr = null;
+      try {
+        videos = await fetchPlaylistViaLocalApi(playlistId, apiKey);
+      } catch (err) {
+        lastErr = err;
+        videos = await fetchPlaylistViaYoutubeApi(playlistId, apiKey);
       }
-      const videos = data.videos || [];
       if (!videos.length) {
-        throw new Error("La playlist non contiene video pubblici.");
+        throw lastErr || new Error("La playlist non contiene video pubblici.");
       }
       global.AscoltoPodcast.syncEpisodesFromPlaylist(content, activeShowId, videos);
       await api.persist({ silent: true });
@@ -266,9 +320,7 @@
       api.showToast(err.message || "Sincronizzazione fallita.", 5000);
     } finally {
       setButtonLoading(btn, false);
-      if (btn && btn.dataset.defaultLabel) {
-        /* restored by setButtonLoading */
-      } else if (btn) {
+      if (btn && !btn.dataset.defaultLabel) {
         btn.textContent = "Sincronizza playlist";
       }
     }
