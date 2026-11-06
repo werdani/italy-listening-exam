@@ -4377,6 +4377,16 @@
   "podcast": {
     "title": "Podcast",
     "description": "Scegli un podcast, apri un episodio e leggi il testo.",
-    "items": []
+    "items": [
+      {
+        "id": 1,
+        "title": "Intelligenza Artificiale: Podcast e Conversazioni",
+        "author": "Signora Reham Ramadan",
+        "description": "Un podcast dedicato al mondo dell’intelligenza artificiale, alle nuove tecnologie e alle innovazioni che stanno trasformando il nostro futuro. Attraverso conversazioni, approfondimenti ed esempi pratici, esploriamo come l’AI sta cambiando il mondo del lavoro, dell’istruzione e della vita quotidiana. Un’occasione per imparare, ascoltare e migliorare il proprio italiano attraverso temi attuali e interessanti.",
+        "cover": "assets/images/podcast-cover-new-intelligenza-artificiale_-podcast-italiano.png",
+        "playlistUrl": "https://www.youtube.com/playlist?list=PLGHoCPqteF8w",
+        "episodes": []
+      }
+    ]
   }
 }
