@@ -4409,6 +4409,18 @@
             "date": "2026-11-06",
             "duration": "",
             "order": 1
+          },
+          {
+            "id": 3,
+            "title": "3. Come funziona ChatGPT",
+            "description": "",
+            "text": "[0:11] Ciao Reham, oggi parliamo di ChatGPT, ma devo dire una cosa. Non capisco ancora come riesca a parlare con me. È una domanda molto interessante. ChatGPT è basato su un tipo di modello di intelligenza artificiale chiamato large language model, cioè un grande modello linguistico.\n\n[0:31] Un grande modello linguistico. Ma cosa significateli? Possiamo dividere il termine in due parti. Language significa linguaggio, perché il modello lavora con il linguaggio umano.\n\n[0:43] Large significa grande, perché questi modelli possono avere una quantità enorme di dati e parametri. E cosa sono i parametri? puoi immaginarli come numeri, che aiutano il modello a rappresentare quello che è imparato durante l'addestramento. Quindi, quando scrivo una domanda, chat GPT cerca la risposta su Google.\n\n[1:02] Non necessariamente. Un modello linguistico può generare una risposta basandosi su quello che ha imparato e sul contesto della conversazione. Ma come fa a sapere cosa dire? Il modo molto semplificato, il modello cerca di prevedere quale parte di testo può venire dopo.\n\n[1:19] considerando tutto il contesto disponibile. Per esempio se scrivo il cello è... Il modello potrebbe prevedere. Blue.\n\n[1:27] Quindi chat GPT indovina la parola successiva? È una semplificazione, ma sì. L'idea di base è collegato alla previsione del testo. I modelli moderni però sono molto più complessi e imparano relazioni molto sofisticate tra le parole e le informazioni.\n\n[1:42] E cosa sono i token? I token sono piccole unità di testo che il modello può processare. un tocan può essere una parola, una parte di una parola, un segno di ponteggiatura o un'altra parte del testo. Quindi la mia frase viene trasformata in tocan?\n\n[1:57] Esatto. E il contesto è importante? Molto. Il modello può utilizzare il contesto della conversazione per capire meglio la tua domanda e rispondere in modo più coerente.\n\n[2:08] Ecco perché posso fare una seconda domanda senza ripetele tutto. Esatto. Machat GPD, può anche sbagliare. Sì, è molto importante ricordarlo.\n\n[2:17] Un modello di A può produrre una risposta che sembra corretta, ma che in realtà contiene degli errori. Quindi non dobbiamo credere a tutto quello che dice. Exacto. Per informazioni importanti è sempre meglio verificare le fonti.\n\n[2:31] Quindi chat GPT è molto potente, ma non è perfetto. Exactamente. Quindi nella prossima puntata parleremo di come usiamo LIA nella vita quotidiana. Sì, e probabilmente scoprirai che usi lì a molto più di quanto pensi.\n\n[2:45] Interessante, ci vediamo! A presto!",
+            "videoUrl": "https://www.youtube.com/watch?v=kR3xwJJOnh4",
+            "videoId": "kR3xwJJOnh4",
+            "audio": "",
+            "date": "2026-11-06",
+            "duration": "",
+            "order": 2
           }
         ]
       }
